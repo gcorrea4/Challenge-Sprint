@@ -25,19 +25,22 @@ header > nav{
         text-decoration: underline;
         color: #000;
     }
-    main {
-  text-align: space-between;
+    main > section > h2 {
+
+  text-align: center;
+  margin: 50px 5px;
+  gap: 30px;
+  font-size: 40px;
+}
+main {
+  text-align: space-between center;
   align-items: center;
+  font-size: 20px;
   margin: 0px 5px;
   padding: 0 60px;
   gap: 30px;
 }
-main > img {
-    width: 700px;
-    display: block;
-    margin: 20px auto;
-}
-
+    
 footer{
     padding: 80px 60px;
 }
