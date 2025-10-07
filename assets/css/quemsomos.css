@@ -3,11 +3,17 @@ body{
     background-color: #F5F5DC;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
 }
+header > h1 {
+    text-shadow: black 1px 1px 2px;
+}
 header{
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 5px 60px;
+}
+header{
+    color: orange;
 }
 header > nav{
     text-decoration: none;
@@ -23,26 +29,85 @@ header > nav{
     }
     header > nav a:hover{
         text-decoration: underline;
-        color: #000;
+        transition: color 0.5s ease;
+        color: orange;
     }
-    main {
-  text-align: space-between;
-  align-items: center;
-  margin: 0px 5px;
-  padding: 0 60px;
-  gap: 30px;
-}
-main > img {
-    width: 700px;
-    display: block;
-    margin: 20px auto;
+a {
+    text-decoration: none;
+    color: #333333;
 }
 
 footer{
     padding: 80px 60px;
 }
+main {
+    text-align: center;
+    padding: 40px 20px;
+}
 
-    a {
-    text-decoration: none;
-    color: #333333;
+.subtitle {
+    margin-top: -15px;
+    margin-bottom: 60px;
+    font-size: 18px;
+    color: #555;
+}
+
+/* O container que segura os cards */
+.team-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+/* O card de cada integrante */
+.team-member-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    width: 300px;
+    padding: 30px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    
+}
+
+.team-member-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transition: color 0.5s ease;
+        color: orange;
+}
+
+/* A foto de perfil */
+.team-member-card img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+    border: 3px solid #eee;
+}
+
+.team-member-card h3 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.team-member-card p {
+    color: #777;
+    margin-bottom: 20px;
+}
+
+/* Links de GitHub e Linkedin */
+.social-links a {
+    font-weight: bold;
+    margin: 0 10px;
+    
+    transition: color 0.5s ease;
+        
+}
+
+.social-links a:hover {
+    color: orange;
 }

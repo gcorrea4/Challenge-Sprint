@@ -3,15 +3,15 @@ body{
     background-color: #F5F5DC;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
 }
+header > h1 {
+    text-shadow: black 1px 1px 2px;
+}
 header{
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 5px 60px;
-}
-header > h1 {
-    text-shadow: black 1px 1px 2px;
-}
+    padding: 5px 60px;}
+
 header > nav{
     text-decoration: none;
     color: #333333;
@@ -27,61 +27,67 @@ header > nav{
     header > nav a:hover{
         text-decoration: underline;
         transition: color 0.5s ease;
-        transform: translateY(-10px);
         color: orange;
     }
 
 header{
     color: orange;
 }
-    main {
-  text-align: space-between;
-  align-items: center;
-  margin: 0px 5px;
-  padding: 0 60px;
-  gap: 30px;
+
+a {
+    text-decoration: none;
+    color: #333333;
 }
-main > img {
-    width: 700px;
-    display: block;
-    margin: 20px auto;
+
+.contact-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 80px; 
+    max-width: 1200px; 
+    margin: 40px auto; 
+    padding: 0 20px; 
 }
-iframe {
-    display: block;
-    margin: 20px auto;
-    width: 50%;
-    height: 500px;
-    border-radius: 8px;
-    border: none;
-    text-align: left;
+
+
+.contato-info {
+    flex: 1; 
 }
-#endereço { 
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
+
+
+.mapa {
+    flex: 1; 
+}
+.contato-info {
+    padding: 0px 0px;
+}
+
+.contato-info h2 {
+    font-size: 30px; 
+    margin-bottom: 5px; 
+}
+.contato-info h3 {
+    margin-top: 30px; 
+    border-bottom: 1px solid #ccc; 
+}
+
+.contato-info ul {
+    list-style: none; 
+    padding-left: 0;
+}
+
+.contato-info li {
     margin-bottom: 10px;
-    
+}
+
+
+.mapa iframe {
+    width: 100%;
+    height: 500px;
+    border: none;
+    border-radius: 8px;
 }
 
 footer{
-    padding: 80px 60px;
+    padding: 30px 60px;
+    gap: 20px;
 }
-
-    a {
-    text-decoration: none;
-    color: #333333;
-}
-footer > nav{
-    text-decoration: none;
-    color: #333333;
-    display: flex;
-    font-weight: bold;
-    padding: 5px 10px;
-    gap: 30px;
-    font-size: 20px;
-    font-family: Arial, Helvetica, sans-serif;
-    }
-    footer > nav a:hover{
-        text-decoration: underline;
-        color: #000;
-    }

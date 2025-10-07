@@ -31,7 +31,6 @@ header > nav{
     header > nav a:hover{
         text-decoration: underline;
         transition: color 0.5s ease;
-        transform: translateY(-10px);
         color: orange;
     }
 
@@ -49,19 +48,16 @@ main{
 }
 main > section {
    line-height: 1.5;
+   width: 500px;
 }
 main > img {
-
 width: 700px;
-
 }
 
-main > section{
-    width: 500px;
-}
 
 footer{
     padding: 30px 60px;
+    gap: 20px;
 }
 
 a {
