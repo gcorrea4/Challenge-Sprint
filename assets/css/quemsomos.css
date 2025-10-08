@@ -45,7 +45,7 @@ main {
     padding: 40px 20px;
 }
 
-.subtitle {
+.subtitulo {
     margin-top: -15px;
     margin-bottom: 60px;
     font-size: 18px;
@@ -53,7 +53,7 @@ main {
 }
 
 
-.team-container {
+.container-time {
     display: flex;
     justify-content: center;
     gap: 40px;
@@ -61,26 +61,26 @@ main {
 }
 
 
-.team-member-card {
+.card-unico {
     background-color: #ffffff;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 64px 128px rgba(0, 0, 0, 0.05);
     width: 300px;
     padding: 30px;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 1.0s, box-shadow 1.0s;
     
 }
 
-.team-member-card:hover {
+.card-unico:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    transition: color 0.5s ease;
+    transition: color 1.0s ease;
         color: orange;
 }
 
 
-.team-member-card img {
+.card-unico img {
     width: 150px;
     height: 150px;
     border-radius: 50%;
@@ -89,18 +89,18 @@ main {
     border: 3px solid #eee;
 }
 
-.team-member-card h3 {
+.card-unico h3 {
     margin: 0;
     font-size: 22px;
 }
 
-.team-member-card p {
+.card-unico p {
     color: #777;
     margin-bottom: 20px;
 }
 
 
-.social-links a {
+.links a {
     font-weight: bold;
     margin: 0 10px;
     
@@ -108,6 +108,6 @@ main {
         
 }
 
-.social-links a:hover {
+.links a:hover {
     color: orange;
 }
