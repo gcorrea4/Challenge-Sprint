@@ -52,7 +52,7 @@ main {
     color: #555;
 }
 
-/* O container que segura os cards */
+
 .team-container {
     display: flex;
     justify-content: center;
@@ -60,7 +60,7 @@ main {
     flex-wrap: wrap;
 }
 
-/* O card de cada integrante */
+
 .team-member-card {
     background-color: #ffffff;
     border: 1px solid #e0e0e0;
@@ -79,7 +79,7 @@ main {
         color: orange;
 }
 
-/* A foto de perfil */
+
 .team-member-card img {
     width: 150px;
     height: 150px;
@@ -99,7 +99,7 @@ main {
     margin-bottom: 20px;
 }
 
-/* Links de GitHub e Linkedin */
+
 .social-links a {
     font-weight: bold;
     margin: 0 10px;
