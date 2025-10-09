@@ -14,9 +14,11 @@ Nossa solução é um protótipo de site para uma **ferramenta integrada de gest
 
 ## 🌐 Link para o Projeto (GitHub Pages)
 
-A versão final do site para esta Sprint está publicada e pode ser acessada através do link abaixo:
+A versão final do site para esta Sprint está publicada e pode ser acessada através do link abaixo (**CTRL + Botão Esquerdo para abrir uma nova guia!**):
 
-**[Clique aqui para ver o site ao vivo!](https://gcorrea4.github.io/Challenge-Sprint/)**
+**[Clique aqui para ver o site ao vivo](https://gcorrea4.github.io/Challenge-Sprint/)**
+
+
 
 ---
 
