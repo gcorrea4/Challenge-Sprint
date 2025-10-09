@@ -1,63 +1,60 @@
-
-
-body{
+body {
     margin: 0;
     background-color: #F5F5DC;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-header{
+header {
     display: flex;
+    flex-direction: column; 
     align-items: center;
-    justify-content: space-between;
-    padding: 5px 60px;
+    padding: 20px;
+    gap: 20px;
 }
+
 header > h1 {
     text-shadow: black 1px 1px 2px;
+    color: orange;
+    margin: 0;
 }
 
-header > nav{
-    text-decoration: none;
-    color: #333333;
+header > nav {
     display: flex;
+    flex-wrap: wrap; 
+    justify-content: center;
+    gap: 20px;
     font-weight: bold;
-    padding: 5px 10px;
-    gap: 30px;
-    align-items: center;
-    justify-content: space-around;
-    font-size: 20px;
-    font-family: Arial, Helvetica, sans-serif;
-    }
-    header > nav a:hover{
-        text-decoration: underline;
-        transition: color 0.5s ease;
-        color: orange;
-    }
+    font-size: 18px;
+}
 
-header{
+header > nav a:hover {
+    text-decoration: underline;
+    transition: 0.5s ease;
     color: orange;
 }
 
-main{
+main {
     display: flex;
-    justify-content: space-between;
-    align-items: center; 
-    margin: 20px 5px;
-    padding: 0 60px;
+    flex-direction: column; 
+    align-items: center;
+    padding: 40px 20px;
     gap: 40px;
 }
+
 main > section {
-   line-height: 1.5;
-   width: 500px;
+    line-height: 1.6;
 }
+
 main > img {
-width: 700px;
+    width: 100%; 
+    max-width: 500px; 
+    height: auto;
+    border-radius: 10px; 
 }
 
-
-footer{
-    padding: 30px 60px;
-    gap: 20px;
+footer {
+    padding: 30px 20px;
+    text-align: center;
 }
 
 a {
@@ -65,3 +62,31 @@ a {
     color: #333333;
 }
 
+
+@media (min-width: 768px) {
+    
+    header {
+        flex-direction: row; 
+        justify-content: space-between;
+        padding: 5px 60px;
+    }
+
+    header > nav {
+        font-size: 20px;
+        gap: 30px;
+    }
+
+    main {
+        flex-direction: row; 
+        padding: 40px 60px;
+    }
+
+    main > section {
+      flex: 1;
+    }
+
+    main > img {
+      flex: 1; 
+      max-width: 700px;
+    }
+}
