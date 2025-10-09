@@ -42,6 +42,8 @@ A versão final do site para esta Sprint está publicada e pode ser acessada atr
 
 ## 👨‍💻 Equipe
 
+**CTRL + Botão Esquerdo para abrir uma nova guia!**
+
 * **Gabriel Correa**
     * [GitHub](https://github.com/gcorrea4) | [LinkedIn](https://www.linkedin.com/in/SEU-PERFIL-AQUI)
 * **[Kayque Duarte]**
