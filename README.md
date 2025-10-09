@@ -46,7 +46,7 @@ A versão final do site para esta Sprint está publicada e pode ser acessada atr
 
 * **Gabriel Correa**
     * [GitHub](https://github.com/gcorrea4) | [LinkedIn](https://www.linkedin.com/in/SEU-PERFIL-AQUI)
-* **[Kayque Duarte]**
+* **Kayque Duarte**
     * [GitHub](https://github.com/Kayque2012) | [LinkedIn](https://www.linkedin.com/in/kayque-duarte-b24313361?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app)
-* **[Eric Maciel]**
+* **Eric Maciel**
     * [GitHub](https://github.com/Eric-devops-tech) | [LinkedIn](https://www.linkedin.com/in/eric-maciel-144058389?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app)
