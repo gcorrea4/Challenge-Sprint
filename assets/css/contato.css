@@ -78,6 +78,10 @@ a {
 .contato-info li {
     margin-bottom: 10px;
 }
+.contato-info a{
+    
+    color: #000000;
+}
 
 
 .mapa iframe {
