@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/contato.css">
+    <script src="../js/contatos.js"></script>
+
     <title>Contato | Challenge TdB</title>
 </head>
 <body>
@@ -21,36 +23,39 @@
     </header>
    <main class="contact-layout">
 
-        <div class="contato-info">
-            <h2>Contatos da empresa</h2>
-            
-            <section>
-                <h3>Contatos</h3>
-                <ul>
-                    <li><strong>Telefone:</strong> +55 11 5084-7276</li>
-                    <li><strong>Email Presidente:</strong> turmadobem@tdb.org.br</li>
-                    <li><strong>Email Comunicação:</strong> comunicacao@tdb.org.br</li>
-                    <li><strong>Dúvidas e Sugestões:</strong> faleconosco@tdb.org.br</li>
-                </ul>
-                <p><strong>Formulario para contato:</strong> <a href="./formulario.html">Clique Aqui</a></p>
-            </section>
-
-            <section>
-                <h3>Localização</h3>
-                <p>Rua Maurício Francisco Klabin, 449<br>Vila Mariana, São Paulo - SP, 04120-020</p>
-            </section>
-
-            <section>
-                <h3>Redes Sociais</h3>
-                <ul>
-                    <li><a href="https://www.facebook.com/turmadobem" target="_blank">Facebook</a></li>
-                    <li><a href="https://x.com/turmadobem" target="_blank">Twitter</a></li>
-                    <li><a href="https://www.instagram.com/ongturmadobem/" target="_blank">Instagram</a></li>
-                    <li><a href="https://www.linkedin.com/company/turma-do-bem?originalSubdomain=br" target="_blank">LinkedIn</a></li>
-                    <li><a href="https://turmadobem.org.br/" target="_blank">Site Oficial</a></li>
-                </ul>
-            </section>
+     <div class="contato-info">
+    <h2>Contatos da empresa</h2>
+    
+    <section>
+        <h3 id="btn-contatos" class="toggle-btn">Contatos</h3>
+        <div id="content-contatos">
+            <ul>
+                <li><strong>Telefone:</strong> +55 11 5084-7276</li>
+                <li><strong>Email Presidente:</strong> turmadobem@tdb.org.br</li>
+                <li><strong>Email Comunicação:</strong> comunicacao@tdb.org.br</li>
+                <li><strong>Dúvidas e Sugestões:</strong> faleconosco@tdb.org.br</li>
+            </ul>
+            <p><strong>Formulario para contato:</strong> <a href="./formulario.html">Clique Aqui</a></p>
         </div>
+    </section>
+
+    <section>
+        <h3 id="btn-localizacao" class="toggle-btn">Localização</h3>
+        <div id="content-localizacao" style="display: none;">
+            <p>Rua Maurício Francisco Klabin, 449<br>Vila Mariana, São Paulo - SP, 04120-020</p>
+        </div>
+    </section>
+
+    <section>
+        <h3 id="btn-redes" class="toggle-btn">Redes Sociais</h3>
+        <div id="content-redes" style="display: none;">
+            <ul>
+                <li><a href="..." target="_blank">Facebook</a></li>
+                <li><a href="..." target="_blank">Twitter</a></li>
+                </ul>
+        </div>
+    </section>
+</div>
         <div class="mapa">
             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3656.786522359551!2d-46.633513685542!3d-23.57623196766431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce59a603957829%3A0x1e3a3414f43657f2!2sR.%20Maur%C3%ADcio%20Francisco%20Klabin%2C%20449%20-%20Vila%20Mariana%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2004120-020!5e0!3m2!1spt-BR!2sbr!4v1696603831835!5m2!1spt-BR!2sbr" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>

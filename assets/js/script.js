@@ -61,7 +61,6 @@ document.addEventListener("DOMContentLoaded", function() {
         
             successMessage.style.display = "block";
             
-            // Limpa o formulário
             form.reset();
         }
     });
