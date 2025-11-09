@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario</title>
+    
+    <link rel="stylesheet" href="../css/formulario.css">
+     <script src="../js/script.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <h1><a href="../../index.html">Challenge TDB</a></h1>
+        <nav>
+            <a href="../..//index.html">Início</a>
+            <a href="../page/sobre.html">Sobre</a>
+            <a href="../page/contato.html">Contato</a>
+        </nav>
+    </header>
+
+    <main>
+        
+        <div class="form-container">
+            <h2>Formulário de Contato</h2>
+            <p>Envie-nos uma mensagem para saber mais.</p>
+            
+            <div id="successMessage" class="success-message">
+                Mensagem enviada com sucesso!
+            </div>
+
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" name="nome">
+                    <span class="error-message" id="nomeError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email">
+                    <span class="error-message" id="emailError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="assunto">Assunto:</label>
+                    <input type="text" id="assunto" name="assunto">
+                </div>
+                
+                <div class="form-group">
+                    <label for="mensagem">Mensagem:</label>
+                    <textarea id="mensagem" name="mensagem" rows="6"></textarea>
+                    <span class="error-message" id="mensagemError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit">Enviar Mensagem</button>
+                </div>
+            </form>
+        </div>
+        
+    </main>
+
+
+</body>
+</html>

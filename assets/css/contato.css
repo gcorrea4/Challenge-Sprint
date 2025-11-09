@@ -91,3 +91,88 @@ footer{
     padding: 30px 60px;
     gap: 20px;
 }
+
+
+@media (max-width: 1300px) {
+    header {
+        padding: 5px 40px;
+    }
+    .contact-layout {
+        gap: 60px;
+        padding: 0 40px;
+    }
+    footer {
+        padding: 30px 40px;
+    }
+}
+
+@media (max-width: 992px) {
+    header {
+        padding: 5px 30px;
+    }
+    header > nav {
+        gap: 20px;
+        font-size: 18px;
+    }
+    .contact-layout {
+        gap: 40px;
+        padding: 0 30px;
+    }
+    .mapa iframe {
+        height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    header > nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        font-size: 18px;
+    }
+    
+    .contact-layout {
+        flex-direction: column;
+        gap: 40px;
+        margin: 20px auto;
+        padding: 0 30px;
+    }
+    
+    .mapa iframe {
+        height: 350px;
+    }
+    
+    .contato-info h2 {
+        font-size: 26px;
+    }
+    
+    footer {
+        padding: 30px 20px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 600px) {
+    header {
+        padding: 20px 15px;
+    }
+    
+    .contact-layout {
+        padding: 0 15px;
+    }
+
+    .mapa iframe {
+        height: 300px;
+    }
+
+    footer {
+        padding: 30px 15px;
+    }
+}

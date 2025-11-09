@@ -111,3 +111,87 @@ main {
 .links a:hover {
     color: orange;
 }
+
+
+@media (max-width: 1300px) {
+    header {
+        padding: 5px 40px;
+    }
+    .container-time {
+        gap: 30px;
+    }
+}
+
+@media (max-width: 992px) {
+    header {
+        padding: 5px 30px;
+    }
+    header > nav {
+        gap: 20px;
+        font-size: 18px;
+    }
+    .container-time {
+        gap: 25px;
+    }
+    .card-unico {
+        width: 280px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    header > nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        font-size: 18px;
+    }
+    
+    main {
+        padding: 30px 20px;
+    }
+
+    .container-time {
+        gap: 30px;
+    }
+    
+    .card-unico {
+        width: 80%;
+        max-width: 300px;
+    }
+    
+    footer {
+        padding: 40px 20px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 600px) {
+    header {
+        padding: 20px 15px;
+    }
+
+    main {
+        padding: 20px 15px;
+    }
+    
+    .subtitulo {
+        margin-bottom: 30px;
+    }
+
+    .card-unico {
+        width: 90%;
+        padding: 20px;
+    }
+
+    footer {
+        padding: 30px 15px;
+    }
+}

@@ -39,22 +39,102 @@ a {
     color: #333333;
 }
     main > section > h2 {
-
-  text-align: center;
-  margin: 50px 5px;
-  gap: 30px;
-  font-size: 40px;
+    text-align: center;
+    margin: 50px 5px;
+    gap: 30px;
+    font-size: 40px;
 }
 main {
-  text-align: space-between center;
-  align-items: center;
-  font-size: 20px;
-  margin: 0px 5px;
-  padding: 0 60px;
-  gap: 30px;
+    text-align: justify;
+    align-items: center;
+    font-size: 20px;
+    margin: 0px 5px;
+    padding: 0 60px;
+    gap: 30px;
 }
     
 footer{
     padding: 80px 60px;
 }
 
+
+@media (max-width: 1300px) {
+    header {
+        padding: 5px 40px;
+    }
+    main {
+        padding: 0 40px;
+    }
+    footer {
+        padding: 60px 40px;
+    }
+}
+
+
+@media (max-width: 992px) {
+    header {
+        padding: 5px 30px;
+    }
+    header > nav {
+        gap: 20px;
+        font-size: 18px;
+    }
+    main {
+        padding: 0 30px;
+        font-size: 18px;
+    }
+    main > section > h2 {
+        font-size: 36px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    header > nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        font-size: 18px;
+    }
+    
+    main {
+        padding: 20px 30px;
+        margin: 0;
+    }
+    
+    main > section > h2 {
+        font-size: 32px;
+        margin: 30px 0;
+    }
+    
+    footer {
+        padding: 40px 30px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 600px) {
+    header {
+        padding: 20px 15px;
+    }
+
+    main {
+        padding: 20px 15px;
+        font-size: 16px;
+    }
+    
+    main > section > h2 {
+        font-size: 28px;
+    }
+
+    footer {
+        padding: 30px 15px;
+    }
+}
