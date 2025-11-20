@@ -33,6 +33,11 @@ A versão final do site, incluindo os requisitos da Sprint 2, está publicada em
 - **Git & GitHub:** Versionamento e gerenciamento de projeto.
 - **GitHub Pages:** Publicação e hospedagem estática.
 
+
+## 🔗 Link do Repositório
+https://github.com/gcorrea4/Challenge-Sprint
+
+
 ## 👨‍💻 Equipe
 
 - Gabriel Correa  
