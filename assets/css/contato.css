@@ -114,6 +114,9 @@ header > nav a:hover {
     
     color: #000000;
 }
+.Formulario a {
+    color: orange;
+}
 
 
 .mapa iframe {
