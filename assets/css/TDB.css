@@ -74,15 +74,12 @@ header > nav a:hover {
 
 
 
-.main{
-    flex: 1;
-    display: flex  ;
-    text-align: justify;
-    justify-content: space-between;
-    align-items: center; 
-    margin: 20px 5px;
-    padding: 0 60px;
-    gap: 40px;
+.main {
+    max-width: 1200px; 
+    margin: 40px auto; 
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column; /
 }
 .main section {
     display: block;
@@ -172,4 +169,130 @@ footer{
     .main {
         padding: 20px 15px;
     }
+}
+.problems-hero {
+    text-align: center;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.problems-hero h1 {
+    font-size: 2.5rem; 
+    color: orange; 
+    margin-bottom: 15px;
+}
+
+.problems-hero p {
+    color: #555555; 
+    font-size: 1.1rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+.interactive-panel {
+    display: flex;
+    flex-direction: column; 
+    gap: 30px;
+    background-color: #FFFFFF; /* Fundo branco para destacar no bege */
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    margin-top: 30px;
+}
+
+.panel-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.panel-btn {
+    background: transparent;
+    border: 1px solid #E0E0E0;
+    color: #333333;
+    padding: 15px;
+    text-align: left;
+    font-size: 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: 600;
+}
+
+.panel-btn:hover {
+    background-color: rgba(255, 165, 0, 0.1); /* Laranja clarinho no hover */
+    color: orange;
+    border-color: orange;
+}
+
+.panel-btn.active {
+    background-color: orange;
+    color: #FFFFFF;
+    border-color: orange;
+    box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
+}
+
+.panel-content {
+    padding: 10px;
+    position: relative;
+    min-height: 250px; 
+}
+
+.content-item {
+    display: none; 
+    animation: fadeIn 0.5s ease;
+}
+
+.content-item.active {
+    display: block; 
+}
+
+.content-item h2 {
+    font-size: 1.8rem;
+    color: #333333;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #E0E0E0;
+    padding-bottom: 10px;
+}
+
+.content-item p {
+    font-size: 1.1rem;
+    color: #555555;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.content-highlight {
+    background-color: rgba(255, 165, 0, 0.1); /* Fundo laranjinha */
+    border-left: 4px solid orange; /* Borda laranja */
+    padding: 15px;
+    border-radius: 0 8px 8px 0;
+    color: #333333;
+    font-size: 1rem;
+}
+
+.content-highlight span {
+    font-weight: bold;
+    color: orange;
+    text-transform: uppercase;
+    margin-right: 5px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsividade do Painel (Lado a lado em telas grandes) */
+@media (min-width: 992px) {
+    .interactive-panel {
+        display: grid;
+        grid-template-columns: 1fr 2.5fr; /* Menu menor, conteúdo maior */
+        gap: 40px;
+        padding: 40px;
+    }
+    .content-item h2 { font-size: 2rem; }
 }
