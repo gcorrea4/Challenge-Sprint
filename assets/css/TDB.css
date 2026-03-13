@@ -195,7 +195,7 @@ footer{
     display: flex;
     flex-direction: column; 
     gap: 30px;
-    background-color: #FFFFFF; /* Fundo branco para destacar no bege */
+    background-color: #FFFFFF; 
     padding: 20px;
     border-radius: 20px;
     border: 1px solid rgba(0, 0, 0, 0.05);
@@ -223,7 +223,7 @@ footer{
 }
 
 .panel-btn:hover {
-    background-color: rgba(255, 165, 0, 0.1); /* Laranja clarinho no hover */
+    background-color: rgba(255, 165, 0, 0.1); 
     color: orange;
     border-color: orange;
 }
@@ -266,8 +266,8 @@ footer{
 }
 
 .content-highlight {
-    background-color: rgba(255, 165, 0, 0.1); /* Fundo laranjinha */
-    border-left: 4px solid orange; /* Borda laranja */
+    background-color: rgba(255, 165, 0, 0.1); 
+    border-left: 4px solid orange; 
     padding: 15px;
     border-radius: 0 8px 8px 0;
     color: #333333;
@@ -286,11 +286,11 @@ footer{
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsividade do Painel (Lado a lado em telas grandes) */
+
 @media (min-width: 992px) {
     .interactive-panel {
         display: grid;
-        grid-template-columns: 1fr 2.5fr; /* Menu menor, conteúdo maior */
+        grid-template-columns: 1fr 2.5fr; 
         gap: 40px;
         padding: 40px;
     }

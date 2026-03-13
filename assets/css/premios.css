@@ -1,32 +1,26 @@
-body{
+
+body {
     margin: 0;
     background-color: #F5F5DC;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #333333;
 }
 
 a {
     text-decoration: none;
     color: #333333;
 }
+
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
     padding: 10px 5%; 
-   
-    
-
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
-    
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
     position: sticky;
     top: 0;
     z-index: 1000;
     background-color: #F5F5DC;
-    
-   
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
-    
     border-bottom: 1px solid rgba(0, 0, 0, 0.05); 
 }
 
@@ -34,7 +28,7 @@ header > h1 {
     font-size: 1.2rem; 
     margin: 0;
     color: orange;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 header > nav {
@@ -47,15 +41,12 @@ header > nav a {
     color: #333333; 
     font-weight: bold;
     font-size: 16px;
-    text-decoration: none;
     transition: 0.3s ease;
 }
 
 header > nav a:hover {
     color: orange;
-    text-decoration: none; 
 }
-
 
 .btn-destaque {
     background-color: orange;
@@ -69,101 +60,123 @@ header > nav a:hover {
 .btn-destaque:hover {
     background-color: #e67e22; 
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-footer{
-    padding: 30px 60px;
-    gap: 20px;
+footer {
+    padding: 40px 20px;
+    text-align: center;
+    margin-top: 40px;
+    border-top: 1px solid rgba(0,0,0,0.05);
 }
-main{
-    display: block;
-    justify-content: space-between;
-    align-items: center; 
-    margin: 20px 5px;
-    padding: 0 60px;
-    gap: 40px;
+
+
+.main-premios {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 0 20px;
 }
-.subsubtitulo{
-    font-size: 20px;
+
+.premios-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.premios-header h2 {
+    font-size: 2.5rem;
+    color: orange;
+    margin-bottom: 15px;
+}
+
+.premios-header p {
+    font-size: 1.2rem;
+    color: #555555;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.grid-premios {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.premio-card {
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    padding: 30px 25px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.premio-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(255, 165, 0, 0.15);
+    border-color: rgba(255, 165, 0, 0.3);
+}
+
+.ano-badge {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333333;
+    color: #FFFFFF;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
     font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.premio-card h3 {
     color: #333333;
+    font-size: 1.3rem;
+    margin: 20px 0 15px;
 }
-.lista-premios{
-    font-size: 18px;
-    line-height: 1.6;
-    color: black;
+
+.premio-card p {
+    color: #666666;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
 }
 
 
-@media (max-width: 1300px) {
-    header {
-        padding: 5px 40px;
-    }
-    main {
-        padding: 0 40px;
-    }
-    footer {
-        padding: 30px 40px;
-    }
+.premio-card.destaque {
+    border: 2px solid orange;
+    background-color: rgba(255, 165, 0, 0.03);
+}
+.premio-card.destaque .ano-badge {
+    background-color: orange;
 }
 
 
 @media (max-width: 992px) {
-    header {
-        padding: 5px 30px;
-    }
-    header > nav {
-        gap: 20px;
-        font-size: 18px;
-    }
-    main {
-        padding: 0 30px;
-    }
+    header { padding: 15px 30px; }
 }
-
 
 @media (max-width: 768px) {
     header {
         flex-direction: column;
-        align-items: center;
         padding: 20px;
         gap: 20px;
     }
-    
     header > nav {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 20px;
-        font-size: 18px;
+        gap: 15px;
     }
-    
-    main {
-        padding: 20px 30px;
-        margin: 0;
-    }
-    
-    footer {
-        padding: 30px 20px;
-        text-align: center;
-    }
+    .premios-header h2 { font-size: 2rem; }
 }
 
-
-@media (max-width: 600px) {
-    header {
-        padding: 20px 15px;
-    }
-
-    main {
-        padding: 20px 15px;
-    }
-
-    footer {
-        padding: 30px 15px;
-    }
-    
-    .lista-premios{
-        font-size: 16px;
+@media (max-width: 480px) {
+    .grid-premios {
+        grid-template-columns: 1fr; 
     }
 }
