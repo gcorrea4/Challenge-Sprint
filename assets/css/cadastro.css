@@ -1,0 +1,156 @@
+/* Centralizando o formulário na tela */
+.main-cadastro {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 120px 20px 60px; /* Espaço para o menu fixo */
+    background-color: var(--cor-fundo, #F5F5DC);
+}
+
+.cadastro-card {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 500px;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.cadastro-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.cadastro-header h2 {
+    color: #333;
+    font-size: 2rem;
+    margin: 0 0 10px 0;
+}
+
+.cadastro-header p {
+    color: #666;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+/* Estilo dos Campos de Texto */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.input-duplo {
+    display: flex;
+    gap: 15px;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    padding: 14px 16px;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+    transition: all 0.3s ease;
+    background-color: #FAFAFA;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #FF8C00; /* Laranja da Turma do Bem */
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(255, 140, 0, 0.1);
+}
+
+/* Botão Ocupando 100% */
+.w-100 {
+    width: 100%;
+    margin-top: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.cadastro-footer {
+    margin-top: 25px;
+    text-align: center;
+    border-top: 1px solid #E0E0E0;
+    padding-top: 20px;
+}
+
+.cadastro-footer p {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.cadastro-footer a {
+    color: #FF8C00;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.cadastro-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Mensagens de Erro e Sucesso */
+.msg-retorno {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.msg-retorno.erro {
+    background-color: #FFEFEF;
+    color: #D8000C;
+    border: 1px solid #FFD2D2;
+}
+
+.msg-retorno.sucesso {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #C8E6C9;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .input-duplo {
+        flex-direction: column;
+        gap: 0;
+    }
+    .cadastro-card {
+        padding: 30px 20px;
+    }
+}
+
+/* Estilo extra para a tela de Login */
+.esqueceu-senha {
+    text-align: right;
+    margin-top: -10px;
+    margin-bottom: 25px;
+}
+
+.esqueceu-senha a {
+    font-size: 0.85rem;
+    color: #FF8C00;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.esqueceu-senha a:hover {
+    color: #E67E22;
+    text-decoration: underline;
+}

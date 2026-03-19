@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Turma do Bem</title>
+    <link rel="stylesheet" href="../css/index.css"> 
+    <link rel="stylesheet" href="../css/cadastro.css"> <script src="../js/login.js" defer></script>
+</head>
+<body>
+
+    <header class="menu-global">
+        <h1> <a href="../../index.html">Turma do Bem</a></h1>
+        </header>
+
+    <main class="main-cadastro">
+        <div class="cadastro-card">
+            <div class="cadastro-header">
+                <h2>Bem-vindo de volta!</h2>
+                <p>Faça login para acessar o painel da Turma do Bem.</p>
+            </div>
+
+            <div id="msg-retorno" style="display: none;"></div>
+
+            <form id="formLogin">
+                <div class="input-group">
+                    <label for="login-email">E-mail</label>
+                    <input type="email" id="login-email" placeholder="exemplo@email.com" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="login-senha">Senha</label>
+                    <input type="password" id="login-senha">
+                </div>
+
+                <div class="esqueceu-senha">
+                    <a href="#">Esqueci minha senha</a>
+                </div>
+
+                <button type="submit" class="botao-acao efeito-brilho w-100">Entrar</button>
+            </form>
+
+            <div class="cadastro-footer">
+                <p>Não tem uma conta? <a href="cadastro.html">Cadastre-se agora</a></p>
+            </div>
+        </div>
+    </main>
+
+    </body>
+</html>
