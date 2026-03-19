@@ -127,9 +127,92 @@ header > nav a:hover {
     border-radius: 8px;
 }
 
-footer{
-    padding: 30px 60px;
-    gap: 20px;
+.rodape-global {
+    background-color: #0B090B;
+    padding: 60px 5% 20px; 
+    position: relative;
+    color: #ffffff;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+
+.rodape-global::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #FFAF00 30%, #F5D45A 50%, #FFAF00 70%, transparent);
+    opacity: 0.6;
+}
+
+
+.container-rodape {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.coluna-rodape h3 {
+    color: #FFAF00;
+    font-size: 1.3rem;
+    margin-top: 0;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.coluna-rodape h4 {
+    color: #ffffff;
+    font-size: 1.1rem;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.descricao-rodape {
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    font-size: 0.9rem;
+}
+
+
+.lista-vertical {
+    list-style: none; 
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; 
+}
+
+.lista-vertical a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+    
+.lista-vertical a:hover {
+    color: #FFAF00;
+    transform: translateX(5px); 
+}
+
+.rodape-inferior {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.85rem;
 }
 
 
