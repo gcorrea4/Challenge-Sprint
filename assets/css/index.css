@@ -93,21 +93,21 @@ a {
 .secao-destaque {
     position: relative;
     width: 100%;
-    /* MUDANÇA AQUI: Garante que ocupe a tela cheia, tirando o branco de baixo */
+    
     min-height: 100vh; 
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     
-    /* MUDANÇA AQUI: Corrigindo o background para não repetir e centralizar sempre */
+   
     background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8)), 
                 url('../img/turma-do-bem-hero.jpg') no-repeat center center;
     background-size: cover;
     
-    /* MUDANÇA AQUI: Removemos o margin-top e usamos padding para o menu fixo não cobrir */
+   
     margin-top: 0; 
-    padding-top: 80px; /* Mesma altura do menu */
+    padding-top: 80px; 
     box-sizing: border-box;
 }
 
@@ -148,13 +148,13 @@ a {
     font-size: 1.1rem;
     font-weight: bold;
     border-radius: 30px;
-    transition: all 0.4s ease; /* Transição um pouco mais lenta para o efeito */
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.4s ease; 
+    border: 1px solid rgb(255, 255, 255);
     cursor: pointer;
-    text-transform: uppercase; /* Deixa em caixa alta como o da Mush */
+    text-transform: uppercase; 
     letter-spacing: 1px;
     
-    /* Sombra base sutil */
+   
     box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
 }
 
@@ -162,9 +162,9 @@ a {
     background-color: var(--cor-primaria-hover, #E67E22);
     transform: translateY(-3px) scale(1.03);
     
-    /* A MÁGICA DO BRILHO INTENSO: Sombra externa forte + Sombra interna */
-    box-shadow: 0 0 30px rgba(255, 140, 0, 0.7), /* Brilho externo neon */
-                inset 0 0 10px rgba(255, 255, 255, 0.3); /* Brilho interno sutil */
+    
+    box-shadow: 0 0 30px rgba(255, 140, 0, 0.7), 
+                inset 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .efeito-brilho:hover {
@@ -318,7 +318,7 @@ a {
     background: none;
     border: none;
     font-size: 1.8rem;
-    color: var(--cor-texto, #333);
+    color: white;
     cursor: pointer;
     transition: color 0.3s ease;
     margin-left: 20px;
