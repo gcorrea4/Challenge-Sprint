@@ -1,0 +1,113 @@
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
+
+export function Cadastro() {
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
+  const navigate = useNavigate();
+
+  
+  const senha = watch('senha');
+
+  const onSubmit = (data: any) => {
+    
+    if (localStorage.getItem("usuario_" + data.email)) {
+      setMensagem({ texto: "Este e-mail já está cadastrado!", tipo: "erro" });
+      return;
+    }
+
+    
+    const novoUsuario = {
+      nomeCompleto: data.nome,
+      email: data.email,
+      senha: data.senha,
+      dataCadastro: new Date().toLocaleDateString('pt-BR')
+    };
+
+    
+    localStorage.setItem("usuario_" + data.email, JSON.stringify(novoUsuario));
+
+    
+    setMensagem({ texto: "Cadastro realizado com sucesso! Redirecionando...", tipo: "sucesso" });
+    
+    setTimeout(() => {
+      navigate('/login');
+    }, 2000);
+  };
+
+  return (
+    <main className="bg-[#F5F5DC] min-h-screen flex justify-center items-center py-[120px] px-[20px]">
+      <div className="bg-white w-full max-w-[500px] p-[30px] sm:p-[40px] rounded-[16px] shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-black/5">
+        
+        <div className="text-center mb-[30px]">
+          <h2 className="text-[#333] text-[2rem] m-[0_0_10px_0] font-bold">Crie sua Conta</h2>
+          <p className="text-[#666] m-0 text-[0.95rem]">Faça parte da nossa rede e ajude a transformar sorrisos.</p>
+        </div>
+
+        
+        {mensagem.texto && (
+          <div className={`p-[15px] rounded-[8px] mb-[20px] font-semibold text-center text-[0.95rem] ${mensagem.tipo === 'erro' ? 'bg-[#FFEFEF] text-[#D8000C] border border-[#FFD2D2]' : 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'}`}>
+            {mensagem.texto}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="flex flex-col mb-[20px] w-full">
+            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Usuário</label>
+            <input 
+              type="text" 
+              placeholder="Digite seu nome"
+              className={`p-[14px_16px] border-[2px] ${errors.nome ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
+              {...register("nome", { required: true })}
+            />
+          </div>
+          
+          <div className="flex flex-col mb-[20px] w-full">
+            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">E-mail</label>
+            <input 
+              type="email" 
+              placeholder="exemplo@email.com"
+              className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
+              {...register("email", { required: true })}
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px]">
+            <div className="flex flex-col mb-[20px] w-full">
+              <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Senha</label>
+              <input 
+                type="password" 
+                className={`p-[14px_16px] border-[2px] ${errors.senha ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
+                {...register("senha", { required: true, minLength: 6 })}
+              />
+            </div>
+            <div className="flex flex-col mb-[20px] w-full">
+              <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Confirmar Senha</label>
+              <input 
+                type="password" 
+                className={`p-[14px_16px] border-[2px] ${errors.confirma ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
+                {...register("confirma", { 
+                  required: true, 
+                  validate: value => value === senha || "As senhas não coincidem"
+                })}
+              />
+              {errors.confirma && <span className="text-[#dc3545] text-[0.8rem] mt-[5px]">{(errors.confirma as any).message}</span>}
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            className="w-full mt-[10px] cursor-pointer bg-[#FF8C00] text-white px-[45px] py-[16px] text-[1.1rem] font-bold rounded-[30px] uppercase tracking-[1px] border border-white shadow-[0_4px_15px_rgba(255,140,0,0.2)] transition-all duration-300 hover:bg-[#E67E22] hover:-translate-y-[2px] hover:shadow-[0_0_30px_rgba(255,140,0,0.8)]"
+          >
+            Cadastrar Agora
+          </button>
+        </form>
+
+        <div className="mt-[25px] text-center border-t border-[#E0E0E0] pt-[20px]">
+          <p className="text-[#666] text-[0.95rem]">Já tem uma conta? <Link to="/login" className="text-[#FF8C00] font-bold no-underline hover:underline">Faça login</Link></p>
+        </div>
+      </div>
+    </main>
+  );
+}
