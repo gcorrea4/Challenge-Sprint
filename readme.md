@@ -1,3 +1,13 @@
+---
+
+## Dependência da API
+
+Este projeto é o Front-End e depende da execução da API para carregar os dados dos pacientes e realizar o login. Certifique-se de que o servidor Python está rodando antes de acessar as funcionalidades.
+
+**Repositório do Back-End:** [https://github.com/gcorrea4/Back-End--Challenge-Sprint-]
+
+---
+
 # 🦷 Challenge Turma do Bem - FIAP
 Este é o protótipo Front-End desenvolvido para o Challenge da ONG Turma do Bem. O projeto visa otimizar a triagem e o atendimento de jovens em situação de vulnerabilidade social, conectando-os a dentistas voluntários através de uma plataforma web inteligente, rápida e acessível.
 ## 🚀 Tecnologias Utilizadas
@@ -31,3 +41,5 @@ Este é o protótipo Front-End desenvolvido para o Challenge da ONG Turma do Bem
 * **Gabriel Correa** (RM: 567903) - [GitHub](https://github.com/gcorrea4) | [LinkedIn](https://www.linkedin.com/in/gabriel-correa-souza-763135271/)
 * **Kayque Duarte** (RM: 567980) - [GitHub](https://github.com/Kayque2012) | [LinkedIn](https://www.linkedin.com/in/kayque-duarte-b24313361)
 * **Eric Maciel** (RM: 567398) - [GitHub](https://github.com/Eric-devops-tech) | [LinkedIn](https://www.linkedin.com/in/eric-maciel-144058389)
+
+
