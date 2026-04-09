@@ -11,13 +11,11 @@ export function Login() {
     
     const usuarioSalvo = localStorage.getItem("usuario_" + data.email);
 
-    
     if (!usuarioSalvo) {
       setMensagem({ texto: "E-mail não encontrado. Por favor, cadastre-se primeiro!", tipo: "erro" });
       return;
     }
 
-    
     const usuario = JSON.parse(usuarioSalvo);
 
     
@@ -27,13 +25,21 @@ export function Login() {
     }
 
     
-    setMensagem({ texto: `Login aprovado! Bem-vindo de volta, ${usuario.nomeCompleto}.`, tipo: "sucesso" });
+    
+    const role = usuario.tipo || 'paciente'; 
+    sessionStorage.setItem("userRole", role); 
     sessionStorage.setItem("usuarioLogado", usuario.nomeCompleto);
 
-   
+    setMensagem({ texto: `Login aprovado! Bem-vindo, ${usuario.nomeCompleto}.`, tipo: "sucesso" });
+
+    
     setTimeout(() => {
-      navigate('/');
-    }, 2000);
+      if (role === 'dentista') {
+        navigate('/SolucaoDashboard'); 
+      } else {
+        navigate('/'); 
+      }
+    }, 1500);
   };
 
   return (

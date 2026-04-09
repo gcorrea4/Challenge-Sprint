@@ -1,14 +1,27 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; 
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate(); 
+
+  
+  const usuarioLogado = sessionStorage.getItem("usuarioLogado");
+
+  
+  const handleLogout = () => {
+    sessionStorage.removeItem("usuarioLogado");
+    sessionStorage.removeItem("userRole");
+    setIsMenuOpen(false); 
+    navigate('/'); 
+    window.location.reload(); 
+  };
 
   return (
     <>
       <header className="flex justify-between items-center px-[5%] h-[65px] fixed top-0 left-0 w-full box-border z-[1000] bg-black/20 backdrop-blur-[12px] border-b border-[#FF8C00]/20 shadow-[0_4px_30px_rgba(0,0,0,0.05)]">
         
-        {/* 1. ESQUERDA: Logo */}
+       
         <div className="flex-1 flex justify-start">
           <h1 className="m-0 font-[900] tracking-[-1px] leading-none" style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}>
             <Link to="/" className="text-[22px] md:text-[33px] whitespace-nowrap text-[#FF8C00] transition-transform duration-300 ease-in-out hover:-translate-y-[2px] flex items-center h-full">
@@ -17,7 +30,7 @@ export function Header() {
           </h1>
         </div>
         
-        {/* 2. CENTRO: Links de Navegação (Oculto no mobile, visível a partir de telas 'lg') */}
+        
         <nav className="hidden lg:flex justify-center items-center gap-[15px] xl:gap-[25px]">
           <Link to="/" className="text-white font-[600] text-[16px] hover:text-[#FF8C00] transition-colors duration-300">Início</Link>
           <Link to="/faq" className="text-white font-[600] text-[16px] hover:text-[#FF8C00] transition-colors duration-300">FAQ</Link>
@@ -26,8 +39,6 @@ export function Header() {
           <Link to="/reconhecimentos" className="text-white font-[600] text-[16px] hover:text-[#FF8C00] transition-colors duration-300">Reconhecimentos</Link>
           <Link to="/SolucaoTriagem" className="text-white font-[600] text-[16px] hover:text-[#FF8C00] transition-colors duration-300">Solução</Link>
           <Link to="/SolucaoDashboard" className="text-white font-[600] text-[16px] hover:text-[#FF8C00] transition-colors duration-300">Dashboard</Link>
-
-
         </nav>
 
         {/* 3. DIREITA: Botão Contato + Menu Hambúrguer */}
@@ -48,13 +59,13 @@ export function Header() {
         
       </header>
 
-      {/* OVERLAY ESCURO */}
+      
       <div 
         onClick={() => setIsMenuOpen(false)} 
         className={`fixed inset-0 bg-black/50 backdrop-blur-[4px] z-[1999] transition-all duration-300 ${isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
       ></div>
 
-      {/* MENU LATERAL */}
+     
       <div 
         className={`fixed top-0 w-[85%] max-w-[320px] h-screen bg-white z-[2000] shadow-[-5px_0_30px_rgba(0,0,0,0.15)] flex flex-col p-[30px_25px] transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${isMenuOpen ? 'right-0' : 'right-[-100%]'}`}
       >
@@ -70,13 +81,41 @@ export function Header() {
           </button>
         </div>
 
+       
         <div className="flex flex-col">
-          <p className="text-[#666] text-[0.9rem] md:text-[0.95rem] mb-[25px] leading-[1.5]">Acesse o painel ou crie sua conta para ajudar a ONG.</p>
-          <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block text-center p-[12px] md:p-[15px] rounded-[8px] font-bold no-underline mb-[15px] transition-all duration-300 bg-[#f5f5f5] text-[#333] border border-[#ddd] hover:bg-[#e9e9e9]">Entrar</Link>
-          <Link to="/cadastro" onClick={() => setIsMenuOpen(false)} className="block text-center p-[12px] md:p-[15px] rounded-[8px] font-bold no-underline mb-[15px] transition-all duration-400 bg-[#FF8C00] text-white shadow-[0_4px_15px_rgba(255,140,0,0.2)] hover:bg-[#E67E22] hover:-translate-y-[3px] hover:scale-105 hover:shadow-[0_0_30px_rgba(255,140,0,0.8)]">Cadastrar Agora</Link>
+          {usuarioLogado ? (
+            
+            <>
+              <p className="text-[#666] text-[0.95rem] mb-[25px] leading-[1.5]">
+                Olá, <strong className="text-[#FF8C00] text-[1.1rem]">{usuarioLogado}</strong>!
+              </p>
+
+              <Link 
+                to="/SolucaoDashboard" 
+                onClick={() => setIsMenuOpen(false)} 
+                className="block text-center p-[12px] md:p-[15px] rounded-[8px] font-bold no-underline mb-[15px] transition-all duration-300 bg-[#f5f5f5] text-[#333] border border-[#ddd] hover:bg-[#e9e9e9]"
+              >
+                Meu Painel
+              </Link>
+
+              <button 
+                onClick={handleLogout}
+                className="w-full text-center p-[12px] md:p-[15px] rounded-[8px] font-bold no-underline mb-[15px] transition-all duration-400 bg-red-500 text-white shadow-[0_4px_15px_rgba(239,68,68,0.2)] hover:bg-red-600 hover:-translate-y-[3px] hover:shadow-[0_0_20px_rgba(239,68,68,0.5)] cursor-pointer border-none"
+              >
+                Sair (Logout)
+              </button>
+            </>
+          ) : (
+           
+            <>
+              <p className="text-[#666] text-[0.9rem] md:text-[0.95rem] mb-[25px] leading-[1.5]">Acesse o painel ou crie sua conta para ajudar a ONG.</p>
+              <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block text-center p-[12px] md:p-[15px] rounded-[8px] font-bold no-underline mb-[15px] transition-all duration-300 bg-[#f5f5f5] text-[#333] border border-[#ddd] hover:bg-[#e9e9e9]">Entrar</Link>
+              <Link to="/cadastro" onClick={() => setIsMenuOpen(false)} className="block text-center p-[12px] md:p-[15px] rounded-[8px] font-bold no-underline mb-[15px] transition-all duration-400 bg-[#FF8C00] text-white shadow-[0_4px_15px_rgba(255,140,0,0.2)] hover:bg-[#E67E22] hover:-translate-y-[3px] hover:scale-105 hover:shadow-[0_0_30px_rgba(255,140,0,0.8)]">Cadastrar Agora</Link>
+            </>
+          )}
         </div>
 
-        {/* Links adicionados para o mobile, já que o menu central sumiu */}
+        
         <div className="mt-auto border-t border-[#f0f0f0] pt-[20px] flex flex-col gap-[15px] overflow-y-auto">
           <Link to="/" onClick={() => setIsMenuOpen(false)} className="text-[#666] font-bold hover:text-[#FF8C00] transition-colors">Início</Link>
           <Link to="/sobre" onClick={() => setIsMenuOpen(false)} className="text-[#666] font-bold hover:text-[#FF8C00] transition-colors">Sobre o Projeto</Link>

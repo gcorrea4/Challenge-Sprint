@@ -7,11 +7,9 @@ export function Cadastro() {
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
   const navigate = useNavigate();
 
-  
   const senha = watch('senha');
 
   const onSubmit = (data: any) => {
-    
     if (localStorage.getItem("usuario_" + data.email)) {
       setMensagem({ texto: "Este e-mail já está cadastrado!", tipo: "erro" });
       return;
@@ -22,13 +20,12 @@ export function Cadastro() {
       nomeCompleto: data.nome,
       email: data.email,
       senha: data.senha,
+      tipo: data.tipo, 
       dataCadastro: new Date().toLocaleDateString('pt-BR')
     };
 
-    
     localStorage.setItem("usuario_" + data.email, JSON.stringify(novoUsuario));
 
-    
     setMensagem({ texto: "Cadastro realizado com sucesso! Redirecionando...", tipo: "sucesso" });
     
     setTimeout(() => {
@@ -45,7 +42,6 @@ export function Cadastro() {
           <p className="text-[#666] m-0 text-[0.95rem]">Faça parte da nossa rede e ajude a transformar sorrisos.</p>
         </div>
 
-        
         {mensagem.texto && (
           <div className={`p-[15px] rounded-[8px] mb-[20px] font-semibold text-center text-[0.95rem] ${mensagem.tipo === 'erro' ? 'bg-[#FFEFEF] text-[#D8000C] border border-[#FFD2D2]' : 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'}`}>
             {mensagem.texto}
@@ -71,6 +67,18 @@ export function Cadastro() {
               className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
               {...register("email", { required: true })}
             />
+          </div>
+
+          
+          <div className="flex flex-col mb-[20px] w-full">
+            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Tipo de Perfil</label>
+            <select 
+              className="p-[14px_16px] border-[2px] border-[#E0E0E0] rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white"
+              {...register("tipo", { required: true })}
+            >
+              <option value="paciente">Sou Beneficiado (Paciente)</option>
+              <option value="dentista">Sou Dentista Voluntário</option>
+            </select>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px]">

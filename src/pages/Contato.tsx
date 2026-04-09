@@ -8,14 +8,14 @@ export function Contato() {
   const [redesOpen, setRedesOpen] = useState(false);
 
   return (
-    <main className="bg-[#F5F5DC] min-h-screen font-sans">
+    <main className="bg-[#F5F5DC] min-h-screen font-sans pt-[80px] lg:pt-[120px]">
       
      
-      <div className="flex flex-col md:flex-row items-start gap-[40px] lg:gap-[80px] max-w-[1200px] mx-auto my-[40px] px-[20px]">
+      <div className="flex flex-col md:flex-row items-start gap-[40px] lg:gap-[80px] max-w-[1200px] mx-auto my-[46px] px-[20px]">
 
         
         <div className="flex-1 w-full">
-          <h2 className="text-[#333333] text-[26px] lg:text-[30px] font-bold mb-[5px] mt-0">Contatos da empresa</h2>
+          <h2 className="text-[#333333] text-[26px] lg:text-[34px] font-bold mb-[50px] mt-0">Contatos da empresa</h2>
           
           
           <section>
