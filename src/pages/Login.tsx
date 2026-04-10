@@ -7,39 +7,61 @@ export function Login() {
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
   const navigate = useNavigate();
 
-  const onSubmit = (data: any) => {
-    
-    const usuarioSalvo = localStorage.getItem("usuario_" + data.email);
+  const onSubmit = async (data: any) => {
+    try {
+      
+      const res = await fetch('http://127.0.0.1:8000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuario: data.email, 
+          senha: data.senha
+        })
+      });
+      
+      const result = await res.json();
 
-    if (!usuarioSalvo) {
-      setMensagem({ texto: "E-mail não encontrado. Por favor, cadastre-se primeiro!", tipo: "erro" });
-      return;
-    }
+      
+      if (result.status === "sucesso") {
+        sessionStorage.setItem("userRole", result.role);
+        sessionStorage.setItem("usuarioLogado", result.nome);
+        
+        if (result.bairro) {
+          sessionStorage.setItem("dentistaBairro", result.bairro); 
+        }
 
-    const usuario = JSON.parse(usuarioSalvo);
+        setMensagem({ texto: `Login aprovado! Bem-vindo, ${result.nome}.`, tipo: "sucesso" });
 
-    
-    if (usuario.senha !== data.senha) {
-      setMensagem({ texto: "Senha incorreta. Tente novamente.", tipo: "erro" });
-      return;
-    }
+        setTimeout(() => {
+          if (result.role === 'dentista') {
+            navigate('/SolucaoDashboard'); 
+          } else {
+            navigate('/'); 
+          }
+        }, 1500);
 
-    
-    
-    const role = usuario.tipo || 'paciente'; 
-    sessionStorage.setItem("userRole", role); 
-    sessionStorage.setItem("usuarioLogado", usuario.nomeCompleto);
-
-    setMensagem({ texto: `Login aprovado! Bem-vindo, ${usuario.nomeCompleto}.`, tipo: "sucesso" });
-
-    
-    setTimeout(() => {
-      if (role === 'dentista') {
-        navigate('/SolucaoDashboard'); 
       } else {
-        navigate('/'); 
+       
+        const usuarioSalvo = localStorage.getItem("usuario_" + data.email);
+        
+        if (usuarioSalvo) {
+          const usuario = JSON.parse(usuarioSalvo);
+          if (usuario.senha === data.senha) {
+            sessionStorage.setItem("userRole", usuario.tipo || 'paciente'); 
+            sessionStorage.setItem("usuarioLogado", usuario.nomeCompleto);
+            setMensagem({ texto: `Login aprovado! Bem-vindo, ${usuario.nomeCompleto}.`, tipo: "sucesso" });
+            setTimeout(() => navigate('/'), 1500);
+            return;
+          }
+        }
+        
+        
+        setMensagem({ texto: "Usuário ou senha incorretos. Tente novamente.", tipo: "erro" });
       }
-    }, 1500);
+
+    } catch (error) {
+      setMensagem({ texto: "Erro ao conectar com o servidor.", tipo: "erro" });
+    }
   };
 
   return (

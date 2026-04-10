@@ -8,29 +8,51 @@ export function Cadastro() {
   const navigate = useNavigate();
 
   const senha = watch('senha');
+  const tipoPerfil = watch('tipo'); 
 
-  const onSubmit = (data: any) => {
-    if (localStorage.getItem("usuario_" + data.email)) {
-      setMensagem({ texto: "Este e-mail já está cadastrado!", tipo: "erro" });
-      return;
+  const onSubmit = async (data: any) => {
+    try {
+      
+      if (data.tipo === 'dentista') {
+        const resposta = await fetch('http://127.0.0.1:8000/cadastrar-dentista', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nome: data.nome,
+            usuario: data.email, 
+            senha: data.senha,
+            bairro: data.bairro
+          })
+        });
+        
+        const result = await resposta.json();
+        if (result.status !== 'sucesso') throw new Error("Erro no backend");
+
+      } else {
+        
+        if (localStorage.getItem("usuario_" + data.email)) {
+          setMensagem({ texto: "Este e-mail já está cadastrado!", tipo: "erro" });
+          return;
+        }
+        const novoUsuario = {
+          nomeCompleto: data.nome,
+          email: data.email,
+          senha: data.senha,
+          tipo: data.tipo, 
+          dataCadastro: new Date().toLocaleDateString('pt-BR')
+        };
+        localStorage.setItem("usuario_" + data.email, JSON.stringify(novoUsuario));
+      }
+
+      setMensagem({ texto: "Cadastro realizado com sucesso! Redirecionando...", tipo: "sucesso" });
+      
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
+    } catch (error) {
+      setMensagem({ texto: "Erro ao cadastrar. Verifique se o servidor está rodando.", tipo: "erro" });
     }
-
-    
-    const novoUsuario = {
-      nomeCompleto: data.nome,
-      email: data.email,
-      senha: data.senha,
-      tipo: data.tipo, 
-      dataCadastro: new Date().toLocaleDateString('pt-BR')
-    };
-
-    localStorage.setItem("usuario_" + data.email, JSON.stringify(novoUsuario));
-
-    setMensagem({ texto: "Cadastro realizado com sucesso! Redirecionando...", tipo: "sucesso" });
-    
-    setTimeout(() => {
-      navigate('/login');
-    }, 2000);
   };
 
   return (
@@ -50,7 +72,7 @@ export function Cadastro() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col mb-[20px] w-full">
-            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Usuário</label>
+            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Nome Completo</label>
             <input 
               type="text" 
               placeholder="Digite seu nome"
@@ -60,7 +82,7 @@ export function Cadastro() {
           </div>
           
           <div className="flex flex-col mb-[20px] w-full">
-            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">E-mail</label>
+            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">E-mail (Login)</label>
             <input 
               type="email" 
               placeholder="exemplo@email.com"
@@ -69,7 +91,6 @@ export function Cadastro() {
             />
           </div>
 
-          
           <div className="flex flex-col mb-[20px] w-full">
             <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Tipo de Perfil</label>
             <select 
@@ -80,6 +101,23 @@ export function Cadastro() {
               <option value="dentista">Sou Dentista Voluntário</option>
             </select>
           </div>
+
+          
+          {tipoPerfil === 'dentista' && (
+            <div className="flex flex-col mb-[20px] w-full animate-fade-in">
+              <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Qual bairro é o seu consultório?</label>
+              <select 
+                className={`p-[14px_16px] border-[2px] ${errors.bairro ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white`}
+                {...register("bairro", { required: tipoPerfil === 'dentista' })}
+              >
+                <option value="">Selecione a região</option>
+                <option value="Tatuapé">Tatuapé</option>
+                <option value="Morumbi">Morumbi</option>
+                <option value="Centro">Centro</option>
+              </select>
+              {errors.bairro && <span className="text-[#dc3545] text-[0.8rem] mt-[5px]">Bairro é obrigatório para dentistas.</span>}
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px]">
             <div className="flex flex-col mb-[20px] w-full">
