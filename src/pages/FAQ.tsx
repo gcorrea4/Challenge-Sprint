@@ -1,17 +1,17 @@
 export function FAQ() {
   return (
-    // O main recebe a cor de fundo bege do seu CSS e a fonte padrão
+   
     <main className="bg-[#F5F5DC] min-h-screen py-[60px] px-[20px] md:px-[60px] font-sans">
       
-      {/* Container principal das features limitando a largura a 1200px */}
+      
       <section className="max-w-[1200px] mx-auto text-center">
         
-        {/* Título */}
+        
         <h2 className="text-[#333333] text-[32px] md:text-[40px] font-bold mt-[20px] mb-[40px]">
           Perguntas frequentes
         </h2>
         
-        {/* Container dos Cards em 1 coluna (1fr) como no seu CSS */}
+        
         <div className="grid grid-cols-1 gap-[30px] text-left">
           
           {/* CARD 1 */}
@@ -24,7 +24,7 @@ export function FAQ() {
             </p>
           </div>
 
-          {/* CARD 2 */}
+          
           <div className="bg-white border border-black/10 p-[30px] rounded-[16px] shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-[10px] hover:border-[#FF8C00] hover:shadow-[0_0_20px_rgba(255,140,0,0.2)]">
             <h3 className="text-[#FF8C00] text-[1.3rem] font-bold mb-[10px]">
               Qual problema ele resolve?

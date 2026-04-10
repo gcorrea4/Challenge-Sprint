@@ -41,7 +41,7 @@ export function Header() {
           <Link to="/SolucaoDashboard" className="text-white font-[600] text-[16px] hover:text-[#FF8C00] transition-colors duration-300">Dashboard</Link>
         </nav>
 
-        {/* 3. DIREITA: Botão Contato + Menu Hambúrguer */}
+        
         <div className="flex-1 flex justify-end items-center gap-[12px] md:gap-[20px]">
           <Link to="/contato" className="hidden sm:block bg-[#FF8C00] text-white px-[15px] lg:px-[20px] py-[6px] rounded-[6px] font-bold text-[13px] lg:text-[14px] shadow-[0_4px_10px_rgba(255,140,0,0.3)] transition-all duration-300 ease-in-out hover:bg-[#E67E22] hover:-translate-y-[2px] hover:shadow-[0_6px_15px_rgba(255,140,0,0.4)]">
             Contato

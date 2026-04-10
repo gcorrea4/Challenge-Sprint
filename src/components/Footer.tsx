@@ -4,15 +4,13 @@ export function Footer() {
   return (
     <footer className="bg-[#0B090B] pt-[60px] px-[5%] pb-[20px] relative text-white font-sans mt-auto w-full box-border">
       
-      {/* Linha de Gradiente no Topo */}
+      
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FFAF00] via-30% via-[#F5D45A] via-50% via-[#FFAF00] via-70% to-transparent opacity-60"></div>
 
-      {/* A MÁGICA AGORA É GRID: 
-          Celular: 1 coluna | Tablet: 2 colunas | PC: 4 colunas 
-      */}
+     
       <div className="max-w-[1200px] w-full mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[40px] mb-[40px]">
         
-        {/* Coluna 1 */}
+        
         <div className="flex flex-col items-start">
           <h3 className="text-[#FFAF00] text-[1.3rem] mt-0 mb-[15px] font-bold">
             Turma do Bem
@@ -22,7 +20,7 @@ export function Footer() {
           </p>
         </div>
 
-        {/* Coluna 2 */}
+        
         <div className="flex flex-col items-start">
           <h4 className="text-white text-[1.1rem] mt-0 mb-[20px] uppercase tracking-[1px] font-bold">Navegação</h4>
           <ul className="flex flex-col gap-[12px] p-0 m-0 list-none text-left">
@@ -37,7 +35,7 @@ export function Footer() {
           </ul>
         </div>
 
-        {/* Coluna 3 */}
+        
         <div className="flex flex-col items-start">
           <h4 className="text-white text-[1.1rem] mt-0 mb-[20px] uppercase tracking-[1px] font-bold">Legal</h4>
           <ul className="flex flex-col gap-[12px] p-0 m-0 list-none text-left">
@@ -46,7 +44,7 @@ export function Footer() {
           </ul>
         </div>
 
-        {/* Coluna 4 */}
+        
         <div className="flex flex-col items-start">
           <h4 className="text-white text-[1.1rem] mt-0 mb-[20px] uppercase tracking-[1px] font-bold">Redes Sociais</h4>
           <ul className="flex flex-col gap-[12px] p-0 m-0 list-none text-left">

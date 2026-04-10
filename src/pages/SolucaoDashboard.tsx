@@ -28,8 +28,7 @@ export function SolucaoDashboard() {
   const userRole = sessionStorage.getItem("userRole"); 
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista Voluntário";
   
-  // --- MÁGICA DO MATCH: Definimos a localização do dentista logado ---
-  // Se no futuro vier do login, ele pega. Para a apresentação, o padrão é Tatuapé.
+  
   const meuBairro = sessionStorage.getItem("dentistaBairro") || "Tatuapé";
 
   const carregarDados = async () => {
@@ -104,18 +103,17 @@ export function SolucaoDashboard() {
     return <span className="text-green-500 font-bold">Baixa (Rotina)</span>;
   };
 
-  // --- FILTROS DE MATCH DE GEOLOCALIZAÇÃO ---
-  // 1. Pega do banco de dados SÓ os pacientes que são do Tatuapé
+  
   const filaDoMeuConsultorio = pacientes.filter(
     p => p.bairro && p.bairro.toLowerCase() === meuBairro.toLowerCase()
   );
 
-  // 2. A barra de busca agora só pesquisa dentro da fila do consultório do dentista
+  
   const pacientesFiltrados = filaDoMeuConsultorio.filter(p => 
     p.nome.toLowerCase().includes(busca.toLowerCase())
   );
 
-  // 3. Os relatórios passam a contar SÓ a fila desse dentista
+  
   const graves = filaDoMeuConsultorio.filter(p => p.urgencia >= 6).length;
   const medios = filaDoMeuConsultorio.filter(p => p.urgencia >= 4 && p.urgencia < 6).length;
   const leves = filaDoMeuConsultorio.filter(p => p.urgencia < 4).length;
@@ -135,7 +133,7 @@ export function SolucaoDashboard() {
           </p>
         </div>
 
-        {/* Estatísticas Macro (Essas mostram a ONG como um todo) */}
+        
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-[20px] md:gap-[30px] mb-[40px]">
           <div className="bg-white p-[25px] rounded-[12px] shadow-sm border-l-[5px] border-[#FF8C00]">
             <p className="text-[#666] font-bold text-[0.9rem] uppercase tracking-[1px] m-0">Pacientes na Fila Global</p>
@@ -156,7 +154,7 @@ export function SolucaoDashboard() {
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-[30px] mb-[50px]">
               
-              {/* Relatório 1: Visão da Fila DO CONSULTÓRIO */}
+              
               <div className="bg-white p-[25px] rounded-[12px] shadow-sm border border-[#eee]">
                 <h3 className="m-0 text-[#333] text-[1.2rem] font-bold mb-4 flex items-center justify-between">
                   Fila do Meu Consultório
@@ -180,7 +178,7 @@ export function SolucaoDashboard() {
                 </div>
               </div>
 
-              {/* Relatório 2: Desempenho Pessoal */}
+              
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-[25px] rounded-[12px] shadow-sm border border-blue-200 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10 text-5xl">👨‍⚕️</div>
                 <h3 className="m-0 text-[#333] text-[1.2rem] font-bold mb-4 flex items-center justify-between relative z-10">
@@ -207,7 +205,7 @@ export function SolucaoDashboard() {
 
             </div>
 
-            {/* TABELA DE PACIENTES TRIADOS (AGORA FILTRADA POR BAIRRO) */}
+            
             <div className="bg-white rounded-[12px] shadow-sm overflow-hidden mb-[50px]">
               <div className="bg-[#fafafa] p-[20px] border-b border-[#eee] flex flex-col sm:flex-row justify-between items-center gap-4">
                 <h3 className="m-0 text-[#333] text-[1.2rem] font-bold">
@@ -259,7 +257,7 @@ export function SolucaoDashboard() {
 
       </div>
 
-      {/* MODAL DO PRONTUÁRIO MANTIDO IGUAL */}
+      
       {pacienteSelecionado && (
         <div className="fixed inset-0 bg-black/60 z-[3000] flex justify-center items-center p-4">
           <div className="bg-white w-full max-w-[600px] rounded-[12px] p-[30px] shadow-2xl relative animate-fade-in">
@@ -309,7 +307,7 @@ export function SolucaoDashboard() {
         </div>
       )}
 
-      {/* CHATBOT MANTIDO IGUAL */}
+      
       {userRole === 'dentista' && (
         <div className="fixed bottom-6 right-6 z-[4000] font-sans">
           {chatAberto ? (
