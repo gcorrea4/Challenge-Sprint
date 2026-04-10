@@ -3,16 +3,31 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 
 export function Cadastro() {
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
   const navigate = useNavigate();
 
   const senha = watch('senha');
   const tipoPerfil = watch('tipo'); 
 
+  
+  const handleCPF = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ""); 
+    if (value.length > 11) value = value.slice(0, 11);
+    value = value.replace(/(\d{3})(\d)/, "$1.$2");
+    value = value.replace(/(\d{3})(\d)/, "$1.$2");
+    value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    setValue("documento", value); 
+  };
+
+  const handleCRO = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ""); 
+    if (value.length > 10) value = value.slice(0, 10);
+    setValue("documento", value);
+  };
+
   const onSubmit = async (data: any) => {
     try {
-      
       if (data.tipo === 'dentista') {
         const resposta = await fetch('http://127.0.0.1:8000/cadastrar-dentista', {
           method: 'POST',
@@ -22,6 +37,7 @@ export function Cadastro() {
             usuario: data.email, 
             senha: data.senha,
             bairro: data.bairro
+            
           })
         });
         
@@ -29,7 +45,6 @@ export function Cadastro() {
         if (result.status !== 'sucesso') throw new Error("Erro no backend");
 
       } else {
-        
         if (localStorage.getItem("usuario_" + data.email)) {
           setMensagem({ texto: "Este e-mail já está cadastrado!", tipo: "erro" });
           return;
@@ -39,19 +54,17 @@ export function Cadastro() {
           email: data.email,
           senha: data.senha,
           tipo: data.tipo, 
+          documento: data.documento, // Salva o CPF no storage
           dataCadastro: new Date().toLocaleDateString('pt-BR')
         };
         localStorage.setItem("usuario_" + data.email, JSON.stringify(novoUsuario));
       }
 
       setMensagem({ texto: "Cadastro realizado com sucesso! Redirecionando...", tipo: "sucesso" });
-      
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      setTimeout(() => navigate('/login'), 2000);
 
     } catch (error) {
-      setMensagem({ texto: "Erro ao cadastrar. Verifique se o servidor está rodando.", tipo: "erro" });
+      setMensagem({ texto: "Erro ao cadastrar. Verifique o servidor.", tipo: "erro" });
     }
   };
 
@@ -71,80 +84,104 @@ export function Cadastro() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex flex-col mb-[20px] w-full">
+          <div className="flex flex-col mb-[15px] w-full">
             <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Nome Completo</label>
             <input 
               type="text" 
               placeholder="Digite seu nome"
-              className={`p-[14px_16px] border-[2px] ${errors.nome ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
+              className={`p-[14px_16px] border-[2px] ${errors.nome ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
               {...register("nome", { required: true })}
             />
           </div>
           
-          <div className="flex flex-col mb-[20px] w-full">
+          <div className="flex flex-col mb-[15px] w-full">
             <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">E-mail (Login)</label>
             <input 
               type="email" 
               placeholder="exemplo@email.com"
-              className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
+              className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
               {...register("email", { required: true })}
             />
           </div>
 
-          <div className="flex flex-col mb-[20px] w-full">
+          <div className="flex flex-col mb-[15px] w-full">
             <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Tipo de Perfil</label>
             <select 
-              className="p-[14px_16px] border-[2px] border-[#E0E0E0] rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white"
+              className="p-[14px_16px] border-[2px] border-[#E0E0E0] rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]"
               {...register("tipo", { required: true })}
             >
+              <option value="">Selecione...</option>
               <option value="paciente">Sou Beneficiado (Paciente)</option>
               <option value="dentista">Sou Dentista Voluntário</option>
             </select>
           </div>
 
-          
+          {/* DUALIDADE: MOSTRA CPF OU CRO DEPENDENDO DO TIPO */}
+          {tipoPerfil === 'paciente' && (
+            <div className="flex flex-col mb-[15px] w-full animate-fade-in">
+              <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CPF</label>
+              <input 
+                type="text" 
+                placeholder="000.000.000-00"
+                className={`p-[14px_16px] border-[2px] ${errors.documento ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+                {...register("documento", { required: true, minLength: 14 })}
+                onChange={handleCPF}
+              />
+            </div>
+          )}
+
           {tipoPerfil === 'dentista' && (
-            <div className="flex flex-col mb-[20px] w-full animate-fade-in">
-              <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Qual bairro é o seu consultório?</label>
-              <select 
-                className={`p-[14px_16px] border-[2px] ${errors.bairro ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white`}
-                {...register("bairro", { required: tipoPerfil === 'dentista' })}
-              >
-                <option value="">Selecione a região</option>
-                <option value="Tatuapé">Tatuapé</option>
-                <option value="Morumbi">Morumbi</option>
-                <option value="Centro">Centro</option>
-              </select>
-              {errors.bairro && <span className="text-[#dc3545] text-[0.8rem] mt-[5px]">Bairro é obrigatório para dentistas.</span>}
+            <div className="grid grid-cols-2 gap-3 animate-fade-in mb-[15px]">
+              <div className="flex flex-col w-full">
+                <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CRO</label>
+                <input 
+                  type="text" 
+                  placeholder="Ex: 12345-SP"
+                  className={`p-[14px_16px] border-[2px] ${errors.documento ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+                  {...register("documento", { required: true })}
+                  onChange={handleCRO}
+                />
+              </div>
+              <div className="flex flex-col w-full">
+                <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Bairro da Clínica</label>
+                <select 
+                  className={`p-[14px_16px] border-[2px] ${errors.bairro ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+                  {...register("bairro", { required: true })}
+                >
+                  <option value="">Selecione...</option>
+                  <option value="Tatuapé">Tatuapé</option>
+                  <option value="Morumbi">Morumbi</option>
+                  <option value="Centro">Centro</option>
+                </select>
+              </div>
             </div>
           )}
 
           <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px]">
-            <div className="flex flex-col mb-[20px] w-full">
+            <div className="flex flex-col mb-[15px] w-full">
               <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Senha</label>
               <input 
                 type="password" 
-                className={`p-[14px_16px] border-[2px] ${errors.senha ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
+                className={`p-[14px_16px] border-[2px] ${errors.senha ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
                 {...register("senha", { required: true, minLength: 6 })}
               />
             </div>
-            <div className="flex flex-col mb-[20px] w-full">
+            <div className="flex flex-col mb-[15px] w-full">
               <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Confirmar Senha</label>
               <input 
                 type="password" 
-                className={`p-[14px_16px] border-[2px] ${errors.confirma ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
+                className={`p-[14px_16px] border-[2px] ${errors.confirma ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
                 {...register("confirma", { 
                   required: true, 
                   validate: value => value === senha || "As senhas não coincidem"
                 })}
               />
-              {errors.confirma && <span className="text-[#dc3545] text-[0.8rem] mt-[5px]">{(errors.confirma as any).message}</span>}
             </div>
           </div>
 
           <button 
             type="submit" 
-            className="w-full mt-[10px] cursor-pointer bg-[#FF8C00] text-white px-[45px] py-[16px] text-[1.1rem] font-bold rounded-[30px] uppercase tracking-[1px] border border-white shadow-[0_4px_15px_rgba(255,140,0,0.2)] transition-all duration-300 hover:bg-[#E67E22] hover:-translate-y-[2px] hover:shadow-[0_0_30px_rgba(255,140,0,0.8)]"
+            className="w-full mt-[10px] cursor-pointer bg-[#FF8C00] text-white px-[45px] py-[16px] text-[1.1rem] font-bold rounded-[30px] uppercase tracking-[1px] shadow-md transition-all hover:bg-[#E67E22] hover:-translate-y-1"
           >
             Cadastrar Agora
           </button>

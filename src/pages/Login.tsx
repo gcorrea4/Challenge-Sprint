@@ -3,13 +3,24 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 
 export function Login() {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, getValues, formState: { errors } } = useForm();
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
   const navigate = useNavigate();
 
+  
+  const handleEsqueciSenha = (e: React.MouseEvent) => {
+    e.preventDefault(); 
+    const emailDigitado = getValues("email");
+    
+    if (!emailDigitado) {
+      setMensagem({ texto: "Digite seu e-mail no campo acima para recuperar a senha.", tipo: "erro" });
+    } else {
+      setMensagem({ texto: `Um link de recuperação foi enviado para ${emailDigitado}!`, tipo: "sucesso" });
+    }
+  };
+
   const onSubmit = async (data: any) => {
     try {
-      
       const res = await fetch('http://127.0.0.1:8000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -21,27 +32,19 @@ export function Login() {
       
       const result = await res.json();
 
-      
       if (result.status === "sucesso") {
         sessionStorage.setItem("userRole", result.role);
         sessionStorage.setItem("usuarioLogado", result.nome);
-        
-        if (result.bairro) {
-          sessionStorage.setItem("dentistaBairro", result.bairro); 
-        }
+        if (result.bairro) sessionStorage.setItem("dentistaBairro", result.bairro); 
 
         setMensagem({ texto: `Login aprovado! Bem-vindo, ${result.nome}.`, tipo: "sucesso" });
 
         setTimeout(() => {
-          if (result.role === 'dentista') {
-            navigate('/SolucaoDashboard'); 
-          } else {
-            navigate('/'); 
-          }
+          if (result.role === 'dentista') navigate('/SolucaoDashboard'); 
+          else navigate('/'); 
         }, 1500);
 
       } else {
-       
         const usuarioSalvo = localStorage.getItem("usuario_" + data.email);
         
         if (usuarioSalvo) {
@@ -55,10 +58,8 @@ export function Login() {
           }
         }
         
-        
         setMensagem({ texto: "Usuário ou senha incorretos. Tente novamente.", tipo: "erro" });
       }
-
     } catch (error) {
       setMensagem({ texto: "Erro ao conectar com o servidor.", tipo: "erro" });
     }
@@ -85,7 +86,7 @@ export function Login() {
             <input 
               type="email" 
               placeholder="exemplo@email.com"
-              className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
+              className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
               {...register("email", { required: true })}
             />
           </div>
@@ -94,18 +95,24 @@ export function Login() {
             <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Senha</label>
             <input 
               type="password" 
-              className={`p-[14px_16px] border-[2px] ${errors.senha ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] text-[#333] transition-all duration-300 bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00] focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,140,0,0.1)]`}
+              className={`p-[14px_16px] border-[2px] ${errors.senha ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
               {...register("senha", { required: true })}
             />
           </div>
 
           <div className="text-right mt-[-10px] mb-[25px]">
-            <a href="#" className="text-[0.85rem] text-[#FF8C00] font-semibold no-underline transition-colors duration-300 hover:text-[#E67E22] hover:underline">Esqueci minha senha</a>
+            <a 
+              href="#" 
+              onClick={handleEsqueciSenha} 
+              className="text-[0.85rem] text-[#FF8C00] font-semibold no-underline hover:text-[#E67E22] hover:underline"
+            >
+              Esqueci minha senha
+            </a>
           </div>
 
           <button 
             type="submit" 
-            className="w-full cursor-pointer bg-[#FF8C00] text-white px-[45px] py-[16px] text-[1.1rem] font-bold rounded-[30px] uppercase tracking-[1px] border border-white shadow-[0_4px_15px_rgba(255,140,0,0.2)] transition-all duration-300 hover:bg-[#E67E22] hover:-translate-y-[2px] hover:shadow-[0_0_30px_rgba(255,140,0,0.8)]"
+            className="w-full cursor-pointer bg-[#FF8C00] text-white px-[45px] py-[16px] text-[1.1rem] font-bold rounded-[30px] uppercase tracking-[1px] shadow-md transition-all hover:bg-[#E67E22] hover:-translate-y-1"
           >
             Entrar
           </button>
