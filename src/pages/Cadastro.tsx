@@ -116,7 +116,7 @@ export function Cadastro() {
             </select>
           </div>
 
-          {/* DUALIDADE: MOSTRA CPF OU CRO DEPENDENDO DO TIPO */}
+          
           {tipoPerfil === 'paciente' && (
             <div className="flex flex-col mb-[15px] w-full animate-fade-in">
               <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CPF</label>
