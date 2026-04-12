@@ -73,40 +73,56 @@ function BotaoCopiar({ texto }: { texto: string }) {
 } 
 
 
-          <section>
-            <h3 
-              onClick={() => setRedesOpen(!redesOpen)}
-              className="text-[#333333] text-[1.17em] font-bold mt-[30px] border-b border-[#ccc] pb-[5px] cursor-pointer hover:text-orange-500 transition-colors flex justify-between"
-            >
-              Redes Sociais <span>{redesOpen ? '−' : '+'}</span>
-            </h3>
-            
-            {redesOpen && (
-              <div className="mt-[15px]">
-                <ul className="list-none pl-0 m-0">
-                  <li className="mb-[10px]"><a href="https://www.facebook.com/turmadobem" target="_blank" rel="noreferrer" className="text-black hover:text-orange-500 transition-colors font-medium">Facebook</a></li>
-                  <li className="mb-[10px]"><a href="https://x.com/turmadobem" target="_blank" rel="noreferrer" className="text-black hover:text-orange-500 transition-colors font-medium">Twitter</a></li>
-                  <li className="mb-[10px]"><a href="https://www.instagram.com/ongturmadobem/" target="_blank" rel="noreferrer" className="text-black hover:text-orange-500 transition-colors font-medium">Instagram</a></li>
-                  <li className="mb-[10px]"><a href="https://www.linkedin.com/company/turma-do-bem?originalSubdomain=br" target="_blank" rel="noreferrer" className="text-black hover:text-orange-500 transition-colors font-medium">LinkedIn</a></li>
-                  <li className="mb-[10px]"><a href="https://turmadobem.org.br/" target="_blank" rel="noreferrer" className="text-black hover:text-orange-500 transition-colors font-medium">Site Oficial</a></li>
-                </ul>
-              </div>
-            )}
-          </section>
-        </div>
+interface AccordionProps {
+  titulo: string;
+  icone: LucideIcon;
+  aberto: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}
 
-        
-        <div className="flex-1 w-full">
-          <iframe 
-            src="https://maps.google.com/maps?q=Rua%20Maur%C3%ADcio%20Francisco%20Klabin,%20449&t=&z=15&ie=UTF8&iwloc=&output=embed" 
-            allowFullScreen 
-            loading="lazy" 
-            referrerPolicy="no-referrer-when-downgrade"
-            className="w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[500px] border-none rounded-[8px] shadow-md"
-          ></iframe>
-        </div>
+function Accordion({ titulo, icone: Icone, aberto, onToggle, children }: AccordionProps) {
+  const conteudoRef = useRef<HTMLDivElement>(null);
+  const [altura, setAltura] = useState(0);
 
+  useEffect(() => {
+    const el = conteudoRef.current;
+    if (el) {
+      setAltura(el.scrollHeight);
+    }
+  }, [aberto]);
+
+  return (
+    <section className="border-b border-[#ddd]">
+      <h3 className="m-0">
+        <button
+          onClick={onToggle}
+          aria-expanded={aberto}
+          className="w-full flex items-center justify-between py-4 px-1 bg-transparent border-none cursor-pointer text-[#333] text-[1.1rem] font-semibold hover:text-orange-500 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 rounded"
+        >
+          <span className="flex items-center gap-3">
+            {Icone && <Icone size={20} className="text-orange-500" />}
+            {titulo}
+          </span>
+          <ChevronDown
+            size={20}
+            className={`transition-transform duration-300 ${aberto ? 'rotate-180' : ''}`}
+          />
+        </button>
+      </h3>
+
+      <div
+        role="region"
+        style={{
+          maxHeight: aberto ? `${altura}px` : '0px',
+          opacity: aberto ? 1 : 0,
+        }}
+        className="overflow-hidden transition-all duration-300 ease-in-out"
+      >
+        <div ref={conteudoRef} className="pb-4 px-1">
+          {children}
+        </div>
       </div>
-    </main>
+    </section>
   );
 }
