@@ -7,7 +7,6 @@ export function Login() {
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
   const navigate = useNavigate();
 
-  
   const handleEsqueciSenha = (e: React.MouseEvent) => {
     e.preventDefault(); 
     const emailDigitado = getValues("email");
@@ -19,49 +18,36 @@ export function Login() {
     }
   };
 
-  const onSubmit = async (data: any) => {
-    try {
-      const res = await fetch('http://127.0.0.1:8000/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          usuario: data.email, 
-          senha: data.senha
-        })
-      });
-      
-      const result = await res.json();
+  // --- SPRINT 3: LOGIN LENDO APENAS DO LOCALSTORAGE (SEM API) ---
+  const onSubmit = (data: any) => {
+    const usuarioSalvo = localStorage.getItem("usuario_" + data.email);
+    
+    if (!usuarioSalvo) {
+      setMensagem({ texto: "Usuário não encontrado. Cadastre-se primeiro!", tipo: "erro" });
+      return;
+    }
 
-      if (result.status === "sucesso") {
-        sessionStorage.setItem("userRole", result.role);
-        sessionStorage.setItem("usuarioLogado", result.nome);
-        if (result.bairro) sessionStorage.setItem("dentistaBairro", result.bairro); 
+    const usuario = JSON.parse(usuarioSalvo);
 
-        setMensagem({ texto: `Login aprovado! Bem-vindo, ${result.nome}.`, tipo: "sucesso" });
+    if (usuario.senha === data.senha) {
+      // Sucesso! Seta as variáveis de sessão baseadas no que salvou no Cadastro
+      sessionStorage.setItem("userRole", usuario.tipo || 'paciente'); 
+      sessionStorage.setItem("usuarioLogado", usuario.nomeCompleto);
 
-        setTimeout(() => {
-          if (result.role === 'dentista') navigate('/SolucaoDashboard'); 
-          else navigate('/'); 
-        }, 1500);
-
-      } else {
-        const usuarioSalvo = localStorage.getItem("usuario_" + data.email);
-        
-        if (usuarioSalvo) {
-          const usuario = JSON.parse(usuarioSalvo);
-          if (usuario.senha === data.senha) {
-            sessionStorage.setItem("userRole", usuario.tipo || 'paciente'); 
-            sessionStorage.setItem("usuarioLogado", usuario.nomeCompleto);
-            setMensagem({ texto: `Login aprovado! Bem-vindo, ${usuario.nomeCompleto}.`, tipo: "sucesso" });
-            setTimeout(() => navigate('/'), 1500);
-            return;
-          }
-        }
-        
-        setMensagem({ texto: "Usuário ou senha incorretos. Tente novamente.", tipo: "erro" });
+      // Se for dentista e tiver bairro, manda pra sessão pro Dashboard usar no Match
+      if (usuario.tipo === 'dentista' && usuario.bairro && usuario.bairro !== "N/A") {
+        sessionStorage.setItem("dentistaBairro", usuario.bairro);
       }
-    } catch (error) {
-      setMensagem({ texto: "Erro ao conectar com o servidor.", tipo: "erro" });
+
+      setMensagem({ texto: `Login aprovado! Bem-vindo, ${usuario.nomeCompleto}.`, tipo: "sucesso" });
+      
+      setTimeout(() => {
+        if (usuario.tipo === 'dentista') navigate('/SolucaoDashboard'); 
+        else navigate('/'); 
+      }, 1500);
+
+    } else {
+      setMensagem({ texto: "Senha incorreta. Tente novamente.", tipo: "erro" });
     }
   };
 
