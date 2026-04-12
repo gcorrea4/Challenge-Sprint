@@ -230,3 +230,33 @@ export function Contato() {
             </div>
           </Accordion>
         </div>
+
+        <div className="flex-1 w-full">
+          <div className="sticky top-[140px]">
+            <iframe
+              src={MAPA_URL}
+              title="Localização da Turma do Bem no Google Maps"
+              aria-label="Mapa mostrando a localização da Turma do Bem"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[500px] border-none rounded-xl shadow-lg"
+            />
+
+            {/* Card de endereço abaixo do mapa */}
+            <div className="mt-4 bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-start gap-3">
+              <MapPin size={20} className="text-orange-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-[#333] m-0">{ENDERECO.rua}</p>
+                <p className="text-xs text-gray-500 m-0 mt-1">
+                  {ENDERECO.bairro}, {ENDERECO.cidade}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  );
+}
