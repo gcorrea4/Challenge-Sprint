@@ -91,7 +91,7 @@ export function Contato() {
             allowFullScreen 
             loading="lazy" 
             referrerPolicy="no-referrer-when-downgrade"
-            className="w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[500px] border-none rounded-[8px] shadow-md"
+            className="w-full h-[250px] sm:h-[350px] md:h-[400px] lg:h-[500px] border-none rounded-[8px] shadow-md"
           ></iframe>
         </div>
 
