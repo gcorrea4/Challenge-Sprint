@@ -12,7 +12,7 @@ export function FAQ() {
         </h2>
         
         
-        <div className="grid grid-cols-1 gap-[30px] text-left">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px] text-left">
           
           {/* CARD 1 */}
           <div className="bg-white border border-black/10 p-[30px] rounded-[16px] shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-[10px] hover:border-[#FF8C00] hover:shadow-[0_0_20px_rgba(255,140,0,0.2)]">
@@ -25,11 +25,10 @@ export function FAQ() {
           </div>
 
           
-          <div className="bg-white border border-black/10 p-[30px] rounded-[16px] shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-[10px] hover:border-[#FF8C00] hover:shadow-[0_0_20px_rgba(255,140,0,0.2)]">
-            <h3 className="text-[#FF8C00] text-[1.3rem] font-bold mb-[10px]">
+          <div className="bg-white border border-black/10 p-[30px] rounded-[16px] shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-[10px] hover:border-[#FF8C00] hover:shadow-[0_0_20px_rgba(255,140,0,0.2)] active:scale-95 active:duration-75">            <h3 className="text-[#FF8C00] text-[1.3rem] font-bold mb-[10px]">
               Qual problema ele resolve?
             </h3>
-            <p className="text-[#666666] leading-[1.5] text-[18px] md:text-[20px] text-justify">
+            <p className="text-[#666666] leading-relaxed text-[18px] md:text-[20px] text-justify tracking-tight">
               A Turma do Bem recebe um grande volume de contatos por diversos canais (e-mail, WhatsApp), o que dificulta o controle e a agilidade. Nossa plataforma busca centralizar todas as solicitações, automatizar o encaminhamento e permitir o acompanhamento de cada caso, tornando o processo mais rápido e organizado.
             </p>
           </div>
@@ -63,6 +62,9 @@ export function FAQ() {
               A Turma do Bem é a maior rede de voluntariado especializado do mundo! Para conhecer mais sobre o incrível trabalho que realizam, fazer doações ou se voluntariar, recomendamos visitar o site oficial da organização.
             </p>
           </div>
+          <div className="mt-[60px] py-[30px] border-t border-black/5">
+  <p className="text-[#666666] text-[18px]">Não encontrou sua dúvida? <a href="/contato" className="text-[#FF8C00] font-bold underline-offset-4 hover:underline">Fale com o suporte da ONG</a></p>
+</div>
 
         </div>
       </section>
