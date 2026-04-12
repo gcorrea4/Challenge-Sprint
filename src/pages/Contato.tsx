@@ -126,3 +126,41 @@ function Accordion({ titulo, icone: Icone, aberto, onToggle, children }: Accordi
     </section>
   );
 }
+
+export function Contato() {
+  const [contatosOpen, setContatosOpen] = useState(true);
+  const [localizacaoOpen, setLocalizacaoOpen] = useState(false);
+  const [redesOpen, setRedesOpen] = useState(false);
+
+  return (
+    <main className="bg-[#F5F5DC] min-h-screen font-sans pt-[80px] lg:pt-[120px]">
+      <div className="flex flex-col md:flex-row items-start gap-10 lg:gap-20 max-w-[1200px] mx-auto my-12 px-5">
+
+        {/* ── Coluna esquerda ── */}
+        <div className="flex-1 w-full">
+          <h2 className="text-[#333] text-2xl lg:text-[34px] font-bold mb-2 mt-0">
+            Contatos da empresa
+          </h2>
+          <p className="text-gray-500 text-sm mb-10">
+            Entre em contato conosco por qualquer um dos canais abaixo.
+          </p>
+
+          {/* Contatos */}
+          <Accordion
+            titulo="Contatos"
+            icone={Phone}
+            aberto={contatosOpen}
+            onToggle={() => setContatosOpen(!contatosOpen)}
+          >
+            <ul className="list-none p-0 m-0 space-y-3">
+              {CONTATOS.map((c) => (
+                <li key={c.label} className="flex items-center gap-3 text-[#333]">
+                  <c.icon size={16} className="text-orange-400 shrink-0" />
+                  <span>
+                    <strong className="text-sm">{c.label}:</strong>{' '}
+                    <span className="text-sm">{c.valor}</span>
+                  </span>
+                  {c.copiavel && <BotaoCopiar texto={c.valor} />}
+                </li>
+              ))}
+            </ul>
