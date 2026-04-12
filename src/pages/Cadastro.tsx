@@ -10,7 +10,7 @@ export function Cadastro() {
   const senha = watch('senha');
   const tipoPerfil = watch('tipo'); 
 
-  
+  // --- MÁSCARAS DE INPUT ---
   const handleCPF = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, ""); 
     if (value.length > 11) value = value.slice(0, 11);
@@ -26,46 +26,29 @@ export function Cadastro() {
     setValue("documento", value);
   };
 
-  const onSubmit = async (data: any) => {
-    try {
-      if (data.tipo === 'dentista') {
-        const resposta = await fetch('http://127.0.0.1:8000/cadastrar-dentista', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            nome: data.nome,
-            usuario: data.email, 
-            senha: data.senha,
-            bairro: data.bairro
-            
-          })
-        });
-        
-        const result = await resposta.json();
-        if (result.status !== 'sucesso') throw new Error("Erro no backend");
-
-      } else {
-        if (localStorage.getItem("usuario_" + data.email)) {
-          setMensagem({ texto: "Este e-mail já está cadastrado!", tipo: "erro" });
-          return;
-        }
-        const novoUsuario = {
-          nomeCompleto: data.nome,
-          email: data.email,
-          senha: data.senha,
-          tipo: data.tipo, 
-          documento: data.documento, // Salva o CPF no storage
-          dataCadastro: new Date().toLocaleDateString('pt-BR')
-        };
-        localStorage.setItem("usuario_" + data.email, JSON.stringify(novoUsuario));
-      }
-
-      setMensagem({ texto: "Cadastro realizado com sucesso! Redirecionando...", tipo: "sucesso" });
-      setTimeout(() => navigate('/login'), 2000);
-
-    } catch (error) {
-      setMensagem({ texto: "Erro ao cadastrar. Verifique o servidor.", tipo: "erro" });
+  // --- SPRINT 3: SALVANDO TUDO NO LOCALSTORAGE (SEM API) ---
+  const onSubmit = (data: any) => {
+    if (localStorage.getItem("usuario_" + data.email)) {
+      setMensagem({ texto: "Este e-mail já está cadastrado!", tipo: "erro" });
+      return;
     }
+
+    // Criamos o objeto do usuário independente de ser paciente ou dentista
+    const novoUsuario = {
+      nomeCompleto: data.nome,
+      email: data.email,
+      senha: data.senha,
+      tipo: data.tipo, 
+      documento: data.documento, 
+      bairro: data.bairro || "N/A", // Salva o bairro se for dentista
+      dataCadastro: new Date().toLocaleDateString('pt-BR')
+    };
+
+    // Salva no "banco de dados falso" do navegador
+    localStorage.setItem("usuario_" + data.email, JSON.stringify(novoUsuario));
+
+    setMensagem({ texto: "Cadastro realizado com sucesso! Redirecionando...", tipo: "sucesso" });
+    setTimeout(() => navigate('/login'), 2000);
   };
 
   return (
@@ -116,7 +99,6 @@ export function Cadastro() {
             </select>
           </div>
 
-          
           {tipoPerfil === 'paciente' && (
             <div className="flex flex-col mb-[15px] w-full animate-fade-in">
               <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CPF</label>

@@ -28,16 +28,21 @@ export function SolucaoDashboard() {
   const userRole = sessionStorage.getItem("userRole"); 
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista Voluntário";
   
-  
   const meuBairro = sessionStorage.getItem("dentistaBairro") || "Tatuapé";
 
+ 
   const carregarDados = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/pacientes');
-      const dados = await response.json();
-      setPacientes(dados);
+      
+      const dadosMockados: Paciente[] = [
+        { nome: "Bruno", idade: 12, urgencia: 6, tipo_dor: "dente quebrado", tempo_dor: 8, renda: 1, bairro: "Tatuapé" },
+        { nome: "Amanda", idade: 15, urgencia: 4, tipo_dor: "forte", tempo_dor: 3, renda: 2, bairro: "Tatuapé" },
+        { nome: "Carlos", idade: 10, urgencia: 2, tipo_dor: "leve", tempo_dor: 1, renda: 3, bairro: "Morumbi" },
+        { nome: "Julia", idade: 14, urgencia: 1, tipo_dor: "rotina", tempo_dor: 0, renda: 4, bairro: "Tatuapé" }
+      ];
+      setPacientes(dadosMockados);
     } catch (error) {
-      console.error("Erro ao conectar com a API:", error);
+      console.error("Erro ao carregar dados locais:", error);
     }
   };
 
@@ -54,47 +59,39 @@ export function SolucaoDashboard() {
     }
   }, [navigate, usuarioLogado]);
 
+ 
   const finalizarAtendimento = async () => {
     if (!pacienteSelecionado) return;
 
     const confirmacao = window.confirm(`Tem certeza que deseja finalizar a triagem de ${pacienteSelecionado.nome}? Ele sairá da fila.`);
     if (confirmacao) {
-      try {
-        await fetch(`http://127.0.0.1:8000/paciente/${pacienteSelecionado.nome}`, { method: 'DELETE' });
-        
-        const urgencia = pacienteSelecionado.urgencia;
-        const newStats = { ...meusStats };
-        
-        if (urgencia >= 6) newStats.graves++;
-        else if (urgencia >= 4) newStats.medios++;
-        else newStats.leves++;
+     
+      
+      const urgencia = pacienteSelecionado.urgencia;
+      const newStats = { ...meusStats };
+      
+      if (urgencia >= 6) newStats.graves++;
+      else if (urgencia >= 4) newStats.medios++;
+      else newStats.leves++;
 
-        setMeusStats(newStats);
-        localStorage.setItem(`stats_${usuarioLogado}`, JSON.stringify(newStats)); 
+      setMeusStats(newStats);
+      localStorage.setItem(`stats_${usuarioLogado}`, JSON.stringify(newStats)); 
 
-        setPacientes(pacientes.filter(p => p.nome !== pacienteSelecionado.nome));
-        setPacienteSelecionado(null); 
-      } catch (error) {
-        alert("Erro ao concluir o atendimento.");
-      }
+      setPacientes(pacientes.filter(p => p.nome !== pacienteSelecionado.nome));
+      setPacienteSelecionado(null); 
     }
   };
 
+ 
   const perguntarParaIA = async () => {
     if (!perguntaIA.trim()) return;
     setCarregandoIA(true);
-    try {
-      const res = await fetch('http://127.0.0.1:8000/IA/consultar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texto: perguntaIA })
-      });
-      const data = await res.json();
-      setRespostaIA(data.resposta);
-    } catch (err) {
-      setRespostaIA("Erro ao conectar com a IA. Verifique se o servidor Python está rodando.");
-    }
-    setCarregandoIA(false);
+    
+    
+    setTimeout(() => {
+      setRespostaIA("O paciente mais urgente na sua fila é o **Bruno** (Urgência: 6, Dente quebrado). Priorize o atendimento dele.");
+      setCarregandoIA(false);
+    }, 1500);
   };
 
   const renderPrioridade = (nivel: number) => {
@@ -103,17 +100,14 @@ export function SolucaoDashboard() {
     return <span className="text-green-500 font-bold">Baixa (Rotina)</span>;
   };
 
-  
   const filaDoMeuConsultorio = pacientes.filter(
     p => p.bairro && p.bairro.toLowerCase() === meuBairro.toLowerCase()
   );
 
-  
   const pacientesFiltrados = filaDoMeuConsultorio.filter(p => 
     p.nome.toLowerCase().includes(busca.toLowerCase())
   );
 
-  
   const graves = filaDoMeuConsultorio.filter(p => p.urgencia >= 6).length;
   const medios = filaDoMeuConsultorio.filter(p => p.urgencia >= 4 && p.urgencia < 6).length;
   const leves = filaDoMeuConsultorio.filter(p => p.urgencia < 4).length;
