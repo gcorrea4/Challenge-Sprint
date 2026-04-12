@@ -1,5 +1,19 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Phone,
+  Mail,
+  MessageCircle,
+  MapPin,
+  Clock,
+  Globe,
+  ChevronDown,
+  Copy,
+  Check,
+  Send,
+  ExternalLink,
+} from 'lucide-react';
 
 export function Contato() {
  
