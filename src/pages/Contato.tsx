@@ -164,3 +164,12 @@ export function Contato() {
                 </li>
               ))}
             </ul>
+
+            <Link
+              to="/formulario"
+              className="mt-6 inline-flex items-center gap-2 bg-orange-500 text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-orange-600 transition-colors shadow-sm hover:shadow-md no-underline focus:outline-none focus:ring-2 focus:ring-orange-300 focus:ring-offset-2"
+            >
+              <Send size={16} />
+              Enviar mensagem pelo formulário
+            </Link>
+          </Accordion>
