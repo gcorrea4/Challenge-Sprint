@@ -62,6 +62,9 @@ export function FAQ() {
               A Turma do Bem é a maior rede de voluntariado especializado do mundo! Para conhecer mais sobre o incrível trabalho que realizam, fazer doações ou se voluntariar, recomendamos visitar o site oficial da organização.
             </p>
           </div>
+          <div className="mt-[60px] py-[30px] border-t border-black/5">
+  <p className="text-[#666666] text-[18px]">Não encontrou sua dúvida? <a href="/contato" className="text-[#FF8C00] font-bold underline-offset-4 hover:underline">Fale com o suporte da ONG</a></p>
+</div>
 
         </div>
       </section>
