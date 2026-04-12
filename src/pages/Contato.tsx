@@ -15,40 +15,38 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
-export function Contato() {
- 
-  const [contatosOpen, setContatosOpen] = useState(true); 
-  const [localizacaoOpen, setLocalizacaoOpen] = useState(false);
-  const [redesOpen, setRedesOpen] = useState(false);
+const ENDERECO = {
+  rua: 'Rua Maurício Francisco Klabin, 449',
+  bairro: 'Vila Mariana',
+  cidade: 'São Paulo - SP',
+  cep: '04120-020',
+};
 
-  return (
-    <main className="bg-[#F5F5DC] min-h-screen font-sans pt-[80px] lg:pt-[120px]">
-      
-     
-      <div className="flex flex-col md:flex-row items-start gap-[40px] lg:gap-[80px] max-w-[1200px] mx-auto my-[46px] px-[20px]">
+const MAPA_URL = `https://maps.google.com/maps?q=${encodeURIComponent(
+  ENDERECO.rua
+)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 
-        
-        <div className="flex-1 w-full">
-          <h2 className="text-[#333333] text-[26px] lg:text-[34px] font-bold mb-[50px] mt-0">Contatos da empresa</h2>
-          
-          
-          <section>
-            <h3 
-              onClick={() => setContatosOpen(!contatosOpen)}
-              className="text-[#333333] text-[1.17em] font-bold mt-[30px] border-b border-[#ccc] pb-[5px] cursor-pointer hover:text-orange-500 transition-colors flex justify-between"
-            >
-              Contatos <span>{contatosOpen ? '−' : '+'}</span>
-            </h3>
-            
-            
-            {contatosOpen && (
-              <div className="mt-[15px]">
-                <ul className="list-none pl-0 m-0">
-                  <li className="mb-[10px] text-[#333333]"><strong>Telefone:</strong> +55 11 5084-7276</li>
-                  <li className="mb-[10px] text-[#333333]"><strong>Email Presidente:</strong> turmadobem@tdb.org.br</li>
-                  <li className="mb-[10px] text-[#333333]"><strong>Email Comunicação:</strong> comunicacao@tdb.org.br</li>
-                  <li className="mb-[10px] text-[#333333]"><strong>Dúvidas e Sugestões:</strong> faleconosco@tdb.org.br</li>
-                </ul>
+const CONTATOS = [
+  { icon: Phone, label: 'Telefone', valor: '+55 11 5084-7276', copiavel: true },
+  { icon: Mail, label: 'Email Presidente', valor: 'turmadobem@tdb.org.br', copiavel: true },
+  { icon: Mail, label: 'Email Comunicação', valor: 'comunicacao@tdb.org.br', copiavel: true },
+  { icon: MessageCircle, label: 'Dúvidas e Sugestões', valor: 'faleconosco@tdb.org.br', copiavel: true },
+];
+
+const REDES_SOCIAIS = [
+  { icon: ExternalLink, nome: 'Facebook', url: 'https://www.facebook.com/turmadobem' },
+  { icon: ExternalLink, nome: 'Twitter / X', url: 'https://x.com/turmadobem' },
+  { icon: ExternalLink, nome: 'Instagram', url: 'https://www.instagram.com/ongturmadobem/' },
+  { icon: ExternalLink, nome: 'LinkedIn', url: 'https://www.linkedin.com/company/turma-do-bem?originalSubdomain=br' },
+  { icon: Globe, nome: 'Site Oficial', url: 'https://turmadobem.org.br/' },
+];
+
+const HORARIOS = [
+  { dia: 'Segunda a Sexta', horario: '9h às 18h' },
+  { dia: 'Sábado', horario: '9h às 13h' },
+  { dia: 'Domingo', horario: 'Fechado' },
+];
+
                 <p className="mt-[15px] text-[#333333]">
                   <strong>Formulário para contato:</strong>{' '}
                   <Link to="/formulario" className="text-orange-500 underline hover:text-orange-600 transition-colors">
