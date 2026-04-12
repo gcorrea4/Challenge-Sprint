@@ -47,33 +47,32 @@ const HORARIOS = [
   { dia: 'Domingo', horario: 'Fechado' },
 ];
 
-                <p className="mt-[15px] text-[#333333]">
-                  <strong>Formulário para contato:</strong>{' '}
-                  <Link to="/formulario" className="text-orange-500 underline hover:text-orange-600 transition-colors">
-                    Clique Aqui
-                  </Link>
-                </p>
-              </div>
-            )}
-          </section>
+function BotaoCopiar({ texto }: { texto: string }) {
+  const [copiado, setCopiado] = useState(false);
 
-          
-          <section>
-            <h3 
-              onClick={() => setLocalizacaoOpen(!localizacaoOpen)}
-              className="text-[#333333] text-[1.17em] font-bold mt-[30px] border-b border-[#ccc] pb-[5px] cursor-pointer hover:text-orange-500 transition-colors flex justify-between"
-            >
-              Localização <span>{localizacaoOpen ? '−' : '+'}</span>
-            </h3>
-            
-            {localizacaoOpen && (
-              <div className="mt-[15px]">
-                <p className="text-[#333333] m-0 leading-relaxed">Rua Maurício Francisco Klabin, 449<br/>Vila Mariana, São Paulo - SP, 04120-020</p>
-              </div>
-            )}
-          </section>
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(texto);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    } catch {
+      /* fallback silencioso */
+    }
+  };
 
-          
+  return (
+    <button
+      onClick={copiar}
+      aria-label={`Copiar ${texto}`}
+      title="Copiar"
+      className="ml-2 p-1 rounded hover:bg-orange-100 transition-colors text-gray-400 hover:text-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-300"
+    >
+      {copiado ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+    </button>
+  );
+} 
+
+
           <section>
             <h3 
               onClick={() => setRedesOpen(!redesOpen)}
