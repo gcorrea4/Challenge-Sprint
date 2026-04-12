@@ -25,8 +25,7 @@ export function FAQ() {
           </div>
 
           
-          <div className="bg-white border border-black/10 p-[30px] rounded-[16px] shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-[10px] hover:border-[#FF8C00] hover:shadow-[0_0_20px_rgba(255,140,0,0.2)]">
-            <h3 className="text-[#FF8C00] text-[1.3rem] font-bold mb-[10px]">
+          <div className="bg-white border border-black/10 p-[30px] rounded-[16px] shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-[10px] hover:border-[#FF8C00] hover:shadow-[0_0_20px_rgba(255,140,0,0.2)] active:scale-95 active:duration-75">            <h3 className="text-[#FF8C00] text-[1.3rem] font-bold mb-[10px]">
               Qual problema ele resolve?
             </h3>
             <p className="text-[#666666] leading-[1.5] text-[18px] md:text-[20px] text-justify">
