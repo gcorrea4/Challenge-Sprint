@@ -173,3 +173,60 @@ export function Contato() {
               Enviar mensagem pelo formulário
             </Link>
           </Accordion>
+
+          <Accordion
+            titulo="Localização"
+            icone={MapPin}
+            aberto={localizacaoOpen}
+            onToggle={() => setLocalizacaoOpen(!localizacaoOpen)}
+          >
+            <div className="space-y-4">
+              <p className="text-[#333] m-0 leading-relaxed text-sm">
+                <MapPin size={14} className="inline mr-1 text-orange-400" />
+                {ENDERECO.rua}
+                <br />
+                {ENDERECO.bairro}, {ENDERECO.cidade}, {ENDERECO.cep}
+              </p>
+
+              {/* Horário de funcionamento */}
+              <div className="bg-orange-50 rounded-lg p-4 border border-orange-100">
+                <h4 className="flex items-center gap-2 text-sm font-semibold text-[#333] m-0 mb-3">
+                  <Clock size={16} className="text-orange-500" />
+                  Horário de funcionamento
+                </h4>
+                <ul className="list-none p-0 m-0 space-y-1">
+                  {HORARIOS.map((h) => (
+                    <li key={h.dia} className="flex justify-between text-sm text-[#555]">
+                      <span>{h.dia}</span>
+                      <span className="font-medium">{h.horario}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Accordion>
+
+          {/* Redes Sociais */}
+          <Accordion
+            titulo="Redes Sociais"
+            icone={Globe}
+            aberto={redesOpen}
+            onToggle={() => setRedesOpen(!redesOpen)}
+          >
+            <div className="flex flex-wrap gap-3">
+              {REDES_SOCIAIS.map((r) => (
+                <a
+                  key={r.nome}
+                  href={r.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Visitar ${r.nome}`}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-[#333] text-sm font-medium hover:border-orange-400 hover:text-orange-500 hover:shadow-sm transition-all no-underline focus:outline-none focus:ring-2 focus:ring-orange-300"
+                >
+                  <r.icon size={18} />
+                  {r.nome}
+                </a>
+              ))}
+            </div>
+          </Accordion>
+        </div>
