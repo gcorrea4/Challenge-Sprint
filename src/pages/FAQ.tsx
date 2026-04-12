@@ -12,7 +12,7 @@ export function FAQ() {
         </h2>
         
         
-        <div className="grid grid-cols-1 gap-[30px] text-left">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px] text-left">
           
           {/* CARD 1 */}
           <div className="bg-white border border-black/10 p-[30px] rounded-[16px] shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-[10px] hover:border-[#FF8C00] hover:shadow-[0_0_20px_rgba(255,140,0,0.2)]">
