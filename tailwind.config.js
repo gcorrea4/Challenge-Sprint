@@ -6,7 +6,7 @@ export default {
   ],
   theme: {
     extend: {
-      // ESTA LINHA É A MÁGICA: Define a 'Inter' como a fonte Sans padrão
+      
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
