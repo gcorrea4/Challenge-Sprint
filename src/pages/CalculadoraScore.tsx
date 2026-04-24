@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Calculator, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calculator } from 'lucide-react';
 
 export function CalculadoraScore() {
   const [idade, setIdade] = useState(14);
   const [renda, setRenda] = useState(1);
   const [dor, setDor] = useState(15); // Forte
-  const [mesmoBairro, setMesmoBairro] = useState(true);
+  const [mesmoBairro] = useState(true);
   const [score, setScore] = useState(0);
 
   useEffect(() => {

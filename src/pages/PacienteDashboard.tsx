@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, LogOut, CheckCircle2, Clock, FileText, CalendarDays, MapPin, Users, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, LogOut, Clock, FileText, CalendarDays, MapPin, Users, ClipboardList } from 'lucide-react';
 
 export function PacienteDashboard() {
   const navigate = useNavigate();
@@ -48,7 +48,6 @@ export function PacienteDashboard() {
   };
 
   const renderSidebar = () => (
-    // 👇 SOLUÇÃO: sticky, top-[65px] e self-start 👇
     <aside className="w-[260px] min-w-[260px] bg-white border-r border-gray-200 hidden md:flex flex-col sticky top-[65px] self-start h-[calc(100vh-65px)] z-10 shadow-sm">
       <div className="p-6 border-b border-gray-100 flex items-center gap-3">
         <div className="w-12 h-12 rounded-full bg-[#FFF3E0] text-[#FF8C00] flex items-center justify-center font-bold text-xl border-2 border-[#FF8C00]">
@@ -97,11 +96,9 @@ export function PacienteDashboard() {
   }
 
   return (
-    // 👇 SOLUÇÃO: items-start no container pai 👇
     <div className="flex min-h-screen bg-[#F5F5DC] font-sans pt-[65px] items-start">
       {renderSidebar()}
       
-      {/* 👇 SOLUÇÃO: Remoção do md:ml-[260px] da tag main 👇 */}
       <main className="flex-1 p-6 md:p-10 max-w-[1600px] mx-auto w-full animate-fade-in space-y-6">
         
         {/* === TELA 1: MEU PAINEL === */}

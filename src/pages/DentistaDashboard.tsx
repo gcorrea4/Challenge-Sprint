@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Calendar, LogOut, 
   Search, MessageSquare, Send, User, 
-  MapPin, Phone, AlertCircle, Star, Target, Filter, Clock, CheckCircle2, ChevronRight, X,
+  MapPin, Phone, AlertCircle, Star, Target, Filter, Clock, CheckCircle2, X,
   Heart
 } from 'lucide-react';
 
@@ -115,10 +115,8 @@ export function DentistaDashboard() {
   );
 
   return (
-    // 👇 SOLUÇÃO: items-start no container pai 👇
     <div className="flex min-h-screen bg-[#F5F5DC] font-sans pt-[65px] items-start">
       
-      {/* 👇 SOLUÇÃO: sticky, top-[65px] e self-start 👇 */}
       <aside className="w-[260px] min-w-[260px] bg-white border-r border-gray-200 hidden md:flex flex-col sticky top-[65px] self-start h-[calc(100vh-65px)] z-10 shadow-sm">
         <div className="p-6 border-b border-gray-100 flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FF8C00] flex items-center justify-center font-bold text-xl border border-orange-100">
@@ -151,7 +149,6 @@ export function DentistaDashboard() {
         </div>
       </aside>
 
-      {/* 👇 SOLUÇÃO: Remoção do md:ml-[260px] da tag main 👇 */}
       <main className="flex-1 p-6 md:p-8 max-w-[1400px] mx-auto w-full">
         
         {/* === TELA 1: PAINEL GERAL (Fila de Triagem) === */}
