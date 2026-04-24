@@ -18,39 +18,50 @@ export function Login() {
     }
   };
 
-  // --- SPRINT 3: LOGIN LENDO APENAS DO LOCALSTORAGE (SEM API) ---
-  const onSubmit = (data: any) => {
-    const usuarioSalvo = localStorage.getItem("usuario_" + data.email);
-    
-    if (!usuarioSalvo) {
-      setMensagem({ texto: "Usuário não encontrado. Cadastre-se primeiro!", tipo: "erro" });
-      return;
-    }
+  const onSubmit = async (data: any) => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: data.email, senha: data.senha }),
+      });
 
-    const usuario = JSON.parse(usuarioSalvo);
+      if (response.ok) {
+        const usuario = await response.json();
+        
+        // Mantemos o sessionStorage para a navegação do Front-End saber quem está logado
+        sessionStorage.setItem("userRole", usuario.tipo || 'paciente'); 
+        sessionStorage.setItem("usuarioLogado", usuario.nome); 
 
-    if (usuario.senha === data.senha) {
-      // Sucesso! Seta as variáveis de sessão baseadas no que salvou no Cadastro
-      sessionStorage.setItem("userRole", usuario.tipo || 'paciente'); 
-      sessionStorage.setItem("usuarioLogado", usuario.nomeCompleto);
+        if (usuario.tipo === 'dentista' && usuario.bairro && usuario.bairro !== "N/A") {
+          sessionStorage.setItem("dentistaBairro", usuario.bairro);
+        }
 
-      // Se for dentista e tiver bairro, manda pra sessão pro Dashboard usar no Match
-      if (usuario.tipo === 'dentista' && usuario.bairro && usuario.bairro !== "N/A") {
-        sessionStorage.setItem("dentistaBairro", usuario.bairro);
+        setMensagem({ texto: `Login aprovado! Bem-vindo(a).`, tipo: "sucesso" });
+        
+        // 👇 REDIRECIONAMENTO INTELIGENTE POR PERFIL 👇
+        setTimeout(() => {
+          if (usuario.tipo === 'admin') {
+            navigate('/dashboard/admin');
+          } else if (usuario.tipo === 'dentista' || usuario.tipo === 'dev') {
+            // O DEV agora vai certinho pro painel do Dentista para usar o filtro de bairros
+            navigate('/dashboard/dentista');
+          } else if (usuario.tipo === 'paciente') {
+            // Ajuste a rota abaixo para onde fica o seu formulário do paciente!
+            navigate('/dashboard/paciente'); 
+          } else {
+            navigate('/'); // Prevenção de erro
+          }
+        }, 1500);
+
+      } else {
+        setMensagem({ texto: "Email ou senha incorretos.", tipo: "erro" });
       }
-
-      setMensagem({ texto: `Login aprovado! Bem-vindo, ${usuario.nomeCompleto}.`, tipo: "sucesso" });
-      
-      setTimeout(() => {
-        if (usuario.tipo === 'dentista') navigate('/SolucaoDashboard'); 
-        else navigate('/'); 
-      }, 1500);
-
-    } else {
-      setMensagem({ texto: "Senha incorreta. Tente novamente.", tipo: "erro" });
+    } catch(err) {
+       setMensagem({ texto: "Erro ao conectar com o Servidor.", tipo: "erro" });
     }
   };
-
+  
   return (
     <main className="bg-[#F5F5DC] min-h-screen flex justify-center items-center py-[120px] px-[20px]">
       <div className="bg-white w-full max-w-[500px] p-[30px] sm:p-[40px] rounded-[16px] shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-black/5">

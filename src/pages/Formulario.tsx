@@ -1,108 +1,172 @@
-import { useForm } from 'react-hook-form';
 import { useState } from 'react';
-
-type FormData = {
-  nome: string;
-  idade: number;
-  tipo_dor: "leve" | "forte" | "dente quebrado";
-  tempo_dor: number;
-  renda: number;
-  bairro: string;
-};
+import { User, Calendar, DollarSign, Activity, Clock, MapPin } from 'lucide-react';
 
 export function Formulario() {
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>();
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [nivelUrgencia, setNivelUrgencia] = useState<number | null>(null);
+  const [formData, setFormData] = useState({
+    nome: '',
+    idade: '',
+    renda: '',
+    tipoDor: 'Leve',
+    diasDor: '',
+    bairro: ''
+  });
 
-  const onSubmit = (data: FormData) => {
-    // --- SPRINT 3: CÁLCULO LOCAL (SEM API/FETCH) ---
-    // Trouxemos a lógica do Python para cá temporariamente para não quebrar a regra
-    let urgenciaCalculada = 0;
+  const handleChange = (e: any) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-    // Regra do Tipo de Dor
-    if (data.tipo_dor === "forte") {
-      urgenciaCalculada += 3;
-    } else if (data.tipo_dor === "dente quebrado") {
-      urgenciaCalculada += 4;
-    } else {
-      urgenciaCalculada += 1; // leve
-    }
-
-    // Regra do Tempo de Dor
-    if (data.tempo_dor > 7) {
-      urgenciaCalculada += 2;
-    }
-
-    // Regra de Renda
-    if (data.renda <= 2) {
-      urgenciaCalculada += 1;
-    }
-
-    // Simulamos um pequeno "tempo de rede" para parecer profissional
-    setTimeout(() => {
-      setNivelUrgencia(urgenciaCalculada);
-      setIsSuccess(true);
-      reset(); // Limpa o formulário
-
-      // Some a mensagem de sucesso depois de 8 segundos
-      setTimeout(() => setIsSuccess(false), 8000);
-    }, 600); 
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+    console.log("Dados da Triagem:", formData);
+    alert("Triagem enviada com sucesso!");
   };
 
   return (
-    <main className="bg-[#F5F5DC] min-h-screen font-sans flex flex-col items-center py-10 px-5 w-full">
-      <div className="w-full max-w-[600px] bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-center text-2xl font-bold mb-2">Triagem Dentária</h2>
-        <p className="text-center text-gray-600 mb-8">Preencha os dados para calcular sua urgência.</p>
+    <main className="min-h-screen bg-[#F5F5DC] py-12 px-4 font-sans flex justify-center items-start md:items-center pt-[100px]">
+      
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+        
+        {/* HEADER MINIMALISTA */}
+        <div className="p-8 pb-6 text-center border-b border-gray-100">
+          <h2 className="text-2xl font-bold text-gray-800">Triagem Dentária</h2>
+          <p className="text-gray-500 text-sm mt-1">Preencha os dados para calcular sua urgência.</p>
+        </div>
 
-        {isSuccess && (
-          <div className="bg-green-100 text-green-800 p-4 rounded mb-6 text-center border border-green-200">
-            Cadastrado com sucesso! <strong>Nível de Urgência: {nivelUrgencia}</strong>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label className="block font-bold text-gray-700 mb-1">Nome Completo:</label>
-            <input type="text" {...register("nome", { required: true })} className="w-full p-3 border rounded outline-none focus:border-blue-500" />
-            {errors.nome && <span className="text-red-500 text-sm">Campo obrigatório</span>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block font-bold text-gray-700 mb-1">Idade:</label>
-              <input type="number" {...register("idade", { required: true, valueAsNumber: true })} className="w-full p-3 border rounded focus:border-blue-500 outline-none" />
+        {/* CORPO DO FORMULÁRIO */}
+        <form onSubmit={handleSubmit} className="p-8 space-y-5">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            
+            {/* Nome Completo */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Nome Completo</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User size={16} className="text-gray-400" />
+                </div>
+                <input 
+                  type="text" 
+                  name="nome"
+                  required
+                  placeholder="Ex: João da Silva"
+                  value={formData.nome}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
+                />
+              </div>
             </div>
+
+            {/* Idade */}
             <div>
-              <label className="block font-bold text-gray-700 mb-1">Renda (Salários):</label>
-              <input type="number" step="0.1" {...register("renda", { required: true, valueAsNumber: true })} className="w-full p-3 border rounded focus:border-blue-500 outline-none" />
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Idade</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Calendar size={16} className="text-gray-400" />
+                </div>
+                <input 
+                  type="number" 
+                  name="idade"
+                  required
+                  min="0"
+                  placeholder="Ex: 15"
+                  value={formData.idade}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
+                />
+              </div>
             </div>
+
+            {/* Renda */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Renda (Salários)</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <DollarSign size={16} className="text-gray-400" />
+                </div>
+                <input 
+                  type="number" 
+                  name="renda"
+                  required
+                  min="0"
+                  step="0.1"
+                  placeholder="Ex: 1.5"
+                  value={formData.renda}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Tipo de Dor */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Tipo de Dor</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Activity size={16} className="text-[#FF8C00]" />
+                </div>
+                <select 
+                  name="tipoDor"
+                  value={formData.tipoDor}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors appearance-none cursor-pointer"
+                >
+                  <option value="leve">Leve</option>
+                  <option value="forte">Forte</option>
+                  <option value="dente quebrado">Dente Quebrado</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Dias com Dor */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Dias com Dor</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Clock size={16} className="text-gray-400" />
+                </div>
+                <input 
+                  type="number" 
+                  name="diasDor"
+                  required
+                  min="0"
+                  placeholder="Ex: 5"
+                  value={formData.diasDor}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Bairro */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Bairro</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MapPin size={16} className="text-gray-400" />
+                </div>
+                <input 
+                  type="text" 
+                  name="bairro"
+                  required
+                  placeholder="Ex: Tatuapé"
+                  value={formData.bairro}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
+                />
+              </div>
+            </div>
+
           </div>
 
-          <div>
-            <label className="block font-bold text-gray-700 mb-1">Tipo de Dor:</label>
-            <select {...register("tipo_dor")} className="w-full p-3 border rounded bg-white focus:border-blue-500 outline-none">
-              <option value="leve">Leve</option>
-              <option value="forte">Forte</option>
-              <option value="dente quebrado">Dente Quebrado</option>
-            </select>
+          <div className="pt-4">
+            <button 
+              type="submit" 
+              className="w-full bg-[#FF8C00] text-white font-bold py-3 rounded-lg hover:bg-[#E67E22] transition-colors"
+            >
+              Enviar para Triagem
+            </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block font-bold text-gray-700 mb-1">Dias com Dor:</label>
-              <input type="number" {...register("tempo_dor", { required: true, valueAsNumber: true })} className="w-full p-3 border rounded focus:border-blue-500 outline-none" />
-            </div>
-            <div>
-              <label className="block font-bold text-gray-700 mb-1">Bairro:</label>
-              <input type="text" {...register("bairro", { required: true })} className="w-full p-3 border rounded focus:border-blue-500 outline-none" />
-            </div>
-          </div>
-
-          <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 transition-colors mt-4 shadow-sm">
-            Enviar para Triagem
-          </button>
         </form>
       </div>
     </main>

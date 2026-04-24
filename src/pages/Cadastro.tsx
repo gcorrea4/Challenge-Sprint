@@ -26,31 +26,46 @@ export function Cadastro() {
     setValue("documento", value);
   };
 
-  // --- SPRINT 3: SALVANDO TUDO NO LOCALSTORAGE (SEM API) ---
-  const onSubmit = (data: any) => {
-    if (localStorage.getItem("usuario_" + data.email)) {
-      setMensagem({ texto: "Este e-mail já está cadastrado!", tipo: "erro" });
-      return;
-    }
-
-    // Criamos o objeto do usuário independente de ser paciente ou dentista
+  const onSubmit = async (data: any) => {
+    // 👇 CORREÇÃO AQUI: Os nomes têm de bater certo com o NovoUsuarioSchema do main.py
     const novoUsuario = {
-      nomeCompleto: data.nome,
+      nome: data.nome,
       email: data.email,
       senha: data.senha,
-      tipo: data.tipo, 
-      documento: data.documento, 
-      bairro: data.bairro || "N/A", // Salva o bairro se for dentista
-      dataCadastro: new Date().toLocaleDateString('pt-BR')
+      tipo_perfil: data.tipo,  // Alterado de 'tipo' para 'tipo_perfil'
+      cpf: data.documento      // Alterado de 'documento' para 'cpf'
     };
 
-    // Salva no "banco de dados falso" do navegador
-    localStorage.setItem("usuario_" + data.email, JSON.stringify(novoUsuario));
+    try {
+      const response = await fetch('http://127.0.0.1:8000/cadastrar-usuario', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(novoUsuario),
+      });
 
-    setMensagem({ texto: "Cadastro realizado com sucesso! Redirecionando...", tipo: "sucesso" });
-    setTimeout(() => navigate('/login'), 2000);
+      if (response.ok) {
+        setMensagem({ texto: "Registo realizado com sucesso! A redirecionar...", tipo: "sucesso" });
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        const erroData = await response.json();
+        
+        // 👇 CORREÇÃO DO ECRÃ BRANCO: Tratar o erro 422 para não rebentar o React
+        let textoErro = "Erro ao realizar o registo.";
+        if (erroData.detail) {
+          if (Array.isArray(erroData.detail)) {
+            textoErro = "Verifica os campos preenchidos. Formato inválido.";
+          } else if (typeof erroData.detail === 'string') {
+            textoErro = erroData.detail;
+          }
+        }
+        
+        setMensagem({ texto: textoErro, tipo: "erro" });
+      }
+    } catch (error) {
+      setMensagem({ texto: "Erro ao ligar ao Servidor! Verifica a API.", tipo: "erro" });
+    }
   };
-
+  
   return (
     <main className="bg-[#F5F5DC] min-h-screen flex justify-center items-center py-[120px] px-[20px]">
       <div className="bg-white w-full max-w-[500px] p-[30px] sm:p-[40px] rounded-[16px] shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-black/5">

@@ -10,9 +10,11 @@ import { Contato } from './pages/Contato';
 import { Formulario } from './pages/Formulario';
 import { Cadastro } from './pages/Cadastro';
 import { Login } from './pages/Login';
-import { SolucaoTriagem } from './pages/SolucaoTriagem';
-import { SolucaoDashboard } from './pages/SolucaoDashboard'; 
-
+import { AdminDashboard } from './pages/AdminDashboard';
+import { DentistaDashboard } from './pages/DentistaDashboard';
+import { PacienteDashboard } from './pages/PacienteDashboard';
+import { CalculadoraScore } from './pages/CalculadoraScore';
+import { FormularioContato } from './pages/FormularioContato';
 
 function App() {
   return (
@@ -30,8 +32,11 @@ function App() {
             <Route path="/formulario" element={<Formulario />} />
             <Route path="/cadastro" element={<Cadastro />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/SolucaoTriagem" element={<SolucaoTriagem />} />
-            <Route path="/SolucaoDashboard" element={<SolucaoDashboard />} />
+            <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/dashboard/dentista" element={<DentistaDashboard />} />
+            <Route path="/dashboard/paciente" element={<PacienteDashboard />} />
+            <Route path='/Calculadura/Score' element={<CalculadoraScore /> } />
+            <Route path='/FormularioContato' element={<FormularioContato /> } /> 
           </Routes>
         </div>
         <Footer />
