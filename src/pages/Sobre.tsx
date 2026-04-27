@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Calculator, Star, CheckCircle2 } from 'lucide-react';
 
 export function Sobre() {
-  // Estados para o Simulador
+ 
   const [idade, setIdade] = useState(14);
   const [renda, setRenda] = useState(1);
   const [dor, setDor] = useState(15); 
@@ -10,7 +10,7 @@ export function Sobre() {
 
   useEffect(() => {
     let pontos = 0;
-    // Lógica do main.py
+    
     if (idade >= 11 && idade <= 17) pontos += 40;
     else if (idade >= 18 && idade <= 21) pontos += 20;
 
@@ -18,7 +18,7 @@ export function Sobre() {
     else if (renda <= 2.0) pontos += 15;
 
     pontos += dor;
-    pontos += 10; // Bônus de proximidade simulado
+    pontos += 10; 
     
     setScore(pontos);
   }, [idade, renda, dor]);

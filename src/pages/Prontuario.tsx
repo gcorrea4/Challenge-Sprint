@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, FileText, Activity } from 'lucide-react';
+import { ArrowLeft, FileText, Activity } from 'lucide-react';
 
 export function Prontuario() {
-  // 👇 Aqui está a "mágica" da rota dinâmica
+  // Rota dinamica
   const { nome } = useParams<{ nome: string }>();
   const navigate = useNavigate();
 
