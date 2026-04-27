@@ -15,6 +15,7 @@ import { DentistaDashboard } from './pages/DentistaDashboard';
 import { PacienteDashboard } from './pages/PacienteDashboard';
 import { CalculadoraScore } from './pages/CalculadoraScore';
 import { FormularioContato } from './pages/FormularioContato';
+import { Prontuario } from './pages/Prontuario';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
             <Route path="/dashboard/paciente" element={<PacienteDashboard />} />
             <Route path='/Calculadura/Score' element={<CalculadoraScore /> } />
             <Route path='/FormularioContato' element={<FormularioContato /> } /> 
+            <Route path='/Prontuario' element={<Prontuario /> } />
           </Routes>
         </div>
         <Footer />

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, Users, Calendar, LogOut, 
-  Search, MessageSquare, Send, User, 
+import {
+  LayoutDashboard, Users, Calendar, LogOut,
+  Search, MessageSquare, Send, User,
   MapPin, Phone, AlertCircle, Star, Target, Filter, Clock, CheckCircle2, X,
   Heart
 } from 'lucide-react';
@@ -28,19 +28,19 @@ interface Agendamento {
 
 export function DentistaDashboard() {
   const navigate = useNavigate();
-  
+
   const [telaAtiva, setTelaAtiva] = useState<'painel' | 'pacientes' | 'agenda'>('painel');
   const [pesquisa, setPesquisa] = useState("");
   const [pergunta, setPergunta] = useState("");
   const [respostaIA, setRespostaIA] = useState("");
   const [carregandoIA, setCarregandoIA] = useState(false);
-  
+
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [meusPacientes, setMeusPacientes] = useState<Paciente[]>([]);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
   const [fichaAtiva, setFichaAtiva] = useState<Paciente | null>(null);
-  
+
   const [novoAgendamento, setNovoAgendamento] = useState({ data: '', hora: '', tipo: 'Primeira Consulta - Avaliação' });
 
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista";
@@ -82,7 +82,7 @@ export function DentistaDashboard() {
       setCarregandoIA(false);
     }
   };
-    
+
   const adotarPaciente = async (paciente: Paciente) => {
     if (window.confirm(`Deseja adotar ${paciente.nome}? Ele será movido para sua lista de pacientes.`)) {
       try {
@@ -111,9 +111,9 @@ export function DentistaDashboard() {
 
     setAgendamentos([...agendamentos, consultaMarcada]);
     alert(`Consulta agendada para ${fichaAtiva.nome} com sucesso!`);
-    setFichaAtiva(null); 
-    setNovoAgendamento({ data: '', hora: '', tipo: 'Primeira Consulta - Avaliação' }); 
-    setTelaAtiva('agenda'); 
+    setFichaAtiva(null);
+    setNovoAgendamento({ data: '', hora: '', tipo: 'Primeira Consulta - Avaliação' });
+    setTelaAtiva('agenda');
   };
 
   const formatarDataAgenda = (dataISO: string) => {
@@ -123,14 +123,14 @@ export function DentistaDashboard() {
     const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     return { diaSemana: dias[dataObj.getDay()], diaMes: dia };
   };
-  
-  const pacientesFiltrados = pacientes.filter(p => 
+
+  const pacientesFiltrados = pacientes.filter(p =>
     p.nome.toLowerCase().includes(pesquisa.toLowerCase())
   );
 
   return (
     <div className="flex min-h-screen bg-[#F5F5DC] font-sans pt-[65px] items-start">
-      
+
       <aside className="w-[260px] min-w-[260px] bg-white border-r border-gray-200 hidden md:flex flex-col sticky top-[65px] self-start h-[calc(100vh-65px)] z-10 shadow-sm">
         <div className="p-6 border-b border-gray-100 flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FF8C00] flex items-center justify-center font-bold text-xl border border-orange-100">
@@ -164,7 +164,7 @@ export function DentistaDashboard() {
       </aside>
 
       <main className="flex-1 p-6 md:p-8 max-w-[1400px] mx-auto w-full">
-        
+
         {telaAtiva === 'painel' && (
           <div className="animate-fade-in">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -210,13 +210,17 @@ export function DentistaDashboard() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-gray-800">{p.nome}</h4>
+                          <h4 className="font-bold text-gray-800 leading-tight cursor-pointer hover:text-[#FF8C00] hover:underline"
+                            onClick={() => navigate(`/prontuario/${p.nome}`)}
+                          >
+                            {p.nome}
+                          </h4>
                           <span className="bg-gray-50 text-gray-500 text-[10px] px-2 py-0.5 rounded-md font-semibold border border-gray-100">{p.idade} anos</span>
                         </div>
                         <div className="flex items-center gap-3 mt-1.5">
-                          <p className="text-[11px] text-gray-500 flex items-center gap-1 font-medium"><MapPin size={12}/> {p.bairro}</p>
+                          <p className="text-[11px] text-gray-500 flex items-center gap-1 font-medium"><MapPin size={12} /> {p.bairro}</p>
                           <p className={`text-[11px] font-bold flex items-center gap-1 uppercase ${p.tipo_dor.includes('quebrado') || p.tipo_dor === 'forte' ? 'text-red-500' : 'text-gray-500'}`}>
-                            <AlertCircle size={12}/> {p.tipo_dor}
+                            <AlertCircle size={12} /> {p.tipo_dor}
                           </p>
                         </div>
                       </div>
@@ -236,7 +240,7 @@ export function DentistaDashboard() {
                     </div>
                   </div>
                 ))}
-                
+
                 {pacientesFiltrados.length === 0 && (
                   <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm text-center">
                     <p className="text-gray-500">Nenhum paciente na fila para esta região no momento.</p>
@@ -319,19 +323,19 @@ export function DentistaDashboard() {
                           </div>
                         </div>
                         <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold uppercase flex items-center gap-1">
-                          <CheckCircle2 size={12}/> Adotado
+                          <CheckCircle2 size={12} /> Adotado
                         </span>
                       </div>
                       <div className="space-y-2 mb-4">
-                        <p className="text-sm text-gray-600 flex items-center gap-2"><Phone size={14} className="text-gray-400"/> {p.telefone || '(11) 90000-0000'}</p>
-                        <p className="text-sm text-gray-600 flex items-center gap-2"><MapPin size={14} className="text-gray-400"/> {p.bairro}</p>
+                        <p className="text-sm text-gray-600 flex items-center gap-2"><Phone size={14} className="text-gray-400" /> {p.telefone || '(11) 90000-0000'}</p>
+                        <p className="text-sm text-gray-600 flex items-center gap-2"><MapPin size={14} className="text-gray-400" /> {p.bairro}</p>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setFichaAtiva(p)}
                       className="w-full bg-gray-50 text-[#FF8C00] border border-orange-200 py-2.5 rounded-xl font-bold text-sm hover:bg-orange-50 hover:border-[#FF8C00] flex items-center justify-center gap-2 transition-all"
                     >
-                      <Calendar size={16}/> Agendar Consulta
+                      <Calendar size={16} /> Agendar Consulta
                     </button>
                   </div>
                 ))}
@@ -361,9 +365,9 @@ export function DentistaDashboard() {
                 <p className="text-gray-500 max-w-md mx-auto">
                   Você ainda não possui consultas agendadas. Vá na aba "Meus Pacientes" para marcar um horário.
                 </p>
-                <button 
+                <button
                   onClick={() => {
-                    if(meusPacientes.length === 0) {
+                    if (meusPacientes.length === 0) {
                       alert("Você precisa adotar um paciente na Triagem primeiro!");
                       setTelaAtiva('painel');
                     } else {
@@ -379,16 +383,16 @@ export function DentistaDashboard() {
               <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                   <h3 className="font-bold text-gray-800">Próximos Agendamentos</h3>
-                  <button 
+                  <button
                     onClick={() => setTelaAtiva('pacientes')}
                     className="text-[#FF8C00] font-bold text-sm hover:underline"
                   >
                     + Novo Agendamento
                   </button>
                 </div>
-                
+
                 <div className="divide-y divide-gray-100">
-                  {agendamentos.sort((a,b) => a.data.localeCompare(b.data)).map((ag) => {
+                  {agendamentos.sort((a, b) => a.data.localeCompare(b.data)).map((ag) => {
                     const dataFormatada = formatarDataAgenda(ag.data);
                     return (
                       <div key={ag.id} className="p-6 flex items-start gap-6 hover:bg-gray-50 transition-colors animate-fade-in">
@@ -400,8 +404,8 @@ export function DentistaDashboard() {
                           <h4 className="font-bold text-gray-800 text-lg">{ag.tipo}</h4>
                           <p className="text-gray-500 text-sm">Paciente: {ag.paciente.nome}</p>
                           <div className="flex items-center gap-4 mt-3">
-                            <span className="bg-orange-50 text-[#FF8C00] px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5"><Clock size={14}/> {ag.hora}</span>
-                            <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5"><MapPin size={14}/> Seu Consultório</span>
+                            <span className="bg-orange-50 text-[#FF8C00] px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5"><Clock size={14} /> {ag.hora}</span>
+                            <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5"><MapPin size={14} /> Seu Consultório</span>
                           </div>
                         </div>
                       </div>
@@ -435,7 +439,7 @@ export function DentistaDashboard() {
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100"><p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Tempo Dor</p><p className="text-sm font-bold text-gray-700">{pacienteSelecionado.tempo_dor} dias</p></div>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-gray-200">
-                  <h4 className="text-gray-800 font-bold text-sm mb-2 flex items-center gap-2"><Phone size={14} className="text-gray-400"/> Contato e Local.</h4>
+                  <h4 className="text-gray-800 font-bold text-sm mb-2 flex items-center gap-2"><Phone size={14} className="text-gray-400" /> Contato e Local.</h4>
                   <p className="text-sm font-medium text-gray-600">{pacienteSelecionado.telefone || '(11) 90000-0000'}</p>
                   <p className="text-sm font-medium text-gray-600 mt-1">{pacienteSelecionado.bairro}, São Paulo - SP</p>
                 </div>
@@ -445,8 +449,8 @@ export function DentistaDashboard() {
               </div>
             </div>
             <div className="bg-gray-100 md:w-1/2 h-[300px] md:h-auto relative">
-               <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 pointer-events-none"><p className="text-[10px] font-bold text-gray-500 uppercase">Geolocalização</p></div>
-               <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen src={`https://maps.google.com/maps?q=${encodeURIComponent(pacienteSelecionado.bairro + ", São Paulo, SP")}&t=&z=14&ie=UTF8&iwloc=&output=embed`} title="Mapa"></iframe>
+              <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 pointer-events-none"><p className="text-[10px] font-bold text-gray-500 uppercase">Geolocalização</p></div>
+              <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen src={`https://maps.google.com/maps?q=${encodeURIComponent(pacienteSelecionado.bairro + ", São Paulo, SP")}&t=&z=14&ie=UTF8&iwloc=&output=embed`} title="Mapa"></iframe>
             </div>
           </div>
         </div>
@@ -455,17 +459,17 @@ export function DentistaDashboard() {
       {fichaAtiva && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-scale-in">
-            
+
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2"><User size={20} className="text-[#FF8C00]"/> Ficha Clínica</h2>
-              <button onClick={() => setFichaAtiva(null)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><X size={20}/></button>
+              <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2"><User size={20} className="text-[#FF8C00]" /> Ficha Clínica</h2>
+              <button onClick={() => setFichaAtiva(null)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><X size={20} /></button>
             </div>
-            
+
             <div className="p-8">
               <div className="flex justify-between items-center mb-6 pb-6 border-b border-dashed border-gray-200">
                 <div>
                   <h3 className="text-2xl font-black text-gray-800">{fichaAtiva.nome}</h3>
-                  <p className="text-sm text-gray-500 flex items-center gap-2 mt-1"><MapPin size={14}/> {fichaAtiva.bairro} | <Phone size={14}/> {fichaAtiva.telefone || '(11) 90000-0000'}</p>
+                  <p className="text-sm text-gray-500 flex items-center gap-2 mt-1"><MapPin size={14} /> {fichaAtiva.bairro} | <Phone size={14} /> {fichaAtiva.telefone || '(11) 90000-0000'}</p>
                 </div>
                 <div className="w-16 h-16 bg-orange-100 text-orange-500 rounded-2xl flex items-center justify-center font-black text-2xl border-2 border-orange-200">
                   {fichaAtiva.idade}
@@ -473,22 +477,22 @@ export function DentistaDashboard() {
               </div>
 
               <form onSubmit={agendarConsulta} className="space-y-5">
-                <h4 className="font-bold text-gray-800 flex items-center gap-2"><Calendar size={18} className="text-[#8dc63f]"/> Agendar Nova Consulta</h4>
-                
+                <h4 className="font-bold text-gray-800 flex items-center gap-2"><Calendar size={18} className="text-[#8dc63f]" /> Agendar Nova Consulta</h4>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Data</label>
-                    <input type="date" required value={novoAgendamento.data} onChange={(e) => setNovoAgendamento({...novoAgendamento, data: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]" />
+                    <input type="date" required value={novoAgendamento.data} onChange={(e) => setNovoAgendamento({ ...novoAgendamento, data: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Horário</label>
-                    <input type="time" required value={novoAgendamento.hora} onChange={(e) => setNovoAgendamento({...novoAgendamento, hora: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]" />
+                    <input type="time" required value={novoAgendamento.hora} onChange={(e) => setNovoAgendamento({ ...novoAgendamento, hora: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]" />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Procedimento Clínico</label>
-                  <select required value={novoAgendamento.tipo} onChange={(e) => setNovoAgendamento({...novoAgendamento, tipo: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00] appearance-none cursor-pointer">
+                  <select required value={novoAgendamento.tipo} onChange={(e) => setNovoAgendamento({ ...novoAgendamento, tipo: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00] appearance-none cursor-pointer">
                     <option value="Primeira Consulta - Avaliação">Primeira Consulta - Avaliação</option>
                     <option value="Restauração (Cárie)">Restauração (Cárie)</option>
                     <option value="Limpeza (Profilaxia)">Limpeza (Profilaxia)</option>
