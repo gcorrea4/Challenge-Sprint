@@ -2,8 +2,13 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 
+interface LoginFormData {
+  email?: string;
+  senha?: string;
+}
+
 export function Login() {
-  const { register, handleSubmit, getValues, formState: { errors } } = useForm();
+  const { register, handleSubmit, getValues, formState: { errors } } = useForm<LoginFormData>();
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
   const navigate = useNavigate();
 
@@ -18,7 +23,7 @@ export function Login() {
     }
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
       const response = await fetch('http://127.0.0.1:8000/login', {
         method: 'POST',
@@ -29,7 +34,6 @@ export function Login() {
       if (response.ok) {
         const usuario = await response.json();
         
-        // Mantemos o sessionStorage para a navegação do Front-End saber quem está logado
         sessionStorage.setItem("userRole", usuario.tipo || 'paciente'); 
         sessionStorage.setItem("usuarioLogado", usuario.nome); 
 
@@ -39,18 +43,15 @@ export function Login() {
 
         setMensagem({ texto: `Login aprovado! Bem-vindo(a).`, tipo: "sucesso" });
         
-        // 👇 REDIRECIONAMENTO INTELIGENTE POR PERFIL 👇
         setTimeout(() => {
           if (usuario.tipo === 'admin') {
             navigate('/dashboard/admin');
           } else if (usuario.tipo === 'dentista' || usuario.tipo === 'dev') {
-            // O DEV agora vai certinho pro painel do Dentista para usar o filtro de bairros
             navigate('/dashboard/dentista');
           } else if (usuario.tipo === 'paciente') {
-            // Ajuste a rota abaixo para onde fica o seu formulário do paciente!
             navigate('/dashboard/paciente'); 
           } else {
-            navigate('/'); // Prevenção de erro
+            navigate('/'); 
           }
         }, 1500);
 

@@ -225,7 +225,7 @@ export function Sobre() {
         </section>
 
         <img 
-          src="/src/img/fiap.jpeg" 
+          src="/fiap.jpeg" 
           alt="Logo FIAP" 
           className="w-full max-w-[500px] block mx-auto mt-[60px] mb-[20px] rounded-[10px]" 
         />

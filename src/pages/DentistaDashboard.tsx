@@ -7,30 +7,44 @@ import {
   Heart
 } from 'lucide-react';
 
+interface Paciente {
+  nome: string;
+  idade: number;
+  bairro: string;
+  tipo_dor: string;
+  score_match: number;
+  renda: number;
+  tempo_dor: number;
+  telefone?: string;
+}
+
+interface Agendamento {
+  id: number;
+  paciente: Paciente;
+  data: string;
+  hora: string;
+  tipo: string;
+}
+
 export function DentistaDashboard() {
   const navigate = useNavigate();
   
   const [telaAtiva, setTelaAtiva] = useState<'painel' | 'pacientes' | 'agenda'>('painel');
-  
   const [pesquisa, setPesquisa] = useState("");
   const [pergunta, setPergunta] = useState("");
   const [respostaIA, setRespostaIA] = useState("");
   const [carregandoIA, setCarregandoIA] = useState(false);
-  const [pacientes, setPacientes] = useState<any[]>([]);
   
-  // Estados para as lógicas de Adotar e Agendar
-  const [meusPacientes, setMeusPacientes] = useState<any[]>([]);
-  const [agendamentos, setAgendamentos] = useState<any[]>([]);
+  const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [meusPacientes, setMeusPacientes] = useState<Paciente[]>([]);
+  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
+  const [fichaAtiva, setFichaAtiva] = useState<Paciente | null>(null);
   
-  const [pacienteSelecionado, setPacienteSelecionado] = useState<any>(null);
-  
-  // Estado para a Ficha Clínica e Formulário de Agendamento
-  const [fichaAtiva, setFichaAtiva] = useState<any>(null);
   const [novoAgendamento, setNovoAgendamento] = useState({ data: '', hora: '', tipo: 'Primeira Consulta - Avaliação' });
 
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista";
   const userRole = sessionStorage.getItem("userRole");
-  
   const [bairroAtivo, setBairroAtivo] = useState(sessionStorage.getItem("dentistaBairro") || "Tatuapé");
 
   useEffect(() => {
@@ -69,7 +83,7 @@ export function DentistaDashboard() {
     }
   };
     
-  const adotarPaciente = async (paciente: any) => {
+  const adotarPaciente = async (paciente: Paciente) => {
     if (window.confirm(`Deseja adotar ${paciente.nome}? Ele será movido para sua lista de pacientes.`)) {
       try {
         await fetch(`http://127.0.0.1:8000/paciente/${paciente.nome}`, { method: 'DELETE' });
@@ -83,11 +97,11 @@ export function DentistaDashboard() {
     }
   };
 
-  const agendarConsulta = (e: any) => {
+  const agendarConsulta = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!novoAgendamento.data || !novoAgendamento.hora) return;
+    if (!novoAgendamento.data || !novoAgendamento.hora || !fichaAtiva) return;
 
-    const consultaMarcada = {
+    const consultaMarcada: Agendamento = {
       id: Date.now(),
       paciente: fichaAtiva,
       data: novoAgendamento.data,
@@ -151,7 +165,6 @@ export function DentistaDashboard() {
 
       <main className="flex-1 p-6 md:p-8 max-w-[1400px] mx-auto w-full">
         
-        {/* === TELA 1: PAINEL GERAL (Fila de Triagem) === */}
         {telaAtiva === 'painel' && (
           <div className="animate-fade-in">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -231,7 +244,6 @@ export function DentistaDashboard() {
                 )}
               </div>
 
-              {/* ASSISTENTE IA */}
               <div className="lg:col-span-4">
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-[550px] sticky top-[90px] overflow-hidden">
                   <div className="bg-gray-50 p-4 border-b border-gray-100 flex items-center gap-3">
@@ -268,7 +280,6 @@ export function DentistaDashboard() {
           </div>
         )}
 
-        {/* === TELA 2: MEUS PACIENTES === */}
         {telaAtiva === 'pacientes' && (
           <div className="animate-fade-in max-w-4xl mx-auto">
             <div className="mb-6 flex items-center gap-3">
@@ -329,7 +340,6 @@ export function DentistaDashboard() {
           </div>
         )}
 
-        {/* === TELA 3: AGENDA === */}
         {telaAtiva === 'agenda' && (
           <div className="animate-fade-in max-w-4xl mx-auto">
             <div className="mb-6 flex items-center gap-3">
@@ -405,7 +415,7 @@ export function DentistaDashboard() {
 
       </main>
 
-      {/* === MODAL 1: PERFIL NA TRIAGEM === */}
+      {/* === MODAIS === */}
       {pacienteSelecionado && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-scale-in">
@@ -442,7 +452,6 @@ export function DentistaDashboard() {
         </div>
       )}
 
-      {/* === MODAL 2: FICHA CLÍNICA === */}
       {fichaAtiva && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-scale-in">

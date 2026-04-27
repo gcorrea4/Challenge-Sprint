@@ -9,7 +9,7 @@ export function Home() {
         className="relative w-full min-h-screen flex justify-center items-center text-center pt-20 box-border bg-cover bg-center bg-no-repeat"
         style={{ 
           
-          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('/src/img/turma-do-bem-hero.jpg')` 
+          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('/turma-do-bem-hero.jpg')` 
         }}
       >
         <div className="relative z-10 max-w-[800px] p-5">

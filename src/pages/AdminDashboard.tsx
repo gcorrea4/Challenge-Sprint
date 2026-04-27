@@ -2,12 +2,25 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock } from 'lucide-react';
 
+interface AgendamentoAdmin {
+  paciente: string;
+  prioridade: string;
+  proc: string;
+  dentista: string;
+  data: string;
+  hora: string;
+  bairro: string;
+}
+
 export function AdminDashboard() {
   const navigate = useNavigate();
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Admin";
   
   const [statsAdmin, setStatsAdmin] = useState({
-    total_beneficiarios: 0, total_dentistas: 0, por_cidade: {} as Record<string, number>, ultimos_agendamentos: [] as any[]
+    total_beneficiarios: 0, 
+    total_dentistas: 0, 
+    por_cidade: {} as Record<string, number>, 
+    ultimos_agendamentos: [] as AgendamentoAdmin[]
   });
 
   useEffect(() => {
@@ -47,7 +60,6 @@ export function AdminDashboard() {
           <p className="text-gray-500 mt-1">Visão geral da operação global da Turma do Bem.</p>
         </div>
 
-        {/* 👇 GRID ATUALIZADO: 2 CARDS REAIS E LARGOS 👇 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform"><Users size={100} className="text-[#8dc63f]"/></div>
@@ -66,10 +78,7 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* GRID INFERIOR: 2 COLUNAS LADO A LADO */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          
-          {/* COLUNA ESQUERDA: Fila por Região */}
           <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100 h-full">
             <h3 className="text-xl font-bold text-gray-800 mb-8 flex items-center gap-2"><MapPin size={24} className="text-[#FF8C00]"/> Demanda por Região</h3>
             <div className="space-y-6">
@@ -91,12 +100,10 @@ export function AdminDashboard() {
             </div>
           </div>
 
-          {/* COLUNA DIREITA: Próximos Atendimentos */}
           <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100 h-full">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><CalendarDays size={24} className="text-[#8dc63f]"/> Agenda da Rede (Global)</h3>
-            
             <div className="space-y-4">
-              {statsAdmin.ultimos_agendamentos && statsAdmin.ultimos_agendamentos.map((ag: any, index: number) => (
+              {statsAdmin.ultimos_agendamentos && statsAdmin.ultimos_agendamentos.map((ag: AgendamentoAdmin, index: number) => (
                 <div key={index} className="p-5 rounded-2xl border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-orange-200 transition-colors flex flex-col gap-2 relative">
                   <div className="flex justify-between items-start">
                     <p className="font-bold text-gray-800 text-lg">{ag.paciente}</p>
@@ -121,7 +128,6 @@ export function AdminDashboard() {
                 </div>
               )}
             </div>
-            
           </div>
         </div>
 

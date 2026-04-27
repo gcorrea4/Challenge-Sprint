@@ -11,16 +11,15 @@ export function FormularioContato() {
     mensagem: ''
   });
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Aqui no futuro podes ligar ao teu backend em Python
     console.log("Mensagem de Contacto Institucional:", formData);
     alert("Mensagem enviada com sucesso! A nossa equipa entrará em contacto em breve.");
-    navigate('/contato'); // Reencaminha de volta para a página de contactos
+    navigate('/contato'); 
   };
 
   return (

@@ -15,7 +15,7 @@ export function QuemSomos() {
        
         <article className="group bg-white border border-[#e0e0e0] rounded-[10px] shadow-[0_64px_128px_rgba(0,0,0,0.05)] w-[300px] p-[30px] max-lg:w-[280px] max-md:w-[80%] max-md:max-w-[300px] max-sm:w-[90%] max-sm:p-[20px] transition-all duration-[1000ms] hover:-translate-y-[5px] hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]">
           <img 
-            src="/src/img/foto-correa.jpg" 
+            src="/foto-correa.jpg" 
             alt="Gabriel Correa" 
             className="w-[150px] h-[150px] rounded-full object-cover mb-[20px] border-[3px] border-[#eee] mx-auto"
           />
@@ -30,7 +30,7 @@ export function QuemSomos() {
         
         <article className="group bg-white border border-[#e0e0e0] rounded-[10px] shadow-[0_64px_128px_rgba(0,0,0,0.05)] w-[300px] p-[30px] max-lg:w-[280px] max-md:w-[80%] max-md:max-w-[300px] max-sm:w-[90%] max-sm:p-[20px] transition-all duration-[1000ms] hover:-translate-y-[5px] hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]">
           <img 
-            src="/src/img/foto-kay.jpg" 
+            src="/foto-kay.jpg" 
             alt="Kayque" 
             className="w-[150px] h-[150px] rounded-full object-cover mb-[20px] border-[3px] border-[#eee] mx-auto"
           />
@@ -45,7 +45,7 @@ export function QuemSomos() {
         
         <article className="group bg-white border border-[#e0e0e0] rounded-[10px] shadow-[0_64px_128px_rgba(0,0,0,0.05)] w-[300px] p-[30px] max-lg:w-[280px] max-md:w-[80%] max-md:max-w-[300px] max-sm:w-[90%] max-sm:p-[20px] transition-all duration-[1000ms] hover:-translate-y-[5px] hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]">
           <img 
-            src="/src/img/foto-eric.jpg" 
+            src="/foto-eric.jpg" 
             alt="Eric Maciel" 
             className="w-[150px] h-[150px] rounded-full object-cover mb-[20px] border-[3px] border-[#eee] mx-auto"
           />

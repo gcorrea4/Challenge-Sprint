@@ -1,6 +1,13 @@
-# 🦷 Painel de Triagem - Turma do Bem (Front-End - Sprint 3)
+# 🦷 Turma do Bem - Otimizando o Atendimento, Transformando Vidas
 
-Este é o protótipo Front-End desenvolvido para o Challenge da ONG **Turma do Bem** (FIAP). O projeto visa otimizar a triagem e o atendimento de jovens em situação de vulnerabilidade social, conectando-os a dentistas voluntários através de uma plataforma web inteligente, rápida e acessível.
+![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=STATUS&message=CONCLUÍDO&color=FF8C00&style=for-the-badge)
+![Badge React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Badge TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Badge TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
+## 📌 Visão Geral do Projeto
+
+A Turma do Bem (TdB) é a maior rede de voluntariado odontológico do mundo. Nosso projeto visa solucionar os gargalos na triagem e distribuição de pacientes através de uma plataforma web integrada. O sistema conecta jovens em vulnerabilidade social a dentistas voluntários, utilizando um algoritmo de "Score TdB" para priorizar os casos mais graves e otimizar o fluxo de atendimento.
 
 ---
 
@@ -11,13 +18,26 @@ Este é o protótipo Front-End desenvolvido para o Challenge da ONG **Turma do B
 
 ---
 
-## 💻 Tecnologias Utilizadas
+## 🚀 Links do Projeto (Sprint 4)
 
-- **React.js** com **Vite** — Alta performance e build ultrarrápido.
-- **TypeScript** — Tipagem estática e segurança no código.
-- **Tailwind CSS** — Estilização moderna e responsividade total sem CSS externo.
-- **React Router Dom** — Navegação SPA (Single Page Application) fluida.
-- **React Hook Form** — Validação avançada e nativa de formulários.
+- **🌍 Deploy na Vercel (Aplicação Online):** [link_a_ser_colocado]
+- **🎥 Vídeo de Apresentação (YouTube):** [link_a_ser_colocado]
+- **💻 Repositório GitHub:** [link_a_ser_colocado]
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+A aplicação foi desenvolvida seguindo os princípios de uma Single Page Application (SPA), garantindo performance, tipagem rigorosa e alta responsividade.
+
+- **Front-end:** React.js com Vite — Alta performance e build ultrarrápido.
+- **Linguagem:** TypeScript — Tipagem estática e segurança no código.
+- **Estilização:** Tailwind CSS — Estilização moderna e responsividade total sem CSS externo.
+- **Navegação:** React Router DOM — Navegação SPA (Single Page Application) fluida.
+- **Formulários e Validação:** React Hook Form — Validação avançada e nativa de formulários.
+- **Ícones:** Lucide React
+- **Integração:** Fetch API Nativa (comunicando com API Java/DDD)
+- **Deploy:** Vercel
 
 ---
 
@@ -28,6 +48,30 @@ Este é o protótipo Front-End desenvolvido para o Challenge da ONG **Turma do B
 - **Simulação de Match e Dashboard:** O painel do Dentista exibe uma fila dinâmica (mockada) para demonstrar a geolocalização.
 - **Painéis Exclusivos:** Visão gerencial e gamificada para Dentistas, e interface de impacto para Pacientes.
 - **Sistema de Login Local:** Níveis de acesso e validação de sessão usando `sessionStorage` e `localStorage`.
+
+---
+
+## 📂 Estrutura de Pastas
+
+A arquitetura do projeto foi dividida de forma modular para facilitar a manutenção e a escalabilidade dos componentes.
+
+```text
+CHALLENGE-SPRINT/
+├── public/                 # Imagens estáticas principais e assets globais
+├── src/                    # Código fonte da aplicação
+│   ├── components/         # Componentes reutilizáveis (Header, Footer, Cards)
+│   ├── img/                # Ícones e imagens vetoriais do sistema
+│   ├── pages/              # Páginas e Dashboards (Views do React Router)
+│   ├── App.tsx             # Configuração de Rotas Dinâmicas e Estáticas
+│   ├── main.tsx            # Ponto de entrada do React
+│   └── stl.css             # Diretivas do Tailwind CSS
+├── .gitignore              # Arquivos ignorados pelo Git
+├── eslint.config.js        # Regras de linting do projeto
+├── index.html              # Template base da SPA
+├── package.json            # Dependências e scripts do projeto
+├── tailwind.config.js      # Configurações do tema e cores do Tailwind
+└── tsconfig.json           # Configurações do compilador TypeScript
+```
 
 ---
 
@@ -65,7 +109,6 @@ Para vivenciar a experiência da plataforma, utilize a tela de **"Cadastre-se"**
 ---
 
 ## 📸 Screenshots
-
 
 ![Extra Large Screenshot](/src/img/extra-large-screenshot.png)
 ![Mobile Screenshot](/src/img/mobile-screenshot.png)

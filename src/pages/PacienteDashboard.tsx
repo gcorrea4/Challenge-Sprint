@@ -2,22 +2,29 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LayoutDashboard, LogOut, Clock, FileText, CalendarDays, MapPin, Users, ClipboardList } from 'lucide-react';
 
+interface HistoricoConsulta {
+  id?: number;
+  titulo?: string;
+  status?: string;
+  data?: string;
+  hora?: string;
+  proc?: string;
+  dentista?: string;
+}
+
 export function PacienteDashboard() {
   const navigate = useNavigate();
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Paciente";
   const userRole = sessionStorage.getItem("userRole");
   
-  // Controle de qual tela mostrar no Dashboard
   const [telaAtiva, setTelaAtiva] = useState<'painel' | 'triagem'>('painel');
-  const [historicoPaciente, setHistoricoPaciente] = useState<any[]>([]);
+  const [historicoPaciente, setHistoricoPaciente] = useState<HistoricoConsulta[]>([]);
 
-  // Estado do formulário de triagem
   const [formData, setFormData] = useState({
     idade: '', renda: '', tipoDor: 'leve', diasDor: '', bairro: ''
   });
 
   useEffect(() => {
-    // Segurança
     if (!sessionStorage.getItem("usuarioLogado") || (userRole !== "paciente" && userRole !== "dev")) {
       navigate('/login');
       return;
@@ -40,7 +47,7 @@ export function PacienteDashboard() {
     navigate('/login');
   };
 
-  const handleTriagemSubmit = (e: any) => {
+  const handleTriagemSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Enviando triagem de:", usuarioLogado, formData);
     alert("Sua triagem foi enviada com sucesso! Você entrou na fila de prioridade.");
@@ -50,39 +57,32 @@ export function PacienteDashboard() {
   const renderSidebar = () => (
     <aside className="w-[260px] min-w-[260px] bg-white border-r border-gray-200 hidden md:flex flex-col sticky top-[65px] self-start h-[calc(100vh-65px)] z-10 shadow-sm">
       <div className="p-6 border-b border-gray-100 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-[#FFF3E0] text-[#FF8C00] flex items-center justify-center font-bold text-xl border-2 border-[#FF8C00]">
+        <div className="w-12 h-12 rounded-full bg-[#FFF3E0] text-[#FF8C00] flex items-center justify-center font-bold text-xl border border-orange-100">
           {usuarioLogado.charAt(0).toUpperCase()}
         </div>
         <div>
           <p className="text-sm font-bold text-gray-800 leading-tight truncate w-[160px]">{usuarioLogado}</p>
-          <p className="text-[0.7rem] uppercase tracking-wider text-[#FF8C00] font-bold">
+          <p className="text-[0.7rem] uppercase tracking-wider text-gray-500 font-semibold">
             {userRole === 'dev' ? 'Desenvolvedor' : 'Beneficiário'}
           </p>
         </div>
       </div>
       <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
-        <button 
-          onClick={() => setTelaAtiva('painel')}
-          className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all ${telaAtiva === 'painel' ? 'bg-[#FF8C00] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
-        >
+        <button onClick={() => setTelaAtiva('painel')} className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all ${telaAtiva === 'painel' ? 'bg-[#FF8C00] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}>
           <LayoutDashboard size={20} /> Meu Painel
         </button>
-        <button 
-          onClick={() => setTelaAtiva('triagem')}
-          className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all ${telaAtiva === 'triagem' ? 'bg-[#FF8C00] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
-        >
+        <button onClick={() => setTelaAtiva('triagem')} className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all ${telaAtiva === 'triagem' ? 'bg-[#FF8C00] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}>
           <ClipboardList size={20} /> Fazer Triagem
         </button>
       </nav>
       <div className="p-4 border-t border-gray-100">
-        <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all"><LogOut size={20} /> Sair</button>
+        <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:text-red-500 transition-all"><LogOut size={20} /> Sair</button>
       </div>
     </aside>
   );
 
-  const historyArray = Array.isArray(historicoPaciente) ? historicoPaciente : [];
-  const concluidas = historyArray.filter(h => h.status === 'Concluído').length;
-  const proximaConsulta = historyArray.find(h => h.status === 'Agendado');
+  const concluidas = historicoPaciente.filter(h => h.status === 'Concluído').length;
+  const proximaConsulta = historicoPaciente.find(h => h.status === 'Agendado');
 
   let diaLaranja = '--';
   let mesAnoLaranja = 'Nenhuma';
@@ -101,7 +101,6 @@ export function PacienteDashboard() {
       
       <main className="flex-1 p-6 md:p-10 max-w-[1600px] mx-auto w-full animate-fade-in space-y-6">
         
-        {/* === TELA 1: MEU PAINEL === */}
         {telaAtiva === 'painel' && (
           <>
             <div>
@@ -121,8 +120,8 @@ export function PacienteDashboard() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative"><h3 className="text-gray-500 text-xs font-bold mb-2 uppercase">Consultas Realizadas</h3><p className="text-4xl font-black text-gray-800">{concluidas}</p><div className="absolute top-5 right-5 text-[#8dc63f] bg-[#8dc63f]/10 p-2.5 rounded-lg"><CalendarDays size={24}/></div></div>
-              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative"><h3 className="text-gray-500 text-xs font-bold mb-2 uppercase">Próxima Consulta</h3><p className="text-4xl font-black text-gray-800">{proximaConsulta ? proximaConsulta.data.substring(0, 5) : '--/--'}</p><div className="absolute top-5 right-5 text-[#FF8C00] bg-[#FF8C00]/10 p-2.5 rounded-lg"><Clock size={24}/></div></div>
-              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative"><h3 className="text-gray-500 text-xs font-bold mb-2 uppercase">Procedimentos</h3><p className="text-4xl font-black text-gray-800">{historyArray.length}</p><div className="absolute top-5 right-5 text-gray-400 bg-gray-100 p-2.5 rounded-lg"><FileText size={24}/></div></div>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative"><h3 className="text-gray-500 text-xs font-bold mb-2 uppercase">Próxima Consulta</h3><p className="text-4xl font-black text-gray-800">{proximaConsulta ? proximaConsulta.data?.substring(0, 5) : '--/--'}</p><div className="absolute top-5 right-5 text-[#FF8C00] bg-[#FF8C00]/10 p-2.5 rounded-lg"><Clock size={24}/></div></div>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative"><h3 className="text-gray-500 text-xs font-bold mb-2 uppercase">Procedimentos</h3><p className="text-4xl font-black text-gray-800">{historicoPaciente.length}</p><div className="absolute top-5 right-5 text-gray-400 bg-gray-100 p-2.5 rounded-lg"><FileText size={24}/></div></div>
             </div>
 
             <div className="bg-[#FFF8F0] border border-[#FFE0B2] rounded-2xl p-6 shadow-sm">
@@ -142,7 +141,6 @@ export function PacienteDashboard() {
           </>
         )}
 
-        {/* === TELA 2: FORMULÁRIO DE TRIAGEM === */}
         {telaAtiva === 'triagem' && (
           <div className="animate-fade-in max-w-2xl mx-auto">
             <div className="mb-6">
@@ -152,56 +150,31 @@ export function PacienteDashboard() {
 
             <form onSubmit={handleTriagemSubmit} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Idade</label>
-                  <input 
-                    type="number" required min="0" placeholder="Ex: 15"
-                    value={formData.idade} onChange={(e) => setFormData({...formData, idade: e.target.value})}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none"
-                  />
+                  <input type="number" required min="0" placeholder="Ex: 15" value={formData.idade} onChange={(e) => setFormData({...formData, idade: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none" />
                 </div>
-
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Renda (Salários)</label>
-                  <input 
-                    type="number" required min="0" step="0.1" placeholder="Ex: 1.5"
-                    value={formData.renda} onChange={(e) => setFormData({...formData, renda: e.target.value})}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none"
-                  />
+                  <input type="number" required min="0" step="0.1" placeholder="Ex: 1.5" value={formData.renda} onChange={(e) => setFormData({...formData, renda: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none" />
                 </div>
-
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Tipo de Dor</label>
-                  <select 
-                    value={formData.tipoDor} onChange={(e) => setFormData({...formData, tipoDor: e.target.value})}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] outline-none"
-                  >
+                  <select value={formData.tipoDor} onChange={(e) => setFormData({...formData, tipoDor: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] outline-none">
                     <option value="leve">Leve</option>
                     <option value="forte">Forte</option>
                     <option value="dente quebrado">Dente Quebrado (Urgência)</option>
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Dias com Dor</label>
-                  <input 
-                    type="number" required min="0" placeholder="Ex: 5"
-                    value={formData.diasDor} onChange={(e) => setFormData({...formData, diasDor: e.target.value})}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none"
-                  />
+                  <input type="number" required min="0" placeholder="Ex: 5" value={formData.diasDor} onChange={(e) => setFormData({...formData, diasDor: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none" />
                 </div>
-
                 <div className="md:col-span-2">
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Bairro de Residência</label>
-                  <input 
-                    type="text" required placeholder="Ex: Tatuapé"
-                    value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none"
-                  />
+                  <input type="text" required placeholder="Ex: Tatuapé" value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none" />
                 </div>
               </div>
-
               <div className="pt-4">
                 <button type="submit" className="w-full bg-[#FF8C00] text-white font-bold py-3 rounded-lg hover:bg-[#E67E22] transition-colors">
                   Salvar e Entrar na Fila
@@ -210,7 +183,6 @@ export function PacienteDashboard() {
             </form>
           </div>
         )}
-
       </main>
     </div>
   );

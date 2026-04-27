@@ -2,15 +2,24 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 
+interface CadastroFormData {
+  nome?: string;
+  email?: string;
+  senha?: string;
+  tipo?: string;
+  documento?: string;
+  bairro?: string;
+  confirma?: string;
+}
+
 export function Cadastro() {
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<CadastroFormData>();
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
   const navigate = useNavigate();
 
   const senha = watch('senha');
   const tipoPerfil = watch('tipo'); 
 
-  // --- MÁSCARAS DE INPUT ---
   const handleCPF = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, ""); 
     if (value.length > 11) value = value.slice(0, 11);
@@ -26,14 +35,13 @@ export function Cadastro() {
     setValue("documento", value);
   };
 
-  const onSubmit = async (data: any) => {
-    // 👇 CORREÇÃO AQUI: Os nomes têm de bater certo com o NovoUsuarioSchema do main.py
+  const onSubmit = async (data: CadastroFormData) => {
     const novoUsuario = {
       nome: data.nome,
       email: data.email,
       senha: data.senha,
-      tipo_perfil: data.tipo,  // Alterado de 'tipo' para 'tipo_perfil'
-      cpf: data.documento      // Alterado de 'documento' para 'cpf'
+      tipo_perfil: data.tipo,  
+      cpf: data.documento      
     };
 
     try {
@@ -49,7 +57,6 @@ export function Cadastro() {
       } else {
         const erroData = await response.json();
         
-        // 👇 CORREÇÃO DO ECRÃ BRANCO: Tratar o erro 422 para não rebentar o React
         let textoErro = "Erro ao realizar o registo.";
         if (erroData.detail) {
           if (Array.isArray(erroData.detail)) {
