@@ -20,9 +20,9 @@ A Turma do Bem (TdB) é a maior rede de voluntariado odontológico do mundo. Nos
 
 ## 🚀 Links do Projeto (Sprint 4)
 
-- **🌍 Deploy na Vercel (Aplicação Online):** [link_a_ser_colocado]
+- **🌍 Deploy na Vercel (Aplicação Online):** [https://challenge-sprint-rose.vercel.app/]
 - **🎥 Vídeo de Apresentação (YouTube):** [link_a_ser_colocado]
-- **💻 Repositório GitHub:** [link_a_ser_colocado]
+- **💻 Repositório GitHub:** [https://github.com/gcorrea4/Challenge-Sprint]
 
 ---
 
