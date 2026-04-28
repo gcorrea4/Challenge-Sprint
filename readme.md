@@ -99,14 +99,6 @@ npm run dev
 
 ---
 
-## 🧪 Instruções de Teste (Fluxo Offline)
-
-Para vivenciar a experiência da plataforma, utilize a tela de **"Cadastre-se"**:
-
-- **Perfil Dentista:** Crie uma conta escolhendo o perfil de Dentista. Preencha os dados (como CRO e Bairro). Faça o login logo em seguida para visualizar o Dashboard interativo, a fila filtrada simulada e a simulação de resposta do Assistente de IA.
-- **Perfil Paciente:** Crie uma conta como Paciente (fornecendo CPF). Teste a página de formulário de triagem, que calculará a urgência localmente e exibirá o resultado em tempo real.
-
----
 
 ## 📸 Screenshots
 
