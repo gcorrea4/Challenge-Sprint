@@ -110,8 +110,8 @@ Para vivenciar a experiência da plataforma, utilize a tela de **"Cadastre-se"**
 
 ## 📸 Screenshots
 
-![Extra Large Screenshot](/src/img/extra-large-screenshot.png)
-![Mobile Screenshot](/src/img/mobile-screenshot.png)
+![Extra Large Screenshot](extra-large-screenshot.png)
+![Mobile Screenshot](mobile-screenshot.png)
 
 ---
 
