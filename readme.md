@@ -102,8 +102,8 @@ npm run dev
 
 ## 📸 Screenshots
 
-![Extra Large Screenshot](extra-large-screenshot.png)
-![Mobile Screenshot](mobile-screenshot.png)
+![Extra Large Screenshot](public\extra-large-screenshot.png)
+![Mobile Screenshot](public\mobile-screenshot.png)
 
 ---
 
