@@ -19,6 +19,8 @@ export function PacienteDashboard() {
   
   const [telaAtiva, setTelaAtiva] = useState<'painel' | 'triagem'>('painel');
   const [historicoPaciente, setHistoricoPaciente] = useState<HistoricoConsulta[]>([]);
+  // NOVO: Estado para lembrar se a ficha foi enviada
+  const [fichaEnviada, setFichaEnviada] = useState(false);
 
   const [formData, setFormData] = useState({
     idade: '', renda: '', tipoDor: 'leve', diasDor: '', bairro: ''
@@ -51,6 +53,9 @@ export function PacienteDashboard() {
     e.preventDefault();
     console.log("Enviando triagem de:", usuarioLogado, formData);
     alert("Sua triagem foi enviada com sucesso! Você entrou na fila de prioridade.");
+    
+    // NOVO: Atualiza a memória dizendo que a ficha foi preenchida
+    setFichaEnviada(true);
     setTelaAtiva('painel'); 
   };
 
@@ -108,15 +113,18 @@ export function PacienteDashboard() {
               <p className="text-gray-500">Acompanhe suas consultas e histórico de atendimentos.</p>
             </div>
 
-            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-center justify-between">
-              <div>
-                <h4 className="font-bold text-orange-800">Sua ficha clínica está incompleta!</h4>
-                <p className="text-sm text-orange-600">Para entrar na fila de atendimento dos dentistas, preencha sua triagem.</p>
+            {/* NOVO: A caixa laranja só aparece se a ficha NÃO tiver sido enviada */}
+            {!fichaEnviada && (
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-orange-800">Sua ficha clínica está incompleta!</h4>
+                  <p className="text-sm text-orange-600">Para entrar na fila de atendimento dos dentistas, preencha sua triagem.</p>
+                </div>
+                <button onClick={() => setTelaAtiva('triagem')} className="bg-[#FF8C00] text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm hover:bg-[#e67e22]">
+                  Preencher Agora
+                </button>
               </div>
-              <button onClick={() => setTelaAtiva('triagem')} className="bg-[#FF8C00] text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm hover:bg-[#e67e22]">
-                Preencher Agora
-              </button>
-            </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative"><h3 className="text-gray-500 text-xs font-bold mb-2 uppercase">Consultas Realizadas</h3><p className="text-4xl font-black text-gray-800">{concluidas}</p><div className="absolute top-5 right-5 text-[#8dc63f] bg-[#8dc63f]/10 p-2.5 rounded-lg"><CalendarDays size={24}/></div></div>

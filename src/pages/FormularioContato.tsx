@@ -39,9 +39,9 @@ export function FormularioContato() {
 
         {/* CABEÇALHO */}
         <div className="pt-12 pb-6 px-8 text-center border-b border-gray-100">
-          <h2 className="text-2xl font-bold text-gray-800">Fale Connosco</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Fale Conosco</h2>
           <p className="text-gray-500 text-sm mt-1">
-            Tem alguma dúvida, quer ser doador ou falar com a imprensa? Envie a sua mensagem.
+            Tem alguma dúvida, quer ser doador ou falar com a ONG? Envie a sua mensagem.
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export function FormularioContato() {
 
             {/* E-mail */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">E-mail de Contacto</label>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">E-mail de Contato</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail size={16} className="text-gray-400" />
@@ -102,10 +102,10 @@ export function FormularioContato() {
                   onChange={handleChange}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors appearance-none cursor-pointer"
                 >
-                  <option value="" disabled>Selecione o motivo do contacto...</option>
+                  <option value="" disabled>Selecione o motivo do contato...</option>
                   <option value="Dúvida Geral">Dúvida Geral</option>
                   <option value="Quero ser Doador">Quero ser Doador</option>
-                  <option value="Imprensa">Imprensa / Comunicação</option>
+                  <option value="Imprensa"> ONG / Comunicação</option>
                   <option value="Parcerias">Parcerias com Clínicas</option>
                   <option value="Outros">Outros</option>
                 </select>

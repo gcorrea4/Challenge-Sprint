@@ -1,6 +1,56 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock } from 'lucide-react';
+// Importing Map components
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet.heat';
+
+// Define approximate coordinates for major São Paulo neighborhoods
+// In a real scenario, your API would return latitude/longitude, but we can map them here for the prototype
+// Define as coordenadas baseadas nas novas regiões de periferia/vulnerabilidade
+const SP_COORDINATES: Record<string, [number, number]> = {
+  'Itaquera': [-23.5375, -46.4566],
+  'Capão Redondo': [-23.6693, -46.7744],
+  'Brasilândia': [-23.4568, -46.6853],
+  'Heliópolis': [-23.6145, -46.5941],
+  'Paraisópolis': [-23.6163, -46.7281],
+  'Osasco': [-23.5329, -46.7917],
+  'Centro': [-23.5489, -46.6388],
+};
+// Component to handle the heatmap layer
+function HeatmapLayer({ data }: { data: Record<string, number> }) {
+  const map = useMap();
+
+  useEffect(() => {
+    // Convert your API neighborhood data into Leaflet heat points
+    const heatPoints = Object.entries(data)
+      .filter(([bairro]) => SP_COORDINATES[bairro]) // Only use known coordinates
+      .map(([bairro, qtd]) => {
+        const [lat, lng] = SP_COORDINATES[bairro];
+        // 1. TIREI a multiplicação (* 5) para não explodir a intensidade
+        return [lat, lng, qtd]; 
+      });
+
+    if (heatPoints.length > 0) {
+      // @ts-ignore - leaflet.heat types are sometimes tricky, ignore for prototype
+      const heat = L.heatLayer(heatPoints, {
+        radius: 25,       // 2. DIMINUÍ O RAIO das bolas (antes era 40)
+        blur: 18,         // 3. AJUSTEI O BLUR para a borda ficar mais suave
+        maxZoom: 12,
+        max: 5,           // 4. LIMITE MÁXIMO: Diz que 5 pacientes já é o "vermelho máximo"
+        gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1.0: 'red' }
+      }).addTo(map);
+
+      return () => {
+        map.removeLayer(heat);
+      };
+    }
+  }, [map, data]);
+
+  return null;
+}
 
 interface AgendamentoAdmin {
   paciente: string;
@@ -79,25 +129,25 @@ export function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100 h-full">
-            <h3 className="text-xl font-bold text-gray-800 mb-8 flex items-center gap-2"><MapPin size={24} className="text-[#FF8C00]"/> Demanda por Região</h3>
-            <div className="space-y-6">
-              {Object.entries(statsAdmin.por_cidade).map(([bairro, qtd], i) => {
-                const pct = statsAdmin.total_beneficiarios > 0 ? Math.round((qtd / statsAdmin.total_beneficiarios) * 100) : 0;
-                return (
-                  <div key={i}>
-                    <div className="flex justify-between text-sm mb-2 font-bold text-gray-700">
-                      <span>{bairro}</span>
-                      <span className="text-[#FF8C00] bg-orange-50 px-2 py-0.5 rounded">{qtd} paciente(s)</span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2.5">
-                      <div className="bg-[#8dc63f] h-2.5 rounded-full transition-all duration-1000" style={{ width: `${pct}%` }}></div>
-                    </div>
-                  </div>
-                );
-              })}
-              {Object.keys(statsAdmin.por_cidade).length === 0 && <p className="text-gray-400 font-medium">Nenhum paciente na fila no momento.</p>}
+          
+          {/* NEW HEATMAP SECTION */}
+          <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100 h-full flex flex-col">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><MapPin size={24} className="text-[#FF8C00]"/> Mapa de Calor (Demandas)</h3>
+            <div className="flex-1 w-full rounded-2xl overflow-hidden border border-gray-200" style={{ minHeight: '350px' }}>
+              <MapContainer 
+                center={[-23.5505, -46.6333]} // Center of São Paulo
+                zoom={11} 
+                style={{ height: '100%', width: '100%', zIndex: 0 }}
+              >
+                <TileLayer
+                  url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                />
+                {/* Render the Heatmap layer using the data from your API */}
+                <HeatmapLayer data={statsAdmin.por_cidade} />
+              </MapContainer>
             </div>
+            <p className="text-xs text-gray-400 mt-4 text-center font-medium">As zonas mais vermelhas indicam maior concentração de jovens na fila de espera.</p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100 h-full">
