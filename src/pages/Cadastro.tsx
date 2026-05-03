@@ -41,7 +41,8 @@ export function Cadastro() {
       email: data.email,
       senha: data.senha,
       tipo_perfil: data.tipo,  
-      cpf: data.documento      
+      cpf: data.documento,
+      bairro: data.bairro
     };
 
     try {
@@ -52,7 +53,7 @@ export function Cadastro() {
       });
 
       if (response.ok) {
-        setMensagem({ texto: "Registo realizado com sucesso! A redirecionar...", tipo: "sucesso" });
+        setMensagem({ texto: "Registo realizado com sucesso! Redirecionando...", tipo: "sucesso" });
         setTimeout(() => navigate('/login'), 2000);
       } else {
         const erroData = await response.json();
@@ -60,7 +61,7 @@ export function Cadastro() {
         let textoErro = "Erro ao realizar o registo.";
         if (erroData.detail) {
           if (Array.isArray(erroData.detail)) {
-            textoErro = "Verifica os campos preenchidos. Formato inválido.";
+            textoErro = "Verifique os campos preenchidos. Formato inválido.";
           } else if (typeof erroData.detail === 'string') {
             textoErro = erroData.detail;
           }
@@ -69,7 +70,7 @@ export function Cadastro() {
         setMensagem({ texto: textoErro, tipo: "erro" });
       }
     } catch (error) {
-      setMensagem({ texto: "Erro ao ligar ao Servidor! Verifica a API.", tipo: "erro" });
+      setMensagem({ texto: "Erro ao conectar com o Servidor! Verifique a API.", tipo: "erro" });
     }
   };
   
@@ -109,7 +110,18 @@ export function Cadastro() {
             />
           </div>
 
-          {/* NOVO: Seleção de Região com foco no público-alvo */}
+          <div className="flex flex-col mb-[15px] w-full">
+            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Tipo de Perfil</label>
+            <select 
+              className="p-[14px_16px] border-[2px] border-[#E0E0E0] rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]"
+              {...register("tipo", { required: true })}
+            >
+              <option value="">Selecione...</option>
+              <option value="paciente">Sou Beneficiado (Paciente)</option>
+              <option value="dentista">Sou Dentista Voluntário</option>
+            </select>
+          </div>
+
           {tipoPerfil && (
              <div className="flex flex-col mb-[15px] w-full animate-fade-in">
                 <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">
@@ -145,8 +157,7 @@ export function Cadastro() {
           )}
 
           {tipoPerfil === 'dentista' && (
-            <div className="grid grid-cols-2 gap-3 animate-fade-in mb-[15px]">
-              <div className="flex flex-col w-full">
+             <div className="flex flex-col mb-[15px] w-full animate-fade-in">
                 <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CRO</label>
                 <input 
                   type="text" 
@@ -156,19 +167,6 @@ export function Cadastro() {
                   onChange={handleCRO}
                 />
               </div>
-              <div className="flex flex-col w-full">
-                <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Bairro da Clínica</label>
-                <select 
-                  className={`p-[14px_16px] border-[2px] ${errors.bairro ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-                  {...register("bairro", { required: true })}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="Tatuapé">Tatuapé</option>
-                  <option value="Morumbi">Morumbi</option>
-                  <option value="Centro">Centro</option>
-                </select>
-              </div>
-            </div>
           )}
 
           <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px]">

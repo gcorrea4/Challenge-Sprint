@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, LogOut, Clock, FileText, CalendarDays, MapPin, Users, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, LogOut, Clock, FileText, CalendarDays, MapPin, Users, ClipboardList, Activity, CheckCircle2 } from 'lucide-react';
 
 interface HistoricoConsulta {
   id?: number;
@@ -19,7 +19,6 @@ export function PacienteDashboard() {
   
   const [telaAtiva, setTelaAtiva] = useState<'painel' | 'triagem'>('painel');
   const [historicoPaciente, setHistoricoPaciente] = useState<HistoricoConsulta[]>([]);
-  // NOVO: Estado para lembrar se a ficha foi enviada
   const [fichaEnviada, setFichaEnviada] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -54,7 +53,6 @@ export function PacienteDashboard() {
     console.log("Enviando triagem de:", usuarioLogado, formData);
     alert("Sua triagem foi enviada com sucesso! Você entrou na fila de prioridade.");
     
-    // NOVO: Atualiza a memória dizendo que a ficha foi preenchida
     setFichaEnviada(true);
     setTelaAtiva('painel'); 
   };
@@ -113,7 +111,6 @@ export function PacienteDashboard() {
               <p className="text-gray-500">Acompanhe suas consultas e histórico de atendimentos.</p>
             </div>
 
-            {/* NOVO: A caixa laranja só aparece se a ficha NÃO tiver sido enviada */}
             {!fichaEnviada && (
               <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-center justify-between">
                 <div>
@@ -132,17 +129,69 @@ export function PacienteDashboard() {
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative"><h3 className="text-gray-500 text-xs font-bold mb-2 uppercase">Procedimentos</h3><p className="text-4xl font-black text-gray-800">{historicoPaciente.length}</p><div className="absolute top-5 right-5 text-gray-400 bg-gray-100 p-2.5 rounded-lg"><FileText size={24}/></div></div>
             </div>
 
-            <div className="bg-[#FFF8F0] border border-[#FFE0B2] rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-[#FF8C00] mb-4 flex items-center gap-2"><CalendarDays size={20}/> Sua Próxima Consulta</h3>
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="bg-white p-6 rounded-xl text-center min-w-[160px] shadow-sm"><p className="text-[#FF8C00] text-4xl font-black mb-1">{diaLaranja}</p><p className="text-gray-800 font-bold">{mesAnoLaranja}</p></div>
-                <div className="flex-1 w-full space-y-2 text-gray-700 bg-white/50 p-4 rounded-xl border border-orange-50">
-                  <p className="text-xl font-bold text-gray-800 mb-2">{proximaConsulta ? proximaConsulta.titulo : 'Você não tem consultas agendadas.'}</p>
-                  {proximaConsulta && (
-                    <><p className="flex items-center gap-2 text-sm"><Clock size={16} className="text-gray-400"/> <strong>Horário:</strong> {proximaConsulta.hora || 'A definir'}</p>
-                    <p className="flex items-center gap-2 text-sm"><Users size={16} className="text-gray-400"/> <strong>Dentista:</strong> {proximaConsulta.dentista}</p>
-                    <p className="flex items-center gap-2 text-sm"><MapPin size={16} className="text-gray-400"/> <strong>Local:</strong> Consultório TdB</p></>
-                  )}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Próxima Consulta */}
+              <div className="lg:col-span-7">
+                <div className="bg-[#FFF8F0] border border-[#FFE0B2] rounded-2xl p-6 shadow-sm h-full">
+                  <h3 className="text-lg font-bold text-[#FF8C00] mb-4 flex items-center gap-2"><CalendarDays size={20}/> Sua Próxima Consulta</h3>
+                  <div className="flex flex-col md:flex-row items-center gap-6">
+                    <div className="bg-white p-6 rounded-xl text-center min-w-[160px] shadow-sm"><p className="text-[#FF8C00] text-4xl font-black mb-1">{diaLaranja}</p><p className="text-gray-800 font-bold">{mesAnoLaranja}</p></div>
+                    <div className="flex-1 w-full space-y-2 text-gray-700 bg-white/50 p-4 rounded-xl border border-orange-50">
+                      <p className="text-xl font-bold text-gray-800 mb-2">{proximaConsulta ? proximaConsulta.titulo : 'Você não tem consultas agendadas.'}</p>
+                      {proximaConsulta && (
+                        <><p className="flex items-center gap-2 text-sm"><Clock size={16} className="text-gray-400"/> <strong>Horário:</strong> {proximaConsulta.hora || 'A definir'}</p>
+                        <p className="flex items-center gap-2 text-sm"><Users size={16} className="text-gray-400"/> <strong>Dentista:</strong> {proximaConsulta.dentista}</p>
+                        <p className="flex items-center gap-2 text-sm"><MapPin size={16} className="text-gray-400"/> <strong>Local:</strong> Consultório TdB</p></>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* MÓDULO DE HISTÓRICO / LINHA DO TEMPO */}
+              <div className="lg:col-span-5">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 h-full">
+                  <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2"><Activity size={20} className="text-[#8dc63f]"/> Histórico de Tratamento</h3>
+                  
+                  <div className="relative border-l-2 border-gray-100 ml-3 space-y-6">
+                    
+                    {/* Status Fixo de Cadastro - Mostra para todos */}
+                    <div className="relative pl-6">
+                      <div className="absolute w-5 h-5 bg-[#8dc63f] rounded-full -left-[11px] top-0.5 border-4 border-white shadow-sm flex items-center justify-center">
+                        <CheckCircle2 size={10} className="text-white" />
+                      </div>
+                      <p className="text-xs font-bold text-gray-400 mb-1">Início</p>
+                      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <h4 className="font-bold text-gray-700 text-sm">Cadastro Aprovado</h4>
+                        <p className="text-xs text-gray-500 mt-1">Sua conta foi ativada no sistema Turma do Bem.</p>
+                      </div>
+                    </div>
+
+                    {/* Mostra a triagem se o usuário clicou no botão preencher (fica dinâmico) */}
+                    {fichaEnviada && (
+                      <div className="relative pl-6 animate-fade-in">
+                        <div className="absolute w-5 h-5 bg-[#FF8C00] rounded-full -left-[11px] top-0.5 border-4 border-white shadow-sm"></div>
+                        <p className="text-xs font-bold text-gray-400 mb-1">Hoje</p>
+                        <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                          <h4 className="font-bold text-orange-800 text-sm">Triagem Realizada</h4>
+                          <p className="text-xs text-orange-600 mt-1">Dados enviados. Você já está na fila inteligente aguardando um dentista voluntário.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Histórico vindo do Banco de Dados */}
+                    {historicoPaciente.filter(h => h.status === 'Concluído').map((item, idx) => (
+                      <div key={idx} className="relative pl-6">
+                        <div className="absolute w-5 h-5 bg-blue-500 rounded-full -left-[11px] top-0.5 border-4 border-white shadow-sm"></div>
+                        <p className="text-xs font-bold text-gray-400 mb-1">{item.data}</p>
+                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                          <h4 className="font-bold text-blue-800 text-sm">{item.proc}</h4>
+                          <p className="text-xs text-blue-600 mt-1">Finalizado por {item.dentista}</p>
+                        </div>
+                      </div>
+                    ))}
+
+                  </div>
                 </div>
               </div>
             </div>

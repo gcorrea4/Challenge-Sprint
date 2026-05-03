@@ -1,45 +1,51 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock } from 'lucide-react';
-// Importing Map components
+import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign } from 'lucide-react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 
-// Define approximate coordinates for major São Paulo neighborhoods
-// In a real scenario, your API would return latitude/longitude, but we can map them here for the prototype
-// Define as coordenadas baseadas nas novas regiões de periferia/vulnerabilidade
 const SP_COORDINATES: Record<string, [number, number]> = {
   'Itaquera': [-23.5375, -46.4566],
   'Capão Redondo': [-23.6693, -46.7744],
   'Brasilândia': [-23.4568, -46.6853],
   'Heliópolis': [-23.6145, -46.5941],
   'Paraisópolis': [-23.6163, -46.7281],
-  'Osasco': [-23.5329, -46.7917],
   'Centro': [-23.5489, -46.6388],
+  'Osasco': [-23.5329, -46.7917],
+  'Tatuapé': [-23.5366, -46.5638],
+  'Morumbi': [-23.5956, -46.7196],
+  'Mooca': [-23.5601, -46.5985],
+  'Pinheiros': [-23.5615, -46.6975],
+  'Lapa': [-23.5244, -46.7028],
+  'Santana': [-23.5028, -46.6253],
+  'Ipiranga': [-23.5900, -46.6056],
+  'Butantã': [-23.5721, -46.7082],
+  'Vila Mariana': [-23.5898, -46.6335],
+  'Santo André': [-23.6666, -46.5322],
+  'Guarulhos': [-23.4628, -46.5333],
+  'Diadema': [-23.6815, -46.6205],
 };
-// Component to handle the heatmap layer
+
 function HeatmapLayer({ data }: { data: Record<string, number> }) {
   const map = useMap();
 
   useEffect(() => {
-    // Convert your API neighborhood data into Leaflet heat points
     const heatPoints = Object.entries(data)
-      .filter(([bairro]) => SP_COORDINATES[bairro]) // Only use known coordinates
+      .filter(([bairro]) => SP_COORDINATES[bairro]) 
       .map(([bairro, qtd]) => {
         const [lat, lng] = SP_COORDINATES[bairro];
-        // 1. TIREI a multiplicação (* 5) para não explodir a intensidade
-        return [lat, lng, qtd]; 
+        return [lat, lng, qtd * 3]; 
       });
 
     if (heatPoints.length > 0) {
-      // @ts-ignore - leaflet.heat types are sometimes tricky, ignore for prototype
+      // @ts-ignore
       const heat = L.heatLayer(heatPoints, {
-        radius: 25,       // 2. DIMINUÍ O RAIO das bolas (antes era 40)
-        blur: 18,         // 3. AJUSTEI O BLUR para a borda ficar mais suave
+        radius: 35,
+        blur: 20,
         maxZoom: 12,
-        max: 5,           // 4. LIMITE MÁXIMO: Diz que 5 pacientes já é o "vermelho máximo"
+        max: 5,
         gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1.0: 'red' }
       }).addTo(map);
 
@@ -86,6 +92,11 @@ export function AdminDashboard() {
 
   const handleLogout = () => { sessionStorage.clear(); navigate('/login'); };
 
+  // Cálculos simulados para o Relatório de Impacto com base no volume de usuários
+  const sorrisosTransformados = (statsAdmin.total_beneficiarios * 2) + 1450;
+  const horasDoadas = Math.round(sorrisosTransformados * 1.5);
+  const economiaGerada = (sorrisosTransformados * 250).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
   const renderSidebar = () => (
     <aside className="w-[260px] min-w-[260px] bg-white border-r border-gray-200 hidden md:flex flex-col sticky top-[65px] self-start h-[calc(100vh-65px)] z-10 shadow-sm">
       <div className="p-6 border-b border-gray-100 flex items-center gap-3">
@@ -110,56 +121,69 @@ export function AdminDashboard() {
           <p className="text-gray-500 mt-1">Visão geral da operação global da Turma do Bem.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform"><Users size={100} className="text-[#8dc63f]"/></div>
-            <div className="relative z-10">
-              <h3 className="text-gray-500 text-sm font-bold mb-2 uppercase tracking-widest">Jovens na Fila (Beneficiários)</h3>
-              <p className="text-6xl font-black text-gray-800">{statsAdmin.total_beneficiarios}</p>
+        {/* MÓDULO DE IMPACTO SOCIAL */}
+        <div className="mb-8">
+          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><TrendingUp size={22} className="text-[#FF8C00]"/> Relatório de Impacto (2026)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-br from-[#FF8C00] to-orange-600 p-6 rounded-2xl shadow-md text-white relative overflow-hidden group">
+              <Smile className="absolute -right-4 -bottom-4 text-white/20 group-hover:scale-110 transition-transform" size={100} />
+              <p className="text-orange-100 font-bold text-sm uppercase tracking-wider mb-1">Sorrisos Transformados</p>
+              <h4 className="text-4xl font-black">{sorrisosTransformados}</h4>
+              <p className="text-xs text-orange-200 mt-2">+12% este mês</p>
             </div>
-          </div>
-          
-          <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform"><Heart size={100} className="text-[#FF8C00]"/></div>
-            <div className="relative z-10">
-              <h3 className="text-gray-500 text-sm font-bold mb-2 uppercase tracking-widest">Dentistas Voluntários</h3>
-              <p className="text-6xl font-black text-gray-800">{statsAdmin.total_dentistas}</p>
+            <div className="bg-gradient-to-br from-[#8dc63f] to-green-600 p-6 rounded-2xl shadow-md text-white relative overflow-hidden group">
+              <Clock className="absolute -right-4 -bottom-4 text-white/20 group-hover:scale-110 transition-transform" size={100} />
+              <p className="text-green-100 font-bold text-sm uppercase tracking-wider mb-1">Horas Clínicas Doadas</p>
+              <h4 className="text-4xl font-black">{horasDoadas}h</h4>
+              <p className="text-xs text-green-200 mt-2">Pelos Dentistas Voluntários</p>
+            </div>
+            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm relative overflow-hidden group">
+              <DollarSign className="absolute -right-4 -bottom-4 text-gray-100 group-hover:scale-110 transition-transform" size={100} />
+              <p className="text-gray-500 font-bold text-sm uppercase tracking-wider mb-1">Economia Social Gerada</p>
+              <h4 className="text-3xl font-black text-[#FF8C00]">{economiaGerada}</h4>
+              <p className="text-xs text-gray-400 mt-2">Valor poupado pelas famílias</p>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+              <h3 className="text-gray-500 text-sm font-bold mb-1 uppercase tracking-widest">Jovens na Fila</h3>
+              <p className="text-5xl font-black text-gray-800">{statsAdmin.total_beneficiarios}</p>
+            </div>
+            <div className="p-4 bg-gray-50 rounded-xl"><Users size={40} className="text-[#8dc63f]"/></div>
+          </div>
           
-          {/* NEW HEATMAP SECTION */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+              <h3 className="text-gray-500 text-sm font-bold mb-1 uppercase tracking-widest">Dentistas Voluntários</h3>
+              <p className="text-5xl font-black text-gray-800">{statsAdmin.total_dentistas}</p>
+            </div>
+            <div className="p-4 bg-gray-50 rounded-xl"><Heart size={40} className="text-[#FF8C00]"/></div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100 h-full flex flex-col">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><MapPin size={24} className="text-[#FF8C00]"/> Mapa de Calor (Demandas)</h3>
             <div className="flex-1 w-full rounded-2xl overflow-hidden border border-gray-200" style={{ minHeight: '350px' }}>
-              <MapContainer 
-                center={[-23.5505, -46.6333]} // Center of São Paulo
-                zoom={11} 
-                style={{ height: '100%', width: '100%', zIndex: 0 }}
-              >
-                <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                />
-                {/* Render the Heatmap layer using the data from your API */}
+              <MapContainer center={[-23.5505, -46.6333]} zoom={11} style={{ height: '100%', width: '100%', zIndex: 0 }}>
+                <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" attribution='&copy; OpenStreetMap &copy; CARTO' />
                 <HeatmapLayer data={statsAdmin.por_cidade} />
               </MapContainer>
             </div>
-            <p className="text-xs text-gray-400 mt-4 text-center font-medium">As zonas mais vermelhas indicam maior concentração de jovens na fila de espera.</p>
+            <p className="text-xs text-gray-400 mt-4 text-center font-medium">Zonas quentes indicam maior concentração de jovens na fila.</p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100 h-full">
-            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><CalendarDays size={24} className="text-[#8dc63f]"/> Agenda da Rede (Global)</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><CalendarDays size={24} className="text-[#8dc63f]"/> Agenda da Rede</h3>
             <div className="space-y-4">
               {statsAdmin.ultimos_agendamentos && statsAdmin.ultimos_agendamentos.map((ag: AgendamentoAdmin, index: number) => (
-                <div key={index} className="p-5 rounded-2xl border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-orange-200 transition-colors flex flex-col gap-2 relative">
+                <div key={index} className="p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-orange-200 transition-colors flex flex-col gap-2">
                   <div className="flex justify-between items-start">
                     <p className="font-bold text-gray-800 text-lg">{ag.paciente}</p>
-                    <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-md ${ag.prioridade === 'Urgente' ? 'bg-red-100 text-red-600' : ag.prioridade === 'Alta' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>
-                      {ag.prioridade}
-                    </span>
+                    <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-md ${ag.prioridade === 'Urgente' ? 'bg-red-100 text-red-600' : ag.prioridade === 'Alta' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>{ag.prioridade}</span>
                   </div>
                   <p className="text-sm text-gray-500 font-medium">{ag.proc} com <strong className="text-gray-700">{ag.dentista}</strong></p>
                   <div className="flex flex-wrap items-center gap-3 mt-2">
@@ -169,18 +193,15 @@ export function AdminDashboard() {
                   </div>
                 </div>
               ))}
-              
               {(!statsAdmin.ultimos_agendamentos || statsAdmin.ultimos_agendamentos.length === 0) && (
                 <div className="flex flex-col items-center justify-center py-10 text-center border-2 border-dashed border-gray-200 rounded-2xl">
                   <CalendarDays size={40} className="text-gray-300 mb-3" />
                   <p className="text-gray-400 font-bold">Sem atendimentos previstos.</p>
-                  <p className="text-gray-400 text-sm">Os dentistas voluntários ainda não agendaram consultas.</p>
                 </div>
               )}
             </div>
           </div>
         </div>
-
       </main>
     </div>
   );

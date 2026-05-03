@@ -4,8 +4,18 @@ import {
   LayoutDashboard, Users, Calendar, LogOut,
   Search, MessageSquare, Send, User,
   MapPin, Phone, AlertCircle, Star, Target, Filter, Clock, CheckCircle2, X,
-  Heart
+  Heart, Activity // <-- Adicionado o ícone Activity aqui
 } from 'lucide-react';
+
+interface HistoricoConsulta {
+  id?: number;
+  titulo?: string;
+  status?: string;
+  data?: string;
+  hora?: string;
+  proc?: string;
+  dentista?: string;
+}
 
 interface Paciente {
   nome: string;
@@ -16,6 +26,7 @@ interface Paciente {
   renda: number;
   tempo_dor: number;
   telefone?: string;
+  historico?: HistoricoConsulta[]; // <-- Adicionado o histórico na interface do Paciente
 }
 
 interface Agendamento {
@@ -45,7 +56,8 @@ export function DentistaDashboard() {
 
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista";
   const userRole = sessionStorage.getItem("userRole");
-  const [bairroAtivo, setBairroAtivo] = useState(sessionStorage.getItem("dentistaBairro") || "Tatuapé");
+  
+  const [bairroAtivo, setBairroAtivo] = useState(sessionStorage.getItem("dentistaBairro") || "Capão Redondo");
 
   useEffect(() => {
     if (!sessionStorage.getItem("usuarioLogado") || (userRole !== "dentista" && userRole !== "dev")) {
@@ -111,6 +123,25 @@ export function DentistaDashboard() {
 
     setAgendamentos([...agendamentos, consultaMarcada]);
     alert(`Consulta agendada para ${fichaAtiva.nome} com sucesso!`);
+    
+    // Atualiza o "histórico" localmente para mostrar na timeline se o dentista abrir de novo
+    const pacienteAtualizado = { ...fichaAtiva };
+    if (!pacienteAtualizado.historico) pacienteAtualizado.historico = [];
+    
+    // Formata a data para padrão DD/MM/AAAA para o histórico
+    const dataParts = novoAgendamento.data.split('-');
+    const dataFormatada = dataParts.length === 3 ? `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}` : novoAgendamento.data;
+    
+    pacienteAtualizado.historico.push({
+      status: 'Agendado',
+      data: dataFormatada,
+      proc: novoAgendamento.tipo,
+      dentista: usuarioLogado
+    });
+    
+    // Atualiza a lista de meus pacientes com o novo histórico
+    setMeusPacientes(meusPacientes.map(p => p.nome === fichaAtiva.nome ? pacienteAtualizado : p));
+
     setFichaAtiva(null);
     setNovoAgendamento({ data: '', hora: '', tipo: 'Primeira Consulta - Avaliação' });
     setTelaAtiva('agenda');
@@ -175,12 +206,13 @@ export function DentistaDashboard() {
                     <Filter size={14} className="text-gray-400" />
                     <span className="text-xs font-bold text-gray-500 uppercase">Simular Bairro:</span>
                     <select value={bairroAtivo} onChange={(e) => setBairroAtivo(e.target.value)} className="bg-gray-50 border border-gray-200 text-sm rounded-lg px-2 py-1 text-[#FF8C00] font-bold outline-none cursor-pointer hover:border-[#FF8C00] transition-colors">
-                      <option value="Tatuapé">Tatuapé</option>
-                      <option value="Morumbi">Morumbi</option>
+                      <option value="Capão Redondo">Capão Redondo</option>
+                      <option value="Heliópolis">Heliópolis</option>
+                      <option value="Itaquera">Itaquera</option>
+                      <option value="Brasilândia">Brasilândia</option>
+                      <option value="Paraisópolis">Paraisópolis</option>
+                      <option value="Osasco">Osasco</option>
                       <option value="Centro">Centro</option>
-                      <option value="Mooca">Mooca</option>
-                      <option value="Pinheiros">Pinheiros</option>
-                      <option value="Santana">Santana</option>
                     </select>
                   </div>
                 ) : (
@@ -335,7 +367,7 @@ export function DentistaDashboard() {
                       onClick={() => setFichaAtiva(p)}
                       className="w-full bg-gray-50 text-[#FF8C00] border border-orange-200 py-2.5 rounded-xl font-bold text-sm hover:bg-orange-50 hover:border-[#FF8C00] flex items-center justify-center gap-2 transition-all"
                     >
-                      <Calendar size={16} /> Agendar Consulta
+                      <Calendar size={16} /> Ver Prontuário
                     </button>
                   </div>
                 ))}
@@ -456,22 +488,19 @@ export function DentistaDashboard() {
         </div>
       )}
 
+      {/* MODAL DE PRONTUÁRIO ATUALIZADO COM HISTÓRICO (TIMELINE) */}
       {fichaAtiva && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-scale-in">
+          <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-scale-in">
 
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2"><User size={20} className="text-[#FF8C00]" /> Ficha Clínica</h2>
-              <button onClick={() => setFichaAtiva(null)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><X size={20} /></button>
-            </div>
-
-            <div className="p-8">
+            {/* Coluna Esquerda: Agendar Consulta */}
+            <div className="p-8 md:w-1/2 overflow-y-auto bg-white border-r border-gray-100">
               <div className="flex justify-between items-center mb-6 pb-6 border-b border-dashed border-gray-200">
                 <div>
                   <h3 className="text-2xl font-black text-gray-800">{fichaAtiva.nome}</h3>
                   <p className="text-sm text-gray-500 flex items-center gap-2 mt-1"><MapPin size={14} /> {fichaAtiva.bairro} | <Phone size={14} /> {fichaAtiva.telefone || '(11) 90000-0000'}</p>
                 </div>
-                <div className="w-16 h-16 bg-orange-100 text-orange-500 rounded-2xl flex items-center justify-center font-black text-2xl border-2 border-orange-200">
+                <div className="w-12 h-12 bg-orange-100 text-orange-500 rounded-xl flex items-center justify-center font-black text-xl border-2 border-orange-200">
                   {fichaAtiva.idade}
                 </div>
               </div>
@@ -505,8 +534,43 @@ export function DentistaDashboard() {
                   Confirmar Agendamento
                 </button>
               </form>
+            </div>
+
+            {/* Coluna Direita: Histórico de Tratamento (Timeline) */}
+            <div className="p-8 md:w-1/2 overflow-y-auto bg-gray-50/50">
+              <div className="flex justify-between items-center mb-6">
+                 <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2"><Activity size={20} className="text-[#8dc63f]"/> Histórico de Tratamento</h3>
+                 <button onClick={() => setFichaAtiva(null)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><X size={20} /></button>
+              </div>
+
+              <div className="relative border-l-2 border-gray-200 ml-3 space-y-6">
+                {/* Mostra se o paciente tiver histórico */}
+                {fichaAtiva.historico && fichaAtiva.historico.length > 0 ? (
+                  fichaAtiva.historico.map((item, idx) => (
+                    <div key={idx} className="relative pl-6 animate-fade-in">
+                      <div className={`absolute w-5 h-5 rounded-full -left-[11px] top-0.5 border-4 border-white shadow-sm ${item.status === 'Agendado' ? 'bg-[#FF8C00]' : 'bg-blue-500'}`}></div>
+                      <p className="text-xs font-bold text-gray-400 mb-1">{item.data}</p>
+                      <div className={`p-4 rounded-xl border ${item.status === 'Agendado' ? 'bg-orange-50 border-orange-100' : 'bg-white border-gray-100 shadow-sm'}`}>
+                        <h4 className={`font-bold text-sm ${item.status === 'Agendado' ? 'text-orange-800' : 'text-gray-800'}`}>
+                          {item.proc} <span className="text-[10px] font-normal uppercase ml-2 text-gray-500">({item.status})</span>
+                        </h4>
+                        <p className={`text-xs mt-1 ${item.status === 'Agendado' ? 'text-orange-600' : 'text-gray-500'}`}>
+                          Responsável: Dr(a). {item.dentista}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-10">
+                    <Activity size={32} className="text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500 font-medium text-sm">Nenhum histórico de tratamento ainda.</p>
+                    <p className="text-gray-400 text-xs mt-1">O histórico aparecerá aqui quando você ou outros dentistas agendarem procedimentos.</p>
+                  </div>
+                )}
+              </div>
 
             </div>
+
           </div>
         </div>
       )}
