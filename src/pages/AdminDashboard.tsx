@@ -84,7 +84,7 @@ export function AdminDashboard() {
       navigate('/login');
       return;
     }
-    fetch('http://127.0.0.1:8000/admin/estatisticas')
+    fetch('http://localhost:5173/admin/estatisticas')
       .then(res => res.json())
       .then(data => setStatsAdmin(data))
       .catch(err => console.error("Erro stats:", err));

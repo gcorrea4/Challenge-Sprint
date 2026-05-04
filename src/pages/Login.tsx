@@ -25,7 +25,7 @@ export function Login() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/login', {
+      const response = await fetch('http://localhost:5173/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: data.email, senha: data.senha }),
@@ -116,9 +116,15 @@ export function Login() {
           </button>
         </form>
 
-        <div className="mt-[25px] text-center border-t border-[#E0E0E0] pt-[20px]">
-          <p className="text-[#666] text-[0.95rem]">Não tem uma conta? <Link to="/cadastro" className="text-[#FF8C00] font-bold no-underline hover:underline">Cadastre-se agora</Link></p>
+        <div className="mt-[25px] text-center border-t border-[#E0E0E0] pt-[20px] space-y-3">
+          <p className="text-[#666] text-[0.95rem]">
+            Não tem uma conta? <Link to="/cadastro" className="text-[#FF8C00] font-bold no-underline hover:underline">Cadastre-se agora</Link>
+          </p>
+          <p className="text-[#666] text-[0.95rem] bg-orange-50 py-2 rounded-lg border border-orange-100">
+            Deseja apoiar a causa? <Link to="/doador" className="text-[#FF8C00] font-black no-underline hover:underline">Seja um Doador</Link>
+          </p>
         </div>
+
       </div>
     </main>
   );

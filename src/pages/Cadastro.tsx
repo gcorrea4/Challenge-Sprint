@@ -46,7 +46,7 @@ export function Cadastro() {
     };
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/cadastrar-usuario', {
+      const response = await fetch('http://localhost:5173/cadastrar-usuario', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(novoUsuario),

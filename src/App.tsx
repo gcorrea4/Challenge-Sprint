@@ -16,6 +16,7 @@ import { PacienteDashboard } from './pages/PacienteDashboard';
 import { CalculadoraScore } from './pages/CalculadoraScore';
 import { FormularioContato } from './pages/FormularioContato';
 import { Prontuario } from './pages/Prontuario';
+import { Doador } from './pages/Doador';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
             <Route path='/Calculadura/Score' element={<CalculadoraScore /> } />
             <Route path='/FormularioContato' element={<FormularioContato /> } /> 
             <Route path='/Prontuario' element={<Prontuario /> } />
+            <Route path='/Doador' element={<Doador />} />
           </Routes>
         </div>
         <Footer />
