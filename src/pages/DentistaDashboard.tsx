@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Calendar, LogOut,
-  Search, MessageSquare, Send, User,
+  Search, MessageSquare, Send,
   MapPin, Phone, AlertCircle, Star, Target, Filter, Clock, CheckCircle2, X,
-  Heart, Activity // <-- Adicionado o ícone Activity aqui
+  Heart, Activity 
 } from 'lucide-react';
 
 interface HistoricoConsulta {
