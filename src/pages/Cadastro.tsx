@@ -53,7 +53,7 @@ export function Cadastro() {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/cadastrar-usuario', {
+      const response = await fetch('https://dentista-na-nuvem-production.up.railway.app/cadastrar-usuario', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(novoUsuario),

@@ -41,7 +41,7 @@ export function PacienteDashboard() {
       return;
     }
     
-    fetch(`http://localhost:8080/paciente/historico/${usuarioLogado}`)
+    fetch(`https://dentista-na-nuvem-production.up.railway.app/paciente/historico/${usuarioLogado}`)
       .then(res => {
         if (!res.ok) throw new Error("Erro 404");
         return res.json();

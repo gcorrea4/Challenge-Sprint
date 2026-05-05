@@ -84,7 +84,7 @@ export function AdminDashboard() {
       navigate('/login');
       return;
     }
-    fetch('http://localhost:8080/admin/estatisticas')
+    fetch('https://dentista-na-nuvem-production.up.railway.app/admin/estatisticas')
       .then(res => res.json())
       .then(data => setStatsAdmin(data))
       .catch(err => console.error("Erro stats:", err));

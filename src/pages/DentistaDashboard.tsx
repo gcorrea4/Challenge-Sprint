@@ -76,7 +76,7 @@ export function DentistaDashboard() {
       return;
     }
 
-    fetch(`http://localhost:8080/pacientes?bairro=${bairroAtivo}`)
+    fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes?bairro=${bairroAtivo}`)
       .then(res => res.json())
       .then(data => setPacientes(data))
       .catch(err => console.error("Erro ao buscar pacientes:", err));
@@ -91,7 +91,7 @@ export function DentistaDashboard() {
     if (!pergunta.trim()) return;
     setCarregandoIA(true);
     try {
-      const res = await fetch('http://localhost:8080/IA/consultar', {
+      const res = await fetch('https://dentista-na-nuvem-production.up.railway.app/IA/consultar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ texto: pergunta })
@@ -108,7 +108,7 @@ export function DentistaDashboard() {
 
   const adotarPaciente = async (paciente: Paciente) => {
     try {
-      await fetch(`http://localhost:8080/pacientes/${paciente.id}`, { method: 'DELETE' });
+      await fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes/${paciente.id}`, { method: 'DELETE' });
       setPacientes(pacientes.filter(p => p.nome !== paciente.nome));
       setMeusPacientes([...meusPacientes, paciente]);
       setPacienteSelecionado(null);
