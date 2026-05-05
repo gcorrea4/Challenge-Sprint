@@ -36,29 +36,35 @@ export function Cadastro() {
   };
 
   const onSubmit = async (data: CadastroFormData) => {
-    const novoUsuario = {
+    // Monta o objeto base
+    const novoUsuario: any = {
       nome: data.nome,
       email: data.email,
       senha: data.senha,
-      tipo_perfil: data.tipo,  
-      cpf: data.documento,
+      tipoPerfil: data.tipo,  // Alterado de tipo_perfil para tipoPerfil
       bairro: data.bairro
     };
 
+    // Separa logicamente o documento em CPF ou CRO dependendo do tipo
+    if (data.tipo === 'paciente') {
+      novoUsuario.cpf = data.documento;
+    } else if (data.tipo === 'dentista') {
+      novoUsuario.cro = data.documento;
+    }
+
     try {
-      const response = await fetch('http://127.0.0.1:8000/cadastrar-usuario', {
+      const response = await fetch('http://localhost:8080/cadastrar-usuario', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(novoUsuario),
       });
-
       if (response.ok) {
         setMensagem({ texto: "Registo realizado com sucesso! Redirecionando...", tipo: "sucesso" });
         setTimeout(() => navigate('/login'), 2000);
       } else {
         const erroData = await response.json();
         
-        let textoErro = "Erro ao realizar o registo.";
+        let textoErro = "Erro ao realizar o registro.";
         if (erroData.detail) {
           if (Array.isArray(erroData.detail)) {
             textoErro = "Verifique os campos preenchidos. Formato inválido.";

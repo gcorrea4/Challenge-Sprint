@@ -41,7 +41,7 @@ export function PacienteDashboard() {
       return;
     }
     
-    fetch(`http://127.0.0.1:8000/paciente/historico/${usuarioLogado}`)
+    fetch(`http://localhost:8080/paciente/historico/${usuarioLogado}`)
       .then(res => {
         if (!res.ok) throw new Error("Erro 404");
         return res.json();
