@@ -1,23 +1,24 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { User, Calendar, DollarSign, Activity, Clock, MapPin } from 'lucide-react';
 
+interface TriagemFormData {
+  nome: string;
+  idade: string;
+  renda: string;
+  tipoDor: string;
+  diasDor: string;
+  bairro: string;
+}
+
 export function Formulario() {
-  const [formData, setFormData] = useState({
-    nome: '',
-    idade: '',
-    renda: '',
-    tipoDor: 'Leve',
-    diasDor: '',
-    bairro: ''
+  const { register, handleSubmit, formState: { errors } } = useForm<TriagemFormData>({
+    defaultValues: {
+      tipoDor: 'leve' // valor padrão pro select
+    }
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Dados da Triagem:", formData);
+  const onSubmit = (data: TriagemFormData) => {
+    console.log("Dados da Triagem (React Hook Form):", data);
     alert("Triagem enviada com sucesso!");
   };
 
@@ -33,7 +34,7 @@ export function Formulario() {
         </div>
 
         {/* CORPO DO FORMULÁRIO */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-5">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             
@@ -46,14 +47,12 @@ export function Formulario() {
                 </div>
                 <input 
                   type="text" 
-                  name="nome"
-                  required
                   placeholder="Ex: João da Silva"
-                  value={formData.nome}
-                  onChange={handleChange}
+                  {...register("nome", { required: true })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
                 />
               </div>
+              {errors.nome && <span className="text-red-500 text-xs mt-1">Nome é obrigatório</span>}
             </div>
 
             {/* Idade */}
@@ -65,15 +64,13 @@ export function Formulario() {
                 </div>
                 <input 
                   type="number" 
-                  name="idade"
-                  required
                   min="0"
                   placeholder="Ex: 15"
-                  value={formData.idade}
-                  onChange={handleChange}
+                  {...register("idade", { required: true })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
                 />
               </div>
+              {errors.idade && <span className="text-red-500 text-xs mt-1">Idade é obrigatória</span>}
             </div>
 
             {/* Renda */}
@@ -85,16 +82,14 @@ export function Formulario() {
                 </div>
                 <input 
                   type="number" 
-                  name="renda"
-                  required
                   min="0"
                   step="0.1"
                   placeholder="Ex: 1.5"
-                  value={formData.renda}
-                  onChange={handleChange}
+                  {...register("renda", { required: true })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
                 />
               </div>
+              {errors.renda && <span className="text-red-500 text-xs mt-1">Renda é obrigatória</span>}
             </div>
 
             {/* Tipo de Dor */}
@@ -105,9 +100,7 @@ export function Formulario() {
                   <Activity size={16} className="text-[#FF8C00]" />
                 </div>
                 <select 
-                  name="tipoDor"
-                  value={formData.tipoDor}
-                  onChange={handleChange}
+                  {...register("tipoDor", { required: true })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors appearance-none cursor-pointer"
                 >
                   <option value="leve">Leve</option>
@@ -126,15 +119,13 @@ export function Formulario() {
                 </div>
                 <input 
                   type="number" 
-                  name="diasDor"
-                  required
                   min="0"
                   placeholder="Ex: 5"
-                  value={formData.diasDor}
-                  onChange={handleChange}
+                  {...register("diasDor", { required: true })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
                 />
               </div>
+              {errors.diasDor && <span className="text-red-500 text-xs mt-1">Obrigatório</span>}
             </div>
 
             {/* Bairro */}
@@ -146,14 +137,12 @@ export function Formulario() {
                 </div>
                 <input 
                   type="text" 
-                  name="bairro"
-                  required
                   placeholder="Ex: Tatuapé"
-                  value={formData.bairro}
-                  onChange={handleChange}
+                  {...register("bairro", { required: true })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
                 />
               </div>
+              {errors.bairro && <span className="text-red-500 text-xs mt-1">Bairro é obrigatório</span>}
             </div>
 
           </div>

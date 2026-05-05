@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import {
   LayoutDashboard, Users, Calendar, LogOut,
   Search, MessageSquare, Send,
@@ -26,12 +27,18 @@ interface Paciente {
   renda: number;
   tempo_dor: number;
   telefone?: string;
-  historico?: HistoricoConsulta[]; // <-- Adicionado o histórico na interface do Paciente
+  historico?: HistoricoConsulta[];
 }
 
 interface Agendamento {
   id: number;
   paciente: Paciente;
+  data: string;
+  hora: string;
+  tipo: string;
+}
+
+interface AgendamentoFormData {
   data: string;
   hora: string;
   tipo: string;
@@ -45,6 +52,7 @@ export function DentistaDashboard() {
   const [pergunta, setPergunta] = useState("");
   const [respostaIA, setRespostaIA] = useState("");
   const [carregandoIA, setCarregandoIA] = useState(false);
+  const [mensagem, setMensagem] = useState('');
 
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [meusPacientes, setMeusPacientes] = useState<Paciente[]>([]);
@@ -52,7 +60,9 @@ export function DentistaDashboard() {
   const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
   const [fichaAtiva, setFichaAtiva] = useState<Paciente | null>(null);
 
-  const [novoAgendamento, setNovoAgendamento] = useState({ data: '', hora: '', tipo: 'Primeira Consulta - Avaliação' });
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<AgendamentoFormData>({
+    defaultValues: { tipo: 'Primeira Consulta - Avaliação' }
+  });
 
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista";
   const userRole = sessionStorage.getItem("userRole");
@@ -65,7 +75,7 @@ export function DentistaDashboard() {
       return;
     }
 
-    fetch(`http://localhost:5173/pacientes?dentista_bairro=${bairroAtivo}`)
+    fetch(`http://127.0.0.1:8000/pacientes?dentista_bairro=${bairroAtivo}`)
       .then(res => res.json())
       .then(data => setPacientes(data))
       .catch(err => console.error("Erro ao buscar pacientes:", err));
@@ -80,7 +90,7 @@ export function DentistaDashboard() {
     if (!pergunta.trim()) return;
     setCarregandoIA(true);
     try {
-      const res = await fetch('http://localhost:5173/IA/consultar', {
+      const res = await fetch('http://127.0.0.1:8000/IA/consultar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ texto: pergunta })
@@ -96,54 +106,50 @@ export function DentistaDashboard() {
   };
 
   const adotarPaciente = async (paciente: Paciente) => {
-    if (window.confirm(`Deseja adotar ${paciente.nome}? Ele será movido para sua lista de pacientes.`)) {
-      try {
-        await fetch(`http://localhost:5173/paciente/${paciente.nome}`, { method: 'DELETE' });
-        setPacientes(pacientes.filter(p => p.nome !== paciente.nome));
-        setMeusPacientes([...meusPacientes, paciente]);
-        setPacienteSelecionado(null);
-        setTelaAtiva('pacientes');
-      } catch (err) {
-        console.error("Erro ao adotar:", err);
-      }
+    try {
+      await fetch(`http://127.0.0.1:8000/paciente/${paciente.nome}`, { method: 'DELETE' });
+      setPacientes(pacientes.filter(p => p.nome !== paciente.nome));
+      setMeusPacientes([...meusPacientes, paciente]);
+      setPacienteSelecionado(null);
+      setTelaAtiva('pacientes');
+    } catch (err) {
+      console.error("Erro ao adotar:", err);
     }
   };
 
-  const agendarConsulta = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!novoAgendamento.data || !novoAgendamento.hora || !fichaAtiva) return;
+  const onAgendarConsulta = (data: AgendamentoFormData) => {
+    if (!fichaAtiva) return;
 
     const consultaMarcada: Agendamento = {
       id: Date.now(),
       paciente: fichaAtiva,
-      data: novoAgendamento.data,
-      hora: novoAgendamento.hora,
-      tipo: novoAgendamento.tipo
+      data: data.data,
+      hora: data.hora,
+      tipo: data.tipo
     };
 
     setAgendamentos([...agendamentos, consultaMarcada]);
-    alert(`Consulta agendada para ${fichaAtiva.nome} com sucesso!`);
     
-    // Atualiza o "histórico" localmente para mostrar na timeline se o dentista abrir de novo
+    setMensagem(`Consulta agendada para ${fichaAtiva.nome} com sucesso!`);
+    setTimeout(() => setMensagem(''), 3000);
+    
     const pacienteAtualizado = { ...fichaAtiva };
     if (!pacienteAtualizado.historico) pacienteAtualizado.historico = [];
     
-    // Formata a data para padrão DD/MM/AAAA para o histórico
-    const dataParts = novoAgendamento.data.split('-');
-    const dataFormatada = dataParts.length === 3 ? `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}` : novoAgendamento.data;
+    const dataParts = data.data.split('-');
+    const dataFormatada = dataParts.length === 3 ? `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}` : data.data;
     
     pacienteAtualizado.historico.push({
       status: 'Agendado',
       data: dataFormatada,
-      proc: novoAgendamento.tipo,
+      proc: data.tipo,
       dentista: usuarioLogado
     });
     
-    // Atualiza a lista de meus pacientes com o novo histórico
     setMeusPacientes(meusPacientes.map(p => p.nome === fichaAtiva.nome ? pacienteAtualizado : p));
 
     setFichaAtiva(null);
-    setNovoAgendamento({ data: '', hora: '', tipo: 'Primeira Consulta - Avaliação' });
+    reset(); 
     setTelaAtiva('agenda');
   };
 
@@ -194,7 +200,13 @@ export function DentistaDashboard() {
         </div>
       </aside>
 
-      <main className="flex-1 p-6 md:p-8 max-w-[1400px] mx-auto w-full">
+      <main className="flex-1 p-6 md:p-8 max-w-[1400px] mx-auto w-full relative">
+
+        {mensagem && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] px-6 py-3 rounded-xl shadow-lg font-bold animate-fade-in flex items-center gap-2">
+            <CheckCircle2 size={20}/> {mensagem}
+          </div>
+        )}
 
         {telaAtiva === 'painel' && (
           <div className="animate-fade-in">
@@ -505,23 +517,23 @@ export function DentistaDashboard() {
                 </div>
               </div>
 
-              <form onSubmit={agendarConsulta} className="space-y-5">
+              <form onSubmit={handleSubmit(onAgendarConsulta)} className="space-y-5">
                 <h4 className="font-bold text-gray-800 flex items-center gap-2"><Calendar size={18} className="text-[#8dc63f]" /> Agendar Nova Consulta</h4>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Data</label>
-                    <input type="date" required value={novoAgendamento.data} onChange={(e) => setNovoAgendamento({ ...novoAgendamento, data: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]" />
+                    <input type="date" {...register("data", { required: true })} className={`w-full bg-gray-50 border ${errors.data ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]`} />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Horário</label>
-                    <input type="time" required value={novoAgendamento.hora} onChange={(e) => setNovoAgendamento({ ...novoAgendamento, hora: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]" />
+                    <input type="time" {...register("hora", { required: true })} className={`w-full bg-gray-50 border ${errors.hora ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]`} />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Procedimento Clínico</label>
-                  <select required value={novoAgendamento.tipo} onChange={(e) => setNovoAgendamento({ ...novoAgendamento, tipo: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00] appearance-none cursor-pointer">
+                  <select {...register("tipo", { required: true })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00] appearance-none cursor-pointer">
                     <option value="Primeira Consulta - Avaliação">Primeira Consulta - Avaliação</option>
                     <option value="Restauração (Cárie)">Restauração (Cárie)</option>
                     <option value="Limpeza (Profilaxia)">Limpeza (Profilaxia)</option>

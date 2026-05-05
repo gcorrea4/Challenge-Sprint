@@ -25,7 +25,7 @@ export function Login() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await fetch('http://localhost:5173/login', {
+      const response = await fetch('http://127.0.0.1:8000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: data.email, senha: data.senha }),
@@ -87,6 +87,7 @@ export function Login() {
               className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
               {...register("email", { required: true })}
             />
+            {errors.email && <span className="text-[#D8000C] text-xs mt-1">E-mail é obrigatório</span>}
           </div>
           
           <div className="flex flex-col mb-[20px] w-full">
@@ -96,6 +97,7 @@ export function Login() {
               className={`p-[14px_16px] border-[2px] ${errors.senha ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
               {...register("senha", { required: true })}
             />
+            {errors.senha && <span className="text-[#D8000C] text-xs mt-1">Senha é obrigatória</span>}
           </div>
 
           <div className="text-right mt-[-10px] mb-[25px]">
@@ -124,7 +126,6 @@ export function Login() {
             Deseja apoiar a causa? <Link to="/doador" className="text-[#FF8C00] font-black no-underline hover:underline">Seja um Doador</Link>
           </p>
         </div>
-
       </div>
     </main>
   );

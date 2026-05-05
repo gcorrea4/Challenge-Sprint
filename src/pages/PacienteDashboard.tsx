@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { LayoutDashboard, LogOut, Clock, FileText, CalendarDays, MapPin, Users, ClipboardList, Activity, CheckCircle2 } from 'lucide-react';
 
 interface HistoricoConsulta {
@@ -12,6 +13,14 @@ interface HistoricoConsulta {
   dentista?: string;
 }
 
+interface TriagemFormData {
+  idade: string;
+  renda: string;
+  tipoDor: string;
+  diasDor: string;
+  bairro: string;
+}
+
 export function PacienteDashboard() {
   const navigate = useNavigate();
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Paciente";
@@ -20,9 +29,10 @@ export function PacienteDashboard() {
   const [telaAtiva, setTelaAtiva] = useState<'painel' | 'triagem'>('painel');
   const [historicoPaciente, setHistoricoPaciente] = useState<HistoricoConsulta[]>([]);
   const [fichaEnviada, setFichaEnviada] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState('');
 
-  const [formData, setFormData] = useState({
-    idade: '', renda: '', tipoDor: 'leve', diasDor: '', bairro: ''
+  const { register, handleSubmit, formState: { errors } } = useForm<TriagemFormData>({
+    defaultValues: { tipoDor: 'leve' }
   });
 
   useEffect(() => {
@@ -31,7 +41,7 @@ export function PacienteDashboard() {
       return;
     }
     
-    fetch(`http://localhost:5173/paciente/historico/${usuarioLogado}`)
+    fetch(`http://127.0.0.1:8000/paciente/historico/${usuarioLogado}`)
       .then(res => {
         if (!res.ok) throw new Error("Erro 404");
         return res.json();
@@ -48,13 +58,14 @@ export function PacienteDashboard() {
     navigate('/login');
   };
 
-  const handleTriagemSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Enviando triagem de:", usuarioLogado, formData);
-    alert("Sua triagem foi enviada com sucesso! Você entrou na fila de prioridade.");
-    
+  const onTriagemSubmit = (data: TriagemFormData) => {
+    console.log("Enviando triagem de:", usuarioLogado, data);
     setFichaEnviada(true);
-    setTelaAtiva('painel'); 
+    setMensagemSucesso("Sua triagem foi enviada com sucesso! Você entrou na fila de prioridade.");
+    setTimeout(() => {
+      setMensagemSucesso('');
+      setTelaAtiva('painel');
+    }, 3000);
   };
 
   const renderSidebar = () => (
@@ -205,19 +216,27 @@ export function PacienteDashboard() {
               <p className="text-gray-500">Avalie sua dor para entrarmos em contato com o dentista mais próximo.</p>
             </div>
 
-            <form onSubmit={handleTriagemSubmit} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 space-y-5">
+            {mensagemSucesso && (
+              <div className="bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] p-4 rounded-lg mb-6 font-semibold text-center shadow-sm">
+                {mensagemSucesso}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit(onTriagemSubmit)} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Idade</label>
-                  <input type="number" required min="0" placeholder="Ex: 15" value={formData.idade} onChange={(e) => setFormData({...formData, idade: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none" />
+                  <input type="number" min="0" placeholder="Ex: 15" {...register("idade", { required: true })} className={`w-full px-4 py-2.5 bg-gray-50 border ${errors.idade ? 'border-red-500' : 'border-gray-300'} rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none`} />
+                  {errors.idade && <span className="text-red-500 text-xs mt-1">Campo obrigatório</span>}
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Renda (Salários)</label>
-                  <input type="number" required min="0" step="0.1" placeholder="Ex: 1.5" value={formData.renda} onChange={(e) => setFormData({...formData, renda: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none" />
+                  <input type="number" min="0" step="0.1" placeholder="Ex: 1.5" {...register("renda", { required: true })} className={`w-full px-4 py-2.5 bg-gray-50 border ${errors.renda ? 'border-red-500' : 'border-gray-300'} rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none`} />
+                  {errors.renda && <span className="text-red-500 text-xs mt-1">Campo obrigatório</span>}
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Tipo de Dor</label>
-                  <select value={formData.tipoDor} onChange={(e) => setFormData({...formData, tipoDor: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] outline-none">
+                  <select {...register("tipoDor", { required: true })} className={`w-full px-4 py-2.5 bg-gray-50 border ${errors.tipoDor ? 'border-red-500' : 'border-gray-300'} rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] outline-none`}>
                     <option value="leve">Leve</option>
                     <option value="forte">Forte</option>
                     <option value="dente quebrado">Dente Quebrado (Urgência)</option>
@@ -225,11 +244,13 @@ export function PacienteDashboard() {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Dias com Dor</label>
-                  <input type="number" required min="0" placeholder="Ex: 5" value={formData.diasDor} onChange={(e) => setFormData({...formData, diasDor: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none" />
+                  <input type="number" min="0" placeholder="Ex: 5" {...register("diasDor", { required: true })} className={`w-full px-4 py-2.5 bg-gray-50 border ${errors.diasDor ? 'border-red-500' : 'border-gray-300'} rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none`} />
+                  {errors.diasDor && <span className="text-red-500 text-xs mt-1">Campo obrigatório</span>}
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Bairro de Residência</label>
-                  <input type="text" required placeholder="Ex: Tatuapé" value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none" />
+                  <input type="text" placeholder="Ex: Tatuapé" {...register("bairro", { required: true })} className={`w-full px-4 py-2.5 bg-gray-50 border ${errors.bairro ? 'border-red-500' : 'border-gray-300'} rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none`} />
+                  {errors.bairro && <span className="text-red-500 text-xs mt-1">Campo obrigatório</span>}
                 </div>
               </div>
               <div className="pt-4">

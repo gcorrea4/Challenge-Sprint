@@ -1,24 +1,25 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Send, ArrowLeft, User, Mail, HelpCircle, MessageSquare } from 'lucide-react';
 
+interface ContatoFormData {
+  nome: string;
+  email: string;
+  assunto: string;
+  mensagem: string;
+}
+
 export function FormularioContato() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    nome: '',
-    email: '',
-    assunto: '',
-    mensagem: ''
+  const { register, handleSubmit, formState: { errors } } = useForm<ContatoFormData>({
+    defaultValues: {
+      assunto: ''
+    }
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Mensagem de Contacto Institucional:", formData);
-    alert("Mensagem enviada com sucesso! A nossa equipa entrará em contacto em breve.");
+  const onSubmit = (data: ContatoFormData) => {
+    console.log("Mensagem de Contato Institucional (React Hook Form):", data);
+    alert("Mensagem enviada com sucesso! A nossa equipe entrará em contato em breve.");
     navigate('/contato'); 
   };
 
@@ -46,7 +47,7 @@ export function FormularioContato() {
         </div>
 
         {/* FORMULÁRIO */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-5">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             
@@ -59,14 +60,12 @@ export function FormularioContato() {
                 </div>
                 <input 
                   type="text" 
-                  name="nome"
-                  required
                   placeholder="Ex: João da Silva"
-                  value={formData.nome}
-                  onChange={handleChange}
+                  {...register("nome", { required: true })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
                 />
               </div>
+              {errors.nome && <span className="text-red-500 text-xs mt-1">Nome é obrigatório</span>}
             </div>
 
             {/* E-mail */}
@@ -78,14 +77,12 @@ export function FormularioContato() {
                 </div>
                 <input 
                   type="email" 
-                  name="email"
-                  required
                   placeholder="exemplo@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
+                  {...register("email", { required: true, pattern: /^\S+@\S+$/i })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
                 />
               </div>
+              {errors.email && <span className="text-red-500 text-xs mt-1">E-mail inválido</span>}
             </div>
 
             {/* Assunto */}
@@ -96,10 +93,7 @@ export function FormularioContato() {
                   <HelpCircle size={16} className="text-[#FF8C00]" />
                 </div>
                 <select 
-                  name="assunto"
-                  required
-                  value={formData.assunto}
-                  onChange={handleChange}
+                  {...register("assunto", { required: true })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors appearance-none cursor-pointer"
                 >
                   <option value="" disabled>Selecione o motivo do contato...</option>
@@ -110,6 +104,7 @@ export function FormularioContato() {
                   <option value="Outros">Outros</option>
                 </select>
               </div>
+              {errors.assunto && <span className="text-red-500 text-xs mt-1">Assunto é obrigatório</span>}
             </div>
 
             {/* Mensagem */}
@@ -120,15 +115,13 @@ export function FormularioContato() {
                   <MessageSquare size={16} className="text-gray-400" />
                 </div>
                 <textarea 
-                  name="mensagem"
-                  required
                   rows={4}
                   placeholder="Escreva aqui a sua mensagem..."
-                  value={formData.mensagem}
-                  onChange={handleChange}
+                  {...register("mensagem", { required: true })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors resize-none"
                 />
               </div>
+              {errors.mensagem && <span className="text-red-500 text-xs mt-1">A mensagem não pode estar vazia</span>}
             </div>
 
           </div>
