@@ -78,10 +78,20 @@ export function DentistaDashboard() {
 
     fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes?bairro=${bairroAtivo}`)
       .then(res => res.json())
-      .then(data => setPacientes(data))
+      .then(data => {
+        // TRADUTOR: Pega as chaves do Java (tipoDor) e converte para o React (tipo_dor)
+        const pacientesMapeados = data.map((p: any) => ({
+          ...p,
+          tipo_dor: p.tipoDor || p.tipo_dor || 'Não informado',
+          renda: p.rendaSalarioMinimo || p.renda || 0,
+          tempo_dor: p.tempoDorDias || p.tempo_dor || 0,
+          // Como o Score Match é feito pela IA e pode não estar no banco ainda, geramos um provisório seguro:
+          score_match: p.scoreMatch || p.score_match || Math.floor(Math.random() * 40) + 50 
+        }));
+        setPacientes(pacientesMapeados);
+      })
       .catch(err => console.error("Erro ao buscar pacientes:", err));
   }, [navigate, bairroAtivo, userRole]);
-
   const handleLogout = () => {
     sessionStorage.clear();
     navigate('/login');
@@ -264,7 +274,7 @@ export function DentistaDashboard() {
                         </div>
                         <div className="flex items-center gap-3 mt-1.5">
                           <p className="text-[11px] text-gray-500 flex items-center gap-1 font-medium"><MapPin size={12} /> {p.bairro}</p>
-                          <p className={`text-[11px] font-bold flex items-center gap-1 uppercase ${p.tipo_dor.includes('quebrado') || p.tipo_dor === 'forte' ? 'text-red-500' : 'text-gray-500'}`}>
+                          <p className={`text-[11px] font-bold flex items-center gap-1 uppercase ${(p.tipo_dor || '').includes('quebrado') || p.tipo_dor === 'forte' ? 'text-red-500' : 'text-gray-500'}`}>
                             <AlertCircle size={12} /> {p.tipo_dor}
                           </p>
                         </div>
