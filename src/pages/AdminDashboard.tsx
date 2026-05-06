@@ -36,7 +36,11 @@ function HeatmapLayer({ data }: { data: Record<string, number> }) {
       .filter(([bairro]) => SP_COORDINATES[bairro]) 
       .map(([bairro, qtd]) => {
         const [lat, lng] = SP_COORDINATES[bairro];
-        return [lat, lng, qtd * 3]; 
+        
+        
+        const intensidade = qtd > 40 ? 5 : qtd > 20 ? 3 : 1;
+        
+        return [lat, lng, intensidade]; 
       });
 
     if (heatPoints.length > 0) {
