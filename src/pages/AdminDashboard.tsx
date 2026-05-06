@@ -5,7 +5,7 @@ import Map, { Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Coloque sua chave real do Mapbox aqui
-const MAPBOX_TOKEN = "pk.eyJ1IjoicGxheWVybmV0dCIsImEiOiJjbW90enJhdHgwNDZoMnRxeDA5bjB1a2VwIn0.xrjs5cHyhZGKGw-0d0iJsA";
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const SP_COORDINATES: Record<string, [number, number]> = {
   'Itaquera': [-23.5375, -46.4566],
