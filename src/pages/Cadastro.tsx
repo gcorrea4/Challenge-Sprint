@@ -104,6 +104,8 @@ export function Cadastro() {
               className={`p-[14px_16px] border-[2px] ${errors.nome ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
               {...register("nome", { required: true })}
             />
+            {/* ADICIONE ESTA LINHA ABAIXO DO INPUT */}
+            {errors.nome && <span className="text-[#D8000C] text-xs mt-1 font-semibold">O nome é obrigatório.</span>}
           </div>
           
           <div className="flex flex-col mb-[15px] w-full">
@@ -114,11 +116,14 @@ export function Cadastro() {
               className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
               {...register("email", { required: true })}
             />
+             
+            {errors.email && <span className="text-[#D8000C] text-xs mt-1 font-semibold">O E-mail é obrigatório.</span>}
           </div>
 
           <div className="flex flex-col mb-[15px] w-full">
             <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Tipo de Perfil</label>
             <select 
+            
               className="p-[14px_16px] border-[2px] border-[#E0E0E0] rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]"
               {...register("tipo", { required: true })}
             >
@@ -126,6 +131,7 @@ export function Cadastro() {
               <option value="paciente">Sou Beneficiado (Paciente)</option>
               <option value="dentista">Sou Dentista Voluntário</option>
             </select>
+            {errors.tipo && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Escolha seu tipo de Perfil.</span>}
           </div>
 
           {tipoPerfil && (
@@ -146,6 +152,7 @@ export function Cadastro() {
                   <option value="Osasco">Grande SP (Osasco / Carapicuíba)</option>
                   <option value="Centro">Centro (Luz / República)</option>
                 </select>
+                {errors.bairro && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Selecione a região!</span>}
              </div>
           )}
 
@@ -159,6 +166,7 @@ export function Cadastro() {
                 {...register("documento", { required: true, minLength: 14 })}
                 onChange={handleCPF}
               />
+              {errors.documento && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Digite seu CPF</span>}
             </div>
           )}
 
@@ -172,6 +180,7 @@ export function Cadastro() {
                   {...register("documento", { required: true })}
                   onChange={handleCRO}
                 />
+                {errors.documento && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Digite seu CRO</span>}
               </div>
           )}
 
@@ -183,6 +192,7 @@ export function Cadastro() {
                 className={`p-[14px_16px] border-[2px] ${errors.senha ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
                 {...register("senha", { required: true, minLength: 6 })}
               />
+              {errors.senha && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Digite sua senha!</span>}
             </div>
             <div className="flex flex-col mb-[15px] w-full">
               <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Confirmar Senha</label>
@@ -194,6 +204,7 @@ export function Cadastro() {
                   validate: value => value === senha || "As senhas não coincidem"
                 })}
               />
+              {errors.confirma && <span className="text-[#D8000C] text-xs mt-1 font-semibold">As senhas devem ser iguais.</span>}
             </div>
           </div>
 

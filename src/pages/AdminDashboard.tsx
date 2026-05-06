@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign } from 'lucide-react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import 'leaflet.heat';
+import Map, { Source, Layer } from 'react-map-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+// Coloque sua chave real do Mapbox aqui
+const MAPBOX_TOKEN = "pk.eyJ1IjoicGxheWVybmV0dCIsImEiOiJjbW90enJhdHgwNDZoMnRxeDA5bjB1a2VwIn0.xrjs5cHyhZGKGw-0d0iJsA";
 
 const SP_COORDINATES: Record<string, [number, number]> = {
   'Itaquera': [-23.5375, -46.4566],
@@ -27,39 +28,6 @@ const SP_COORDINATES: Record<string, [number, number]> = {
   'Guarulhos': [-23.4628, -46.5333],
   'Diadema': [-23.6815, -46.6205],
 };
-
-function HeatmapLayer({ data }: { data: Record<string, number> }) {
-  const map = useMap();
-
-  useEffect(() => {
-    const heatPoints = Object.entries(data || {})
-      .filter(([bairro]) => SP_COORDINATES[bairro]) 
-      .map(([bairro, qtd]) => {
-        const [lat, lng] = SP_COORDINATES[bairro];
-        
-        const intensidade = qtd > 40 ? 5 : qtd > 20 ? 3 : 1;
-        
-        return [lat, lng, intensidade]; 
-      });
-
-    if (heatPoints.length > 0) {
-      // @ts-ignore
-      const heat = L.heatLayer(heatPoints, {
-        radius: 35,
-        blur: 20,
-        maxZoom: 12,
-        max: 5,
-        gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1.0: 'red' }
-      }).addTo(map);
-
-      return () => {
-        map.removeLayer(heat);
-      };
-    }
-  }, [map, data]);
-
-  return null;
-}
 
 interface AgendamentoAdmin {
   paciente: string;
@@ -90,11 +58,10 @@ export function AdminDashboard() {
     
     fetch('https://dentista-na-nuvem-production.up.railway.app/admin/estatisticas')
       .then(res => {
-        if (!res.ok) throw new Error("Erro 500 do servidor"); // Força cair no catch se o Java falhar
+        if (!res.ok) throw new Error("Erro 500 do servidor"); 
         return res.json();
       })
       .then(data => {
-        // Se der sucesso, ainda garantimos que nada vem undefined
         setStatsAdmin({
           total_beneficiarios: data.total_beneficiarios || 0,
           total_dentistas: data.total_dentistas || 0,
@@ -103,35 +70,57 @@ export function AdminDashboard() {
         });
       })
       .catch(err => {
-        console.warn("Backend do Admin falhou. Injetando dados simulados para a apresentação!", err);
-        // O SALVADOR DA PÁTRIA: Dados Mockados para o vídeo ficar perfeito
+        console.error("Erro crítico: O Java não conseguiu acessar o Banco Oracle!", err);
+        // Se der erro, ele fica zerado (provando que é 100% real)
         setStatsAdmin({
-          total_beneficiarios: 247,
-          total_dentistas: 84,
-          por_cidade: {
-            'Capão Redondo': 45,
-            'Itaquera': 38,
-            'Heliópolis': 30,
-            'Brasilândia': 25,
-            'Paraisópolis': 22,
-            'Centro': 15,
-            'Osasco': 12
-          },
-          ultimos_agendamentos: [
-            { paciente: "Lucas Almeida", prioridade: "Urgente", proc: "Canal (Endodontia)", dentista: "Dra. Ana Silva", data: "10/05/2026", hora: "14:30", bairro: "Capão Redondo" },
-            { paciente: "Mariana Costa", prioridade: "Alta", proc: "Extração Simples", dentista: "Dr. Roberto", data: "11/05/2026", hora: "09:00", bairro: "Itaquera" },
-            { paciente: "Pedro Santos", prioridade: "Normal", proc: "Primeira Consulta", dentista: "Dra. Carla", data: "12/05/2026", hora: "11:15", bairro: "Heliópolis" }
-          ]
+          total_beneficiarios: 0,
+          total_dentistas: 0,
+          por_cidade: {},
+          ultimos_agendamentos: []
         });
       });
   }, [navigate]);
 
   const handleLogout = () => { sessionStorage.clear(); navigate('/login'); };
 
-  // Cálculos simulados para o Relatório de Impacto com base no volume de usuários
   const sorrisosTransformados = (statsAdmin.total_beneficiarios * 2) + 1450;
   const horasDoadas = Math.round(sorrisosTransformados * 1.5);
   const economiaGerada = (sorrisosTransformados * 250).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  // 1. DADOS GEOJSON
+  const geojsonData = {
+    type: 'FeatureCollection',
+    features: Object.entries(statsAdmin.por_cidade || {})
+      .filter(([bairro]) => SP_COORDINATES[bairro])
+      .map(([bairro, qtd]) => {
+        const [lat, lng] = SP_COORDINATES[bairro];
+        return {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [lng, lat] }, 
+          properties: { weight: qtd > 40 ? 5 : qtd > 20 ? 3 : 1 }
+        };
+      })
+  };
+
+  // 2. ESTILO DE CALOR MAPBOX
+  const heatmapLayerStyle = {
+    id: 'tdb-heatmap',
+    type: 'heatmap',
+    paint: {
+      'heatmap-weight': ['interpolate', ['linear'], ['get', 'weight'], 0, 0, 5, 1],
+      'heatmap-intensity': 1.5,
+      'heatmap-color': [
+        'interpolate', ['linear'], ['heatmap-density'],
+        0, 'rgba(0, 0, 255, 0)',
+        0.2, '#4338ca',
+        0.5, '#a855f7',
+        0.8, '#f97316',
+        1, '#ef4444'
+      ],
+      'heatmap-radius': 45,
+      'heatmap-opacity': 0.85
+    }
+  };
 
   const renderSidebar = () => (
     <aside className="w-[260px] min-w-[260px] bg-white border-r border-gray-200 hidden md:flex flex-col sticky top-[65px] self-start h-[calc(100vh-65px)] z-10 shadow-sm">
@@ -157,7 +146,6 @@ export function AdminDashboard() {
           <p className="text-gray-500 mt-1">Visão geral da operação global da Turma do Bem.</p>
         </div>
 
-        {/* MÓDULO DE IMPACTO SOCIAL */}
         <div className="mb-8">
           <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><TrendingUp size={22} className="text-[#FF8C00]"/> Relatório de Impacto (2026)</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -203,11 +191,20 @@ export function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100 h-full flex flex-col">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><MapPin size={24} className="text-[#FF8C00]"/> Mapa de Calor (Demandas)</h3>
-            <div className="flex-1 w-full rounded-2xl overflow-hidden border border-gray-200" style={{ minHeight: '350px' }}>
-              <MapContainer center={[-23.5505, -46.6333]} zoom={11} style={{ height: '100%', width: '100%', zIndex: 0 }}>
-                <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" attribution='&copy; OpenStreetMap &copy; CARTO' />
-                <HeatmapLayer data={statsAdmin.por_cidade} />
-              </MapContainer>
+            <div className="flex-1 w-full rounded-2xl overflow-hidden border border-gray-200 relative" style={{ minHeight: '350px' }}>
+              {/* @ts-ignore */}
+              <Map
+                initialViewState={{ longitude: -46.6333, latitude: -23.5505, zoom: 10 }}
+                style={{ width: '100%', height: '100%' }}
+                mapStyle="mapbox://styles/mapbox/dark-v11"
+                mapboxAccessToken={MAPBOX_TOKEN}
+              >
+                {/* @ts-ignore */}
+                <Source type="geojson" data={geojsonData}>
+                  {/* @ts-ignore */}
+                  <Layer {...heatmapLayerStyle} />
+                </Source>
+              </Map>
             </div>
             <p className="text-xs text-gray-400 mt-4 text-center font-medium">Zonas quentes indicam maior concentração de jovens na fila.</p>
           </div>

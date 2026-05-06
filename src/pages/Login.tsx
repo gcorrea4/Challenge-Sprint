@@ -87,7 +87,7 @@ export function Login() {
               className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
               {...register("email", { required: true })}
             />
-            {errors.email && <span className="text-[#D8000C] text-xs mt-1">E-mail é obrigatório</span>}
+            {errors.email && <span className="text-[#D8000C] text-xs mt-1 font-semibold">O E-mail é obrigatório.</span>}
           </div>
           
           <div className="flex flex-col mb-[20px] w-full">
@@ -97,7 +97,7 @@ export function Login() {
               className={`p-[14px_16px] border-[2px] ${errors.senha ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
               {...register("senha", { required: true })}
             />
-            {errors.senha && <span className="text-[#D8000C] text-xs mt-1">Senha é obrigatória</span>}
+            {errors.senha && <span className="text-[#D8000C] text-xs mt-1 font-semibold">A senha é obrigatória.</span>}
           </div>
 
           <div className="text-right mt-[-10px] mb-[25px]">

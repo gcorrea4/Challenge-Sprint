@@ -56,8 +56,27 @@ export function DentistaDashboard() {
   const [mensagem, setMensagem] = useState('');
 
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
-  const [meusPacientes, setMeusPacientes] = useState<Paciente[]>([]);
-  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  
+  // 1. SALVANDO E LENDO DA MEMÓRIA DO NAVEGADOR
+  const [meusPacientes, setMeusPacientes] = useState<Paciente[]>(() => {
+    const salvos = localStorage.getItem('tdb_meusPacientes');
+    return salvos ? JSON.parse(salvos) : [];
+  });
+
+  const [agendamentos, setAgendamentos] = useState<Agendamento[]>(() => {
+    const salvos = localStorage.getItem('tdb_agendamentos');
+    return salvos ? JSON.parse(salvos) : [];
+  });
+
+  // Atualiza o LocalStorage sempre que houver mudanças
+  useEffect(() => {
+    localStorage.setItem('tdb_meusPacientes', JSON.stringify(meusPacientes));
+  }, [meusPacientes]);
+
+  useEffect(() => {
+    localStorage.setItem('tdb_agendamentos', JSON.stringify(agendamentos));
+  }, [agendamentos]);
+
   const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
   const [fichaAtiva, setFichaAtiva] = useState<Paciente | null>(null);
 
@@ -70,6 +89,9 @@ export function DentistaDashboard() {
   
   const [bairroAtivo, setBairroAtivo] = useState(sessionStorage.getItem("dentistaBairro") || "Capão Redondo");
 
+  // Pega a data de hoje para bloquear agendamentos no passado
+  const dataHoje = new Date().toISOString().split('T')[0];
+
   useEffect(() => {
     if (!sessionStorage.getItem("usuarioLogado") || (userRole !== "dentista" && userRole !== "dev")) {
       navigate('/login');
@@ -79,19 +101,23 @@ export function DentistaDashboard() {
     fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes?bairro=${bairroAtivo}`)
       .then(res => res.json())
       .then(data => {
-        // TRADUTOR: Pega as chaves do Java (tipoDor) e converte para o React (tipo_dor)
         const pacientesMapeados = data.map((p: any) => ({
           ...p,
           tipo_dor: p.tipoDor || p.tipo_dor || 'Não informado',
           renda: p.rendaSalarioMinimo || p.renda || 0,
           tempo_dor: p.tempoDorDias || p.tempo_dor || 0,
-          // Como o Score Match é feito pela IA e pode não estar no banco ainda, geramos um provisório seguro:
           score_match: p.scoreMatch || p.score_match || Math.floor(Math.random() * 40) + 50 
         }));
-        setPacientes(pacientesMapeados);
+        
+        // Remove os pacientes que já foram adotados para não aparecerem duplicados
+        const adotadosNomes = meusPacientes.map(mp => mp.nome);
+        const filaLimpa = pacientesMapeados.filter((p: Paciente) => !adotadosNomes.includes(p.nome));
+        
+        setPacientes(filaLimpa);
       })
       .catch(err => console.error("Erro ao buscar pacientes:", err));
-  }, [navigate, bairroAtivo, userRole]);
+  }, [navigate, bairroAtivo, userRole, meusPacientes]);
+
   const handleLogout = () => {
     sessionStorage.clear();
     navigate('/login');
@@ -105,7 +131,6 @@ export function DentistaDashboard() {
       const res = await fetch('https://dentista-na-nuvem-production.up.railway.app/IA/consultar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // Mandamos a pergunta e os pacientes atuais para a IA ter contexto!
         body: JSON.stringify({ 
           texto: pergunta,
           fila_json: JSON.stringify(pacientesFiltrados) 
@@ -113,19 +138,15 @@ export function DentistaDashboard() {
       });
       
       const data = await res.json();
-      console.log("Resposta crua do Java/Gemini:", data); // <-- Isso vai te mostrar a mágica no F12!
+      console.log("Resposta crua do Java/Gemini:", data); 
       
       let textoFinal = "";
 
-      // Verifica de onde veio a resposta para não dar undefined
       if (data.candidates && data.candidates.length > 0) {
-        // Se veio do Gemini com sucesso
         textoFinal = data.candidates[0].content.parts[0].text;
       } else if (data.resposta) {
-        // Se veio do seu código antigo
         textoFinal = data.resposta;
       } else if (data.error) {
-        // Se o Java retornou algum erro
         textoFinal = "Erro do servidor: " + data.error;
       } else {
         textoFinal = "A IA processou, mas não retornou um formato legível.";
@@ -537,12 +558,11 @@ export function DentistaDashboard() {
         </div>
       )}
 
-      {/* MODAL DE PRONTUÁRIO ATUALIZADO COM HISTÓRICO (TIMELINE) */}
+      {/* MODAL DE PRONTUÁRIO ATUALIZADO COM HISTÓRICO (TIMELINE) E DATA MINIMA */}
       {fichaAtiva && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-scale-in">
 
-            {/* Coluna Esquerda: Agendar Consulta */}
             <div className="p-8 md:w-1/2 overflow-y-auto bg-white border-r border-gray-100">
               <div className="flex justify-between items-center mb-6 pb-6 border-b border-dashed border-gray-200">
                 <div>
@@ -560,7 +580,12 @@ export function DentistaDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Data</label>
-                    <input type="date" {...register("data", { required: true })} className={`w-full bg-gray-50 border ${errors.data ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]`} />
+                    <input 
+                      type="date" 
+                      min={dataHoje} 
+                      {...register("data", { required: true })} 
+                      className={`w-full bg-gray-50 border ${errors.data ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]`} 
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Horário</label>
@@ -585,7 +610,6 @@ export function DentistaDashboard() {
               </form>
             </div>
 
-            {/* Coluna Direita: Histórico de Tratamento (Timeline) */}
             <div className="p-8 md:w-1/2 overflow-y-auto bg-gray-50/50">
               <div className="flex justify-between items-center mb-6">
                  <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2"><Activity size={20} className="text-[#8dc63f]"/> Histórico de Tratamento</h3>
@@ -593,7 +617,6 @@ export function DentistaDashboard() {
               </div>
 
               <div className="relative border-l-2 border-gray-200 ml-3 space-y-6">
-                {/* Mostra se o paciente tiver histórico */}
                 {fichaAtiva.historico && fichaAtiva.historico.length > 0 ? (
                   fichaAtiva.historico.map((item, idx) => (
                     <div key={idx} className="relative pl-6 animate-fade-in">
