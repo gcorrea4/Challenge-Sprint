@@ -100,17 +100,43 @@ export function DentistaDashboard() {
   const enviarPerguntaIA = async () => {
     if (!pergunta.trim()) return;
     setCarregandoIA(true);
+    
     try {
       const res = await fetch('https://dentista-na-nuvem-production.up.railway.app/IA/consultar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texto: pergunta })
+        // Mandamos a pergunta e os pacientes atuais para a IA ter contexto!
+        body: JSON.stringify({ 
+          texto: pergunta,
+          fila_json: JSON.stringify(pacientesFiltrados) 
+        })
       });
+      
       const data = await res.json();
-      setRespostaIA(data.resposta);
+      console.log("Resposta crua do Java/Gemini:", data); // <-- Isso vai te mostrar a mágica no F12!
+      
+      let textoFinal = "";
+
+      // Verifica de onde veio a resposta para não dar undefined
+      if (data.candidates && data.candidates.length > 0) {
+        // Se veio do Gemini com sucesso
+        textoFinal = data.candidates[0].content.parts[0].text;
+      } else if (data.resposta) {
+        // Se veio do seu código antigo
+        textoFinal = data.resposta;
+      } else if (data.error) {
+        // Se o Java retornou algum erro
+        textoFinal = "Erro do servidor: " + data.error;
+      } else {
+        textoFinal = "A IA processou, mas não retornou um formato legível.";
+      }
+      
+      setRespostaIA(textoFinal);
       setPergunta("");
+
     } catch (err) {
-      setRespostaIA("Erro ao consultar assistente.");
+      console.error("Erro no fetch da IA:", err);
+      setRespostaIA("Desculpe, Doutor. Tive um erro de conexão ao consultar a IA.");
     } finally {
       setCarregandoIA(false);
     }
