@@ -101,14 +101,28 @@ export function DentistaDashboard() {
     fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes?bairro=${bairroAtivo}`)
       .then(res => res.json())
       .then(data => {
-        const pacientesMapeados = data.map((p: any) => ({
-          ...p,
-          tipo_dor: p.tipoDor || p.tipo_dor || 'Não informado',
-          renda: p.rendaSalarioMinimo || p.renda || 0,
-          tempo_dor: p.tempoDorDias || p.tempo_dor || 0,
-          score_match: p.scoreMatch || p.score_match || Math.floor(Math.random() * 40) + 50 
-        }));
-        
+        const pacientesMapeados = data.map((p: any) => {
+          // Calcula a idade com base na data de nascimento vinda do banco
+          let idadeCalculada = p.idade;
+          if (!idadeCalculada && p.dataNascimento) {
+            const nascimento = new Date(p.dataNascimento);
+            const hoje = new Date();
+            idadeCalculada = hoje.getFullYear() - nascimento.getFullYear();
+            const m = hoje.getMonth() - nascimento.getMonth();
+            if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+              idadeCalculada--;
+            }
+          }
+
+          return {
+            ...p,
+            idade: idadeCalculada || '?', // Se não tiver data, mostra ? para não ficar em branco
+            tipo_dor: p.tipoDor || p.tipo_dor || 'Não informado',
+            renda: p.rendaSalarioMinimo || p.renda || 0,
+            tempo_dor: p.tempoDorDias || p.tempo_dor || 0,
+            score_match: p.scoreMatch || p.score_match || Math.floor(Math.random() * 40) + 50 
+          };
+        });
         // Remove os pacientes que já foram adotados para não aparecerem duplicados
         const adotadosNomes = meusPacientes.map(mp => mp.nome);
         const filaLimpa = pacientesMapeados.filter((p: Paciente) => !adotadosNomes.includes(p.nome));
@@ -138,7 +152,6 @@ export function DentistaDashboard() {
       });
       
       const data = await res.json();
-      console.log("Resposta crua do Java/Gemini:", data); 
       
       let textoFinal = "";
 
@@ -172,6 +185,14 @@ export function DentistaDashboard() {
       setTelaAtiva('pacientes');
     } catch (err) {
       console.error("Erro ao adotar:", err);
+    }
+  };
+
+  // FUNÇÃO NOVA: Remover paciente adotado
+  const removerAdocao = (pacienteRemover: Paciente) => {
+    if(window.confirm(`Tem certeza que deseja cancelar a adoção de ${pacienteRemover.nome}? Ele será removido da sua lista e da agenda.`)) {
+      setMeusPacientes(meusPacientes.filter(p => p.nome !== pacienteRemover.nome));
+      setAgendamentos(agendamentos.filter(a => a.paciente.nome !== pacienteRemover.nome));
     }
   };
 
@@ -433,12 +454,22 @@ export function DentistaDashboard() {
                         <p className="text-sm text-gray-600 flex items-center gap-2"><MapPin size={14} className="text-gray-400" /> {p.bairro}</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => setFichaAtiva(p)}
-                      className="w-full bg-gray-50 text-[#FF8C00] border border-orange-200 py-2.5 rounded-xl font-bold text-sm hover:bg-orange-50 hover:border-[#FF8C00] flex items-center justify-center gap-2 transition-all"
-                    >
-                      <Calendar size={16} /> Ver Prontuário
-                    </button>
+                    {/* BOTÕES LADO A LADO AQUI */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setFichaAtiva(p)}
+                        className="flex-1 bg-gray-50 text-[#FF8C00] border border-orange-200 py-2.5 rounded-xl font-bold text-sm hover:bg-orange-50 hover:border-[#FF8C00] flex items-center justify-center gap-2 transition-all"
+                      >
+                        <Calendar size={16} /> Ver Prontuário
+                      </button>
+                      <button
+                        onClick={() => removerAdocao(p)}
+                        className="bg-red-50 text-red-500 border border-red-200 px-3 py-2.5 rounded-xl hover:bg-red-100 hover:text-red-600 transition-all flex items-center justify-center"
+                        title="Remover paciente"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

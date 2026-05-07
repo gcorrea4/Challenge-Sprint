@@ -109,16 +109,21 @@ export function Cadastro() {
           </div>
           
           <div className="flex flex-col mb-[15px] w-full">
-            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">E-mail (Login)</label>
-            <input 
-              type="email" 
-              placeholder="exemplo@email.com"
-              className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-              {...register("email", { required: true })}
-            />
-             
-            {errors.email && <span className="text-[#D8000C] text-xs mt-1 font-semibold">O E-mail é obrigatório.</span>}
-          </div>
+  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">E-mail (Login)</label>
+  <input 
+    type="email" 
+    placeholder="exemplo@email.com"
+    className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+    {...register("email", { 
+      required: "O E-mail é obrigatório.",
+      pattern: {
+        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: "E-mail em formato inválido."
+      }
+    })}
+  />
+  {errors.email && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.email.message}</span>}
+</div>
 
           <div className="flex flex-col mb-[15px] w-full">
             <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Tipo de Perfil</label>
@@ -171,17 +176,23 @@ export function Cadastro() {
           )}
 
           {tipoPerfil === 'dentista' && (
-             <div className="flex flex-col mb-[15px] w-full animate-fade-in">
-                <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CRO</label>
-                <input 
-                  type="text" 
-                  placeholder="Ex: 12345-SP"
-                  className={`p-[14px_16px] border-[2px] ${errors.documento ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-                  {...register("documento", { required: true })}
-                  onChange={handleCRO}
-                />
-                {errors.documento && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Digite seu CRO</span>}
-              </div>
+            <div className="flex flex-col mb-[15px] w-full animate-fade-in">
+  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CRO</label>
+  <input 
+    type="text" 
+    placeholder="Ex: 12345-SP"
+    className={`p-[14px_16px] border-[2px] ${errors.documento ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+    {...register("documento", { 
+      required: "Digite seu CRO",
+      pattern: {
+        value: /^\d{4,6}-[A-Z]{2}$/i,
+        message: "Formato inválido. Use Ex: 12345-SP"
+      }
+    })}
+    onChange={handleCRO}
+  />
+  {errors.documento && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.documento.message}</span>}
+</div>
           )}
 
           <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px]">
