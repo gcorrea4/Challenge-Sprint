@@ -7,26 +7,19 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 // Coloque sua chave real do Mapbox aqui
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-const SP_COORDINATES: Record<string, [number, number]> = {
-  'Itaquera': [-23.5375, -46.4566],
-  'Capão Redondo': [-23.6693, -46.7744],
-  'Brasilândia': [-23.4568, -46.6853],
-  'Heliópolis': [-23.6145, -46.5941],
-  'Paraisópolis': [-23.6163, -46.7281],
-  'Centro': [-23.5489, -46.6388],
-  'Osasco': [-23.5329, -46.7917],
-  'Tatuapé': [-23.5366, -46.5638],
-  'Morumbi': [-23.5956, -46.7196],
-  'Mooca': [-23.5601, -46.5985],
-  'Pinheiros': [-23.5615, -46.6975],
-  'Lapa': [-23.5244, -46.7028],
-  'Santana': [-23.5028, -46.6253],
-  'Ipiranga': [-23.5900, -46.6056],
-  'Butantã': [-23.5721, -46.7082],
-  'Vila Mariana': [-23.5898, -46.6335],
-  'Santo André': [-23.6666, -46.5322],
-  'Guarulhos': [-23.4628, -46.5333],
-  'Diadema': [-23.6815, -46.6205],
+const LATAM_COORDINATES: Record<string, [number, number]> = {
+  'São Paulo': [-23.5505, -46.6333],
+  'Rio de Janeiro': [-22.9068, -43.1729],
+  'Buenos Aires': [-34.6037, -58.3816],
+  'Bogotá': [4.7110, -74.0721],
+  'Lima': [-12.0464, -77.0428],
+  'Santiago': [-33.4489, -70.6693],
+  'Cidade do México': [19.4326, -99.1332],
+  'Assunção': [-25.2637, -57.5759],
+  'Montevidéu': [-34.9011, -56.1645],
+  'La Paz': [-16.4897, -68.1193],
+  'Quito': [-0.1807, -78.4678],
+  'Cidade do Panamá': [8.9824, -79.5199]
 };
 
 interface AgendamentoAdmin {
@@ -36,7 +29,7 @@ interface AgendamentoAdmin {
   dentista: string;
   data: string;
   hora: string;
-  bairro: string;
+  cidade: string; // <-- Trocado bairro por cidade
 }
 
 export function AdminDashboard() {
@@ -91,13 +84,13 @@ export function AdminDashboard() {
   const geojsonData = {
     type: 'FeatureCollection',
     features: Object.entries(statsAdmin.por_cidade || {})
-      .filter(([bairro]) => SP_COORDINATES[bairro])
-      .map(([bairro, qtd]) => {
-        const [lat, lng] = SP_COORDINATES[bairro];
+      .filter(([cidade]) => LATAM_COORDINATES[cidade])
+      .map(([cidade, qtd]) => {
+        const [lat, lng] = LATAM_COORDINATES[cidade];
         return {
           type: 'Feature',
           geometry: { type: 'Point', coordinates: [lng, lat] }, 
-          properties: { weight: qtd > 40 ? 5 : qtd > 20 ? 3 : 1 }
+          properties: { weight: (qtd as number) > 40 ? 5 : (qtd as number) > 20 ? 3 : 1 }
         };
       })
   };
@@ -194,7 +187,7 @@ export function AdminDashboard() {
             <div className="flex-1 w-full rounded-2xl overflow-hidden border border-gray-200 relative" style={{ minHeight: '350px' }}>
               {/* @ts-ignore */}
               <Map
-                initialViewState={{ longitude: -46.6333, latitude: -23.5505, zoom: 10 }}
+                initialViewState={{ longitude: -60.0000, latitude: -15.0000, zoom: 3.2 }}
                 style={{ width: '100%', height: '100%' }}
                 mapStyle="mapbox://styles/mapbox/dark-v11"
                 mapboxAccessToken={MAPBOX_TOKEN}
@@ -222,7 +215,7 @@ export function AdminDashboard() {
                   <div className="flex flex-wrap items-center gap-3 mt-2">
                     <span className="text-xs font-bold text-gray-600 flex items-center gap-1 bg-gray-50 px-2.5 py-1.5 rounded-lg"><CalendarDays size={14}/> {ag.data}</span>
                     <span className="text-xs font-bold text-[#FF8C00] flex items-center gap-1 bg-orange-50 px-2.5 py-1.5 rounded-lg"><Clock size={14}/> {ag.hora}</span>
-                    <span className="text-xs font-bold text-gray-600 flex items-center gap-1 bg-gray-50 px-2.5 py-1.5 rounded-lg"><MapPin size={14}/> {ag.bairro}</span>
+                    <span className="text-xs font-bold text-gray-600 flex items-center gap-1 bg-gray-50 px-2.5 py-1.5 rounded-lg"><MapPin size={14}/> {ag.cidade}</span>
                   </div>
                 </div>
               ))}

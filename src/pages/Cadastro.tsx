@@ -8,7 +8,8 @@ interface CadastroFormData {
   senha?: string;
   tipo?: string;
   documento?: string;
-  bairro?: string;
+  pais?: string;
+  cidade?: string;
   confirma?: string;
 }
 
@@ -42,7 +43,7 @@ export function Cadastro() {
       email: data.email,
       senha: data.senha,
       tipoPerfil: data.tipo,  // Alterado de tipo_perfil para tipoPerfil
-      bairro: data.bairro
+      cidade: data.cidade
     };
 
     // Separa logicamente o documento em CPF ou CRO dependendo do tipo
@@ -140,24 +141,39 @@ export function Cadastro() {
           </div>
 
           {tipoPerfil && (
-             <div className="flex flex-col mb-[15px] w-full animate-fade-in">
-                <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">
-                  {tipoPerfil === 'paciente' ? 'Escolha a região mais próxima da sua residência:' : 'Região de atendimento da sua Clínica:'}
-                </label>
-                <select 
-                  className={`p-[14px_16px] border-[2px] ${errors.bairro ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-                  {...register("bairro", { required: true })}
-                >
-                  <option value="">Selecione a região...</option>
-                  <option value="Capão Redondo">Zona Sul (Capão Redondo / Grajaú)</option>
-                  <option value="Heliópolis">Zona Sul (Heliópolis / Ipiranga)</option>
-                  <option value="Itaquera">Zona Leste (Itaquera / Guaianases)</option>
-                  <option value="Brasilândia">Zona Norte (Brasilândia / Cachoeirinha)</option>
-                  <option value="Paraisópolis">Zona Oeste (Paraisópolis / Campo Limpo)</option>
-                  <option value="Osasco">Grande SP (Osasco / Carapicuíba)</option>
-                  <option value="Centro">Centro (Luz / República)</option>
-                </select>
-                {errors.bairro && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Selecione a região!</span>}
+             <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px] mb-[15px] animate-fade-in">
+                <div className="flex flex-col w-full sm:w-1/2">
+                  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">
+                    País de Atuação
+                  </label>
+                  <select 
+                    className={`p-[14px_16px] border-[2px] ${errors.pais ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+                    {...register("pais", { required: true })}
+                  >
+                    <option value="">Selecione o País...</option>
+                    <option value="Brasil">Brasil</option>
+                    <option value="Argentina">Argentina</option>
+                    <option value="México">México</option>
+                    <option value="Colômbia">Colômbia</option>
+                    <option value="Peru">Peru</option>
+                    <option value="Chile">Chile</option>
+                    <option value="Panamá">Panamá</option>
+                  </select>
+                  {errors.pais && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Selecione o País!</span>}
+                </div>
+
+                <div className="flex flex-col w-full sm:w-1/2 mt-[15px] sm:mt-0">
+                  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">
+                    Cidade Principal
+                  </label>
+                  <input 
+                    type="text"
+                    placeholder="Ex: São Paulo, Bogotá..."
+                    className={`p-[14px_16px] border-[2px] ${errors.cidade ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+                    {...register("cidade", { required: true })}
+                  />
+                  {errors.cidade && <span className="text-[#D8000C] text-xs mt-1 font-semibold">A cidade é obrigatória!</span>}
+                </div>
              </div>
           )}
 

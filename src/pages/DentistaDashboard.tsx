@@ -22,7 +22,8 @@ interface Paciente {
   id: number;
   nome: string;
   idade: number;
-  bairro: string;
+  pais: string; // <-- Adicionado
+  cidade: string; // <-- Adicionado (substitui o bairro)
   tipo_dor: string;
   score_match: number;
   renda: number;
@@ -57,7 +58,6 @@ export function DentistaDashboard() {
 
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   
-  // 1. SALVANDO E LENDO DA MEMÓRIA DO NAVEGADOR
   const [meusPacientes, setMeusPacientes] = useState<Paciente[]>(() => {
     const salvos = localStorage.getItem('tdb_meusPacientes');
     return salvos ? JSON.parse(salvos) : [];
@@ -68,7 +68,6 @@ export function DentistaDashboard() {
     return salvos ? JSON.parse(salvos) : [];
   });
 
-  // Atualiza o LocalStorage sempre que houver mudanças
   useEffect(() => {
     localStorage.setItem('tdb_meusPacientes', JSON.stringify(meusPacientes));
   }, [meusPacientes]);
@@ -87,9 +86,9 @@ export function DentistaDashboard() {
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista";
   const userRole = sessionStorage.getItem("userRole");
   
-  const [bairroAtivo, setBairroAtivo] = useState(sessionStorage.getItem("dentistaBairro") || "Capão Redondo");
+  // Substituído de Bairro para Cidade
+  const [cidadeAtiva, setCidadeAtiva] = useState(sessionStorage.getItem("dentistaCidade") || "São Paulo");
 
-  // Pega a data de hoje para bloquear agendamentos no passado
   const dataHoje = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
@@ -98,11 +97,11 @@ export function DentistaDashboard() {
       return;
     }
 
-    fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes?bairro=${bairroAtivo}`)
+    // A API agora procura por cidade
+    fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes?cidade=${cidadeAtiva}`)
       .then(res => res.json())
       .then(data => {
         const pacientesMapeados = data.map((p: any) => {
-          // Calcula a idade com base na data de nascimento vinda do banco
           let idadeCalculada = p.idade;
           if (!idadeCalculada && p.dataNascimento) {
             const nascimento = new Date(p.dataNascimento);
@@ -116,21 +115,23 @@ export function DentistaDashboard() {
 
           return {
             ...p,
-            idade: idadeCalculada || '?', // Se não tiver data, mostra ? para não ficar em branco
+            idade: idadeCalculada || '?', 
             tipo_dor: p.tipoDor || p.tipo_dor || 'Não informado',
             renda: p.rendaSalarioMinimo || p.renda || 0,
             tempo_dor: p.tempoDorDias || p.tempo_dor || 0,
-            score_match: p.scoreMatch || p.score_match || Math.floor(Math.random() * 40) + 50 
+            score_match: p.scoreMatch || p.score_match || Math.floor(Math.random() * 40) + 50,
+            pais: p.pais || 'Não informado',
+            cidade: p.cidade || 'Não informado'
           };
         });
-        // Remove os pacientes que já foram adotados para não aparecerem duplicados
+        
         const adotadosNomes = meusPacientes.map(mp => mp.nome);
         const filaLimpa = pacientesMapeados.filter((p: Paciente) => !adotadosNomes.includes(p.nome));
         
         setPacientes(filaLimpa);
       })
       .catch(err => console.error("Erro ao buscar pacientes:", err));
-  }, [navigate, bairroAtivo, userRole, meusPacientes]);
+  }, [navigate, cidadeAtiva, userRole, meusPacientes]);
 
   const handleLogout = () => {
     sessionStorage.clear();
@@ -152,7 +153,6 @@ export function DentistaDashboard() {
       });
       
       const data = await res.json();
-      
       let textoFinal = "";
 
       if (data.candidates && data.candidates.length > 0) {
@@ -188,7 +188,6 @@ export function DentistaDashboard() {
     }
   };
 
-  // FUNÇÃO NOVA: Remover paciente adotado
   const removerAdocao = (pacienteRemover: Paciente) => {
     if(window.confirm(`Tem certeza que deseja cancelar a adoção de ${pacienteRemover.nome}? Ele será removido da sua lista e da agenda.`)) {
       setMeusPacientes(meusPacientes.filter(p => p.nome !== pacienteRemover.nome));
@@ -246,7 +245,6 @@ export function DentistaDashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#F5F5DC] font-sans pt-[65px] items-start">
-
       <aside className="w-[260px] min-w-[260px] bg-white border-r border-gray-200 hidden md:flex flex-col sticky top-[65px] self-start h-[calc(100vh-65px)] z-10 shadow-sm">
         <div className="p-6 border-b border-gray-100 flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FF8C00] flex items-center justify-center font-bold text-xl border border-orange-100">
@@ -280,7 +278,6 @@ export function DentistaDashboard() {
       </aside>
 
       <main className="flex-1 p-6 md:p-8 max-w-[1400px] mx-auto w-full relative">
-
         {mensagem && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] px-6 py-3 rounded-xl shadow-lg font-bold animate-fade-in flex items-center gap-2">
             <CheckCircle2 size={20}/> {mensagem}
@@ -295,19 +292,18 @@ export function DentistaDashboard() {
                 {userRole === 'dev' ? (
                   <div className="flex items-center gap-2 mt-2">
                     <Filter size={14} className="text-gray-400" />
-                    <span className="text-xs font-bold text-gray-500 uppercase">Simular Bairro:</span>
-                    <select value={bairroAtivo} onChange={(e) => setBairroAtivo(e.target.value)} className="bg-gray-50 border border-gray-200 text-sm rounded-lg px-2 py-1 text-[#FF8C00] font-bold outline-none cursor-pointer hover:border-[#FF8C00] transition-colors">
-                      <option value="Capão Redondo">Capão Redondo</option>
-                      <option value="Heliópolis">Heliópolis</option>
-                      <option value="Itaquera">Itaquera</option>
-                      <option value="Brasilândia">Brasilândia</option>
-                      <option value="Paraisópolis">Paraisópolis</option>
-                      <option value="Osasco">Osasco</option>
-                      <option value="Centro">Centro</option>
+                    <span className="text-xs font-bold text-gray-500 uppercase">Simular Localidade:</span>
+                    <select value={cidadeAtiva} onChange={(e) => setCidadeAtiva(e.target.value)} className="bg-gray-50 border border-gray-200 text-sm rounded-lg px-2 py-1 text-[#FF8C00] font-bold outline-none cursor-pointer hover:border-[#FF8C00] transition-colors">
+                      <option value="São Paulo">São Paulo (BR)</option>
+                      <option value="Rio de Janeiro">Rio de Janeiro (BR)</option>
+                      <option value="Bogotá">Bogotá (CO)</option>
+                      <option value="Buenos Aires">Buenos Aires (AR)</option>
+                      <option value="Cidade do México">Cidade do México (MX)</option>
+                      <option value="Santiago">Santiago (CL)</option>
                     </select>
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-sm mt-1">Bairro de Atuação: <span className="font-bold text-gray-700">{bairroAtivo}</span></p>
+                  <p className="text-gray-500 text-sm mt-1">Cidade de Atuação: <span className="font-bold text-gray-700">{cidadeAtiva}</span></p>
                 )}
               </div>
 
@@ -341,7 +337,7 @@ export function DentistaDashboard() {
                           <span className="bg-gray-50 text-gray-500 text-[10px] px-2 py-0.5 rounded-md font-semibold border border-gray-100">{p.idade} anos</span>
                         </div>
                         <div className="flex items-center gap-3 mt-1.5">
-                          <p className="text-[11px] text-gray-500 flex items-center gap-1 font-medium"><MapPin size={12} /> {p.bairro}</p>
+                          <p className="text-[11px] text-gray-500 flex items-center gap-1 font-medium"><MapPin size={12} /> {p.cidade}, {p.pais}</p>
                           <p className={`text-[11px] font-bold flex items-center gap-1 uppercase ${(p.tipo_dor || '').includes('quebrado') || p.tipo_dor === 'forte' ? 'text-red-500' : 'text-gray-500'}`}>
                             <AlertCircle size={12} /> {p.tipo_dor}
                           </p>
@@ -385,14 +381,14 @@ export function DentistaDashboard() {
 
                   <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-white">
                     <div className="self-start bg-gray-50 p-3.5 rounded-2xl rounded-tl-sm text-sm text-gray-600 border border-gray-100">
-                      Doutor, a fila já está priorizada para jovens em vulnerabilidade perto de <strong>{bairroAtivo}</strong>. Posso te ajudar a analisar algum caso?
+                      Doutor, a fila já está priorizada para jovens em vulnerabilidade perto de <strong>{cidadeAtiva}</strong>. Posso te ajudar a analisar algum caso?
                     </div>
                     {respostaIA && (
                       <div className="self-start bg-orange-50/50 p-3.5 rounded-2xl rounded-tl-sm text-sm text-gray-700 border border-orange-100 whitespace-pre-wrap">
                         {respostaIA}
                       </div>
                     )}
-                    {carregandoIA && <div className="text-xs text-gray-400 font-medium animate-pulse pl-2">Digitando...</div>}
+                    {carregandoIA && <div className="text-xs text-gray-400 font-medium animate-pulse pl-2">A pensar...</div>}
                   </div>
 
                   <div className="p-3 bg-white border-t border-gray-100 flex gap-2">
@@ -415,7 +411,7 @@ export function DentistaDashboard() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">Meus Pacientes Adotados</h2>
-                <p className="text-gray-500 text-sm">Jovens que você assumiu o tratamento até os 18 anos.</p>
+                <p className="text-gray-500 text-sm">Jovens que assumiu o tratamento até aos 18 anos.</p>
               </div>
             </div>
 
@@ -424,8 +420,8 @@ export function DentistaDashboard() {
                 <div className="bg-gray-50 p-6 rounded-full mb-6">
                   <Heart size={64} className="text-gray-300" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Você ainda não adotou pacientes</h3>
-                <p className="text-gray-500 max-w-md mx-auto">Acesse a Fila de Triagem, avalie um caso e clique em "Adotar Paciente" para iniciar o tratamento.</p>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Ainda não adotou pacientes</h3>
+                <p className="text-gray-500 max-w-md mx-auto">Aceda à Fila de Triagem, avalie um caso e clique em "Adotar Paciente" para iniciar o tratamento.</p>
                 <button onClick={() => setTelaAtiva('painel')} className="mt-8 bg-white text-[#FF8C00] border-2 border-[#FF8C00] px-6 py-2.5 rounded-xl font-bold hover:bg-[#FF8C00] hover:text-white transition-colors">
                   Ver Fila de Triagem
                 </button>
@@ -451,10 +447,9 @@ export function DentistaDashboard() {
                       </div>
                       <div className="space-y-2 mb-4">
                         <p className="text-sm text-gray-600 flex items-center gap-2"><Phone size={14} className="text-gray-400" /> {p.telefone || '(11) 90000-0000'}</p>
-                        <p className="text-sm text-gray-600 flex items-center gap-2"><MapPin size={14} className="text-gray-400" /> {p.bairro}</p>
+                        <p className="text-sm text-gray-600 flex items-center gap-2"><MapPin size={14} className="text-gray-400" /> {p.cidade}, {p.pais}</p>
                       </div>
                     </div>
-                    {/* BOTÕES LADO A LADO AQUI */}
                     <div className="flex gap-2">
                       <button
                         onClick={() => setFichaAtiva(p)}
@@ -484,7 +479,7 @@ export function DentistaDashboard() {
                 <Calendar size={24} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Minha Agenda Voluntária</h2>
+                <h2 className="text-2xl font-bold text-gray-800">A Minha Agenda Voluntária</h2>
                 <p className="text-gray-500 text-sm">Próximos agendamentos vinculados ao projeto Turma do Bem.</p>
               </div>
             </div>
@@ -494,14 +489,14 @@ export function DentistaDashboard() {
                 <div className="bg-gray-50 p-6 rounded-full mb-6">
                   <Clock size={64} className="text-gray-300" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Sua agenda está livre</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">A sua agenda está livre</h3>
                 <p className="text-gray-500 max-w-md mx-auto">
-                  Você ainda não possui consultas agendadas. Vá na aba "Meus Pacientes" para marcar um horário.
+                  Ainda não possui consultas agendadas. Vá ao separador "Meus Pacientes" para marcar um horário.
                 </p>
                 <button
                   onClick={() => {
                     if (meusPacientes.length === 0) {
-                      alert("Você precisa adotar um paciente na Triagem primeiro!");
+                      alert("Precisa de adotar um paciente na Triagem primeiro!");
                       setTelaAtiva('painel');
                     } else {
                       setTelaAtiva('pacientes');
@@ -538,7 +533,7 @@ export function DentistaDashboard() {
                           <p className="text-gray-500 text-sm">Paciente: {ag.paciente.nome}</p>
                           <div className="flex items-center gap-4 mt-3">
                             <span className="bg-orange-50 text-[#FF8C00] px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5"><Clock size={14} /> {ag.hora}</span>
-                            <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5"><MapPin size={14} /> Seu Consultório</span>
+                            <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5"><MapPin size={14} /> O seu Consultório</span>
                           </div>
                         </div>
                       </div>
@@ -572,9 +567,9 @@ export function DentistaDashboard() {
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-100"><p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Tempo Dor</p><p className="text-sm font-bold text-gray-700">{pacienteSelecionado.tempo_dor} dias</p></div>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-gray-200">
-                  <h4 className="text-gray-800 font-bold text-sm mb-2 flex items-center gap-2"><Phone size={14} className="text-gray-400" /> Contato e Local.</h4>
+                  <h4 className="text-gray-800 font-bold text-sm mb-2 flex items-center gap-2"><Phone size={14} className="text-gray-400" /> Contato e Localização</h4>
                   <p className="text-sm font-medium text-gray-600">{pacienteSelecionado.telefone || '(11) 90000-0000'}</p>
-                  <p className="text-sm font-medium text-gray-600 mt-1">{pacienteSelecionado.bairro}, São Paulo - SP</p>
+                  <p className="text-sm font-medium text-gray-600 mt-1">{pacienteSelecionado.cidade}, {pacienteSelecionado.pais}</p>
                 </div>
                 <button onClick={() => adotarPaciente(pacienteSelecionado)} className="w-full mt-4 bg-[#FF8C00] text-white font-bold py-3.5 rounded-xl hover:bg-[#E67E22] transition-colors shadow-md flex items-center justify-center gap-2">
                   <Target size={18} /> Adotar Paciente
@@ -583,13 +578,12 @@ export function DentistaDashboard() {
             </div>
             <div className="bg-gray-100 md:w-1/2 h-[300px] md:h-auto relative">
               <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 pointer-events-none"><p className="text-[10px] font-bold text-gray-500 uppercase">Geolocalização</p></div>
-              <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen src={`https://maps.google.com/maps?q=${encodeURIComponent(pacienteSelecionado.bairro + ", São Paulo, SP")}&t=&z=14&ie=UTF8&iwloc=&output=embed`} title="Mapa"></iframe>
+              <iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen src={`https://maps.google.com/maps?q=$${encodeURIComponent(pacienteSelecionado.cidade + ", " + pacienteSelecionado.pais)}&t=&z=14&ie=UTF8&iwloc=&output=embed`} title="Mapa"></iframe>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL DE PRONTUÁRIO ATUALIZADO COM HISTÓRICO (TIMELINE) E DATA MINIMA */}
       {fichaAtiva && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-scale-in">
@@ -598,7 +592,7 @@ export function DentistaDashboard() {
               <div className="flex justify-between items-center mb-6 pb-6 border-b border-dashed border-gray-200">
                 <div>
                   <h3 className="text-2xl font-black text-gray-800">{fichaAtiva.nome}</h3>
-                  <p className="text-sm text-gray-500 flex items-center gap-2 mt-1"><MapPin size={14} /> {fichaAtiva.bairro} | <Phone size={14} /> {fichaAtiva.telefone || '(11) 90000-0000'}</p>
+                  <p className="text-sm text-gray-500 flex items-center gap-2 mt-1"><MapPin size={14} /> {fichaAtiva.cidade}, {fichaAtiva.pais} | <Phone size={14} /> {fichaAtiva.telefone || '(11) 90000-0000'}</p>
                 </div>
                 <div className="w-12 h-12 bg-orange-100 text-orange-500 rounded-xl flex items-center justify-center font-black text-xl border-2 border-orange-200">
                   {fichaAtiva.idade}
@@ -667,7 +661,7 @@ export function DentistaDashboard() {
                   <div className="text-center py-10">
                     <Activity size={32} className="text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500 font-medium text-sm">Nenhum histórico de tratamento ainda.</p>
-                    <p className="text-gray-400 text-xs mt-1">O histórico aparecerá aqui quando você ou outros dentistas agendarem procedimentos.</p>
+                    <p className="text-gray-400 text-xs mt-1">O histórico aparecerá aqui quando for agendado algum procedimento.</p>
                   </div>
                 )}
               </div>
