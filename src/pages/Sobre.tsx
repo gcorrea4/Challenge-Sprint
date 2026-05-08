@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Calculator, Star, CheckCircle2 } from 'lucide-react';
 
 export function Sobre() {
@@ -23,138 +24,196 @@ export function Sobre() {
     setScore(pontos);
   }, [idade, renda, dor]);
 
+  // Arrays para facilitar a renderização e animação em cascata (stagger)
+  const tecnologias = [
+    { titulo: "Front-End", desc: "HTML, CSS e JavaScript para criar uma interface de utilizador interativa e amigável." },
+    { titulo: "Back-End", desc: "Java e Python para construir a lógica do servidor, processamento de dados e regras de negócio." },
+    { titulo: "Banco de Dados", desc: "Um sistema de banco de dados relacional para garantir a segurança e a integridade das informações." },
+    { titulo: "Inteligência Artificial", desc: "Um chatbot para a automação da triagem inicial." }
+  ];
+
+  const regrasMatch = [
+    { titulo: "Foco em Jovens (11-17 anos)", peso: "+40 Pontos" },
+    { titulo: "Baixa Renda Familiar", peso: "+30 Pontos" },
+    { titulo: "Gravidade da Dor e Clínica", peso: "+20 Pontos" },
+    { titulo: "Proximidade Geográfica", peso: "+10 Pontos" }
+  ];
+
   return (
-    <main className="bg-[#F5F5DC] min-h-screen font-sans py-[40px] px-[20px]">
+    <main className="bg-[#F5F5DC] min-h-screen font-sans py-[40px] px-[20px] overflow-hidden">
       
       <div className="max-w-[1100px] mx-auto">
         
-        <div className="text-center mb-[50px]">
+        {/* CABEÇALHO */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-[50px]"
+        >
           <h2 className="text-black text-[2rem] md:text-[2.5rem] font-bold mb-[10px] mt-[50px]">Sobre o Nosso Projeto</h2>
           <p className="text-[#555555] text-[1.1rem]">Conheça a essência da nossa solução para a Turma do Bem.</p>
-        </div>
+        </motion.div>
 
+        {/* SECÇÃO IDEIA / PROJETO */}
         <section className="flex flex-col md:flex-row gap-[30px] mb-[50px]">
-          <div className="bg-white p-[30px] rounded-[15px] shadow-[0_4px_15px_rgba(0,0,0,0.05)] flex-1 border-t-[5px] border-orange-500">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="bg-white p-[30px] rounded-[15px] shadow-[0_4px_15px_rgba(0,0,0,0.05)] flex-1 border-t-[5px] border-orange-500 transition-shadow duration-300 hover:shadow-[0_8px_30px_rgba(249,115,22,0.15)]"
+          >
             <h3 className="text-orange-500 text-[1.5rem] font-bold mb-[15px] mt-0">💡 A Ideia</h3>
             <p className="text-[#555555] leading-[1.6] text-justify m-0">
-              A ideia por trás deste projeto nasceu da observação de que o primeiro contato entre o paciente e o consultório odontológico pode ser demorado e repetitivo. Buscamos uma forma de agilizar essa etapa, garantindo que o dentista receba as informações essenciais do paciente de forma clara e organizada antes mesmo da primeira consulta, otimizando o tempo de todos e melhorando a qualidade do atendimento inicial.
+              A ideia por trás deste projeto nasceu da observação de que o primeiro contacto entre o paciente e o consultório odontológico pode ser demorado e repetitivo. Buscamos uma forma de agilizar essa etapa, garantindo que o dentista receba as informações essenciais do paciente de forma clara e organizada antes mesmo da primeira consulta, otimizando o tempo de todos e melhorando a qualidade do atendimento inicial.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white p-[30px] rounded-[15px] shadow-[0_4px_15px_rgba(0,0,0,0.05)] flex-1 border-t-[5px] border-orange-500">
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white p-[30px] rounded-[15px] shadow-[0_4px_15px_rgba(0,0,0,0.05)] flex-1 border-t-[5px] border-orange-500 transition-shadow duration-300 hover:shadow-[0_8px_30px_rgba(249,115,22,0.15)]"
+          >
             <h3 className="text-orange-500 text-[1.5rem] font-bold mb-[15px] mt-0">🚀 O Projeto</h3>
             <p className="text-[#555555] leading-[1.6] text-justify m-0">
-              Nosso projeto é um web app de gestão e triagem de pacientes. Através de um chatbot interativo, o sistema realiza o primeiro atendimento, coletando dados cadastrais e o histórico inicial do paciente. Essas informações são então processadas e armazenadas de forma segura, sendo apresentadas ao dentista em um painel de controle intuitivo, que facilita o acesso rápido a todo o histórico do cliente e otimiza o fluxo de trabalho da clínica.
+              Nosso projeto é um web app de gestão e triagem de pacientes. Através de um chatbot interativo, o sistema realiza o primeiro atendimento, coletando dados cadastrais e o histórico inicial do paciente. Essas informações são então processadas e armazenadas de forma segura, sendo apresentadas ao dentista num painel de controlo intuitivo, que facilita o acesso rápido a todo o histórico do cliente e otimiza o fluxo de trabalho da clínica.
             </p>
-          </div>
+          </motion.div>
         </section>
 
+        {/* TECNOLOGIAS UTILIZADAS */}
         <section className="mb-[60px]">
-          <h2 className="text-[#333333] text-[1.5rem] md:text-[2rem] font-bold mt-[60px] mb-[30px] border-b-[2px] border-orange-500 inline-block pb-[10px] relative left-1/2 -translate-x-1/2 text-center">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-[#333333] text-[1.5rem] md:text-[2rem] font-bold mt-[60px] mb-[30px] border-b-[2px] border-orange-500 inline-block pb-[10px] relative left-1/2 -translate-x-1/2 text-center"
+          >
             Tecnologias Utilizadas
-          </h2>
+          </motion.h2>
           
           <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-[20px]">
-            <div className="bg-white p-[20px] rounded-[10px] text-center border border-[#E0E0E0] transition-all duration-300 hover:-translate-y-[5px] hover:border-orange-500 hover:shadow-[0_10px_20px_rgba(255,165,0,0.15)]">
-              <h3 className="text-[#333333] font-bold mb-[10px] mt-0">Front-End</h3>
-              <p className="text-[#666666] text-[0.95rem] m-0">HTML, CSS e JavaScript para criar uma interface de usuário interativa e amigável.</p>
-            </div>
-            <div className="bg-white p-[20px] rounded-[10px] text-center border border-[#E0E0E0] transition-all duration-300 hover:-translate-y-[5px] hover:border-orange-500 hover:shadow-[0_10px_20px_rgba(255,165,0,0.15)]">
-              <h3 className="text-[#333333] font-bold mb-[10px] mt-0">Back-End</h3>
-              <p className="text-[#666666] text-[0.95rem] m-0">Java e Python para construir a lógica do servidor, processamento de dados e regras de negócio.</p>
-            </div>
-            <div className="bg-white p-[20px] rounded-[10px] text-center border border-[#E0E0E0] transition-all duration-300 hover:-translate-y-[5px] hover:border-orange-500 hover:shadow-[0_10px_20px_rgba(255,165,0,0.15)]">
-              <h3 className="text-[#333333] font-bold mb-[10px] mt-0">Banco de Dados</h3>
-              <p className="text-[#666666] text-[0.95rem] m-0">Um sistema de banco de dados relacional para garantir a segurança e a integridade das informações dos pacientes.</p>
-            </div>
-            <div className="bg-white p-[20px] rounded-[10px] text-center border border-[#E0E0E0] transition-all duration-300 hover:-translate-y-[5px] hover:border-orange-500 hover:shadow-[0_10px_20px_rgba(255,165,0,0.15)]">
-              <h3 className="text-[#333333] font-bold mb-[10px] mt-0">Inteligência Artificial</h3>
-              <p className="text-[#666666] text-[0.95rem] m-0">Um chatbot para a automação da triagem inicial.</p>
-            </div>
+            {tecnologias.map((tech, index) => (
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="bg-white p-[20px] rounded-[10px] text-center border border-[#E0E0E0] transition-all duration-300 hover:-translate-y-[5px] hover:border-orange-500 hover:shadow-[0_10px_20px_rgba(255,165,0,0.15)]"
+              >
+                <h3 className="text-[#333333] font-bold mb-[10px] mt-0">{tech.titulo}</h3>
+                <p className="text-[#666666] text-[0.95rem] m-0">{tech.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </section>
 
+        {/* ROADMAP / SPRINTS */}
         <section>
-          <h2 className="text-[#333333] text-[1.5rem] md:text-[2rem] font-bold mt-[60px] mb-[30px] border-b-[2px] border-orange-500 inline-block pb-[10px] relative left-1/2 -translate-x-1/2 text-center">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-[#333333] text-[1.5rem] md:text-[2rem] font-bold mt-[60px] mb-[30px] border-b-[2px] border-orange-500 inline-block pb-[10px] relative left-1/2 -translate-x-1/2 text-center"
+          >
             Nosso Roadmap
-          </h2>
+          </motion.h2>
           
           <div className="flex flex-col gap-[15px] max-w-[800px] mx-auto text-left">
-            <div className="bg-white p-[20px_25px] rounded-[10px] border-l-[5px] border-[#CCCCCC] shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
-              <span className="inline-block bg-[#333333] text-white px-[12px] py-[5px] rounded-[20px] text-[0.85rem] font-bold mb-[10px]">Sprint 1</span>
-              <p className="text-[#555555] m-0">Definição do escopo, planejamento, e desenvolvimento da estrutura base do front-end com as páginas estáticas.</p>
-            </div>
+            {[
+              { num: "1", desc: "Definição do escopo, planeamento, e desenvolvimento da estrutura base do front-end com as páginas estáticas." },
+              { num: "2", desc: "Foco no desenvolvimento do back-end, modelagem do banco de dados e criação das principais regras de negócio." },
+              { num: "3", desc: "Implementação do chatbot e início da integração entre o front-end e o back-end para a troca de dados." }
+            ].map((sprint, i) => (
+              <motion.div 
+                key={sprint.num}
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                className="bg-white p-[20px_25px] rounded-[10px] border-l-[5px] border-[#CCCCCC] shadow-[0_2px_10px_rgba(0,0,0,0.05)]"
+              >
+                <span className="inline-block bg-[#333333] text-white px-[12px] py-[5px] rounded-[20px] text-[0.85rem] font-bold mb-[10px]">Sprint {sprint.num}</span>
+                <p className="text-[#555555] m-0">{sprint.desc}</p>
+              </motion.div>
+            ))}
 
-            <div className="bg-white p-[20px_25px] rounded-[10px] border-l-[5px] border-[#CCCCCC] shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
-              <span className="inline-block bg-[#333333] text-white px-[12px] py-[5px] rounded-[20px] text-[0.85rem] font-bold mb-[10px]">Sprint 2</span>
-              <p className="text-[#555555] m-0">Foco no desenvolvimento do back-end, modelagem do banco de dados e criação das principais regras de negócio.</p>
-            </div>
-
-            <div className="bg-white p-[20px_25px] rounded-[10px] border-l-[5px] border-[#CCCCCC] shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
-              <span className="inline-block bg-[#333333] text-white px-[12px] py-[5px] rounded-[20px] text-[0.85rem] font-bold mb-[10px]">Sprint 3</span>
-              <p className="text-[#555555] m-0">Implementação do chatbot e início da integração entre o front-end e o back-end para a troca de dados.</p>
-            </div>
-
-            <div className="bg-orange-500/5 p-[20px_25px] rounded-[10px] border-l-[5px] border-orange-500 shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
+            {/* SPRINT ATUAL COM ANIMAÇÃO DE PULSO */}
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              animate={{ scale: [1, 1.015, 1] }}
+              transition={{ 
+                duration: 0.4, delay: 0.3, // Animação de entrada
+                scale: { repeat: Infinity, duration: 2, ease: "easeInOut" } // Animação contínua
+              }}
+              className="bg-orange-500/5 p-[20px_25px] rounded-[10px] border-l-[5px] border-orange-500 shadow-[0_2px_10px_rgba(0,0,0,0.05)]"
+            >
               <span className="inline-block bg-orange-500 text-white px-[12px] py-[5px] rounded-[20px] text-[0.85rem] font-bold mb-[10px]">Sprint 4 (Atual)</span>
               <p className="text-[#555555] m-0">Integração final de todas as tecnologias, fase de testes, refatoração de código e preparação da solução para a apresentação final.</p>
-            </div>
+            </motion.div>
           </div>
         </section>
-        <div className="text-center mb-[40px]">
+
+        {/* TECNOLOGIA DIFERENCIAL & SIMULADOR */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="text-center mb-[40px]"
+        >
           <h2 className="text-[#333333] text-[1.5rem] md:text-[2rem] font-bold mt-[60px] mb-[20px] border-b-[3px] border-orange-500 inline-block pb-[10px]">
-            Nossa tecnologia diferencial
+            A nossa tecnologia diferencial
           </h2>
-        </div>
+        </motion.div>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-[50px] items-center mb-[80px]">
           
-          
-          <div className="space-y-6 text-left">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="space-y-6 text-left"
+          >
             <p className="text-[#555555] text-[1.1rem] leading-relaxed">
-              Diferente de uma fila comum, nosso sistema utiliza um <strong>Algoritmo de Match Inteligente</strong> para calcular o Score de Impacto Social de cada caso. 
-              Priorizamos jovens entre 11 e 17 anos em situação de vulnerabilidade econômica, com quadros clínicos agudos e <strong>que residem próximos ao consultório voluntário</strong>.
+              Diferente de uma fila comum, o nosso sistema utiliza um <strong>Algoritmo de Match Inteligente</strong> para calcular o Score de Impacto Social de cada caso. 
+              Priorizamos jovens entre 11 e 17 anos em situação de vulnerabilidade económica, com quadros clínicos agudos e <strong>que residem próximos ao consultório voluntário</strong>.
             </p>
             
             <div className="space-y-5 mt-8">
-              <div className="flex items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="bg-orange-100 p-3 rounded-xl text-orange-500"><CheckCircle2 size={24}/></div>
-                <div>
-                  <p className="text-base font-bold text-gray-800 m-0">Foco em Jovens (11-17 anos)</p>
-                  <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider m-0 mt-1">Peso: +40 Pontos</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="bg-orange-100 p-3 rounded-xl text-orange-500"><CheckCircle2 size={24}/></div>
-                <div>
-                  <p className="text-base font-bold text-gray-800 m-0">Baixa Renda Familiar</p>
-                  <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider m-0 mt-1">Peso: +30 Pontos</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="bg-orange-100 p-3 rounded-xl text-orange-500"><CheckCircle2 size={24}/></div>
-                <div>
-                  <p className="text-base font-bold text-gray-800 m-0">Gravidade da Dor e Clínica</p>
-                  <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider m-0 mt-1">Peso: +20 Pontos</p>
-                </div>
-              </div>
-
-              
-              <div className="flex items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="bg-orange-100 p-3 rounded-xl text-orange-500"><CheckCircle2 size={24}/></div>
-                <div>
-                  <p className="text-base font-bold text-gray-800 m-0">Proximidade Geográfica (Geolocalização)</p>
-                  <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider m-0 mt-1">Peso: +10 Pontos</p>
-                </div>
-              </div>
-
+              {regrasMatch.map((regra, index) => (
+                <motion.div 
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 + (index * 0.1) }}
+                  className="flex items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                >
+                  <div className="bg-orange-100 p-3 rounded-xl text-orange-500"><CheckCircle2 size={24}/></div>
+                  <div>
+                    <p className="text-base font-bold text-gray-800 m-0">{regra.titulo}</p>
+                    <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider m-0 mt-1">Peso: {regra.peso}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </motion.div>
 
-          
-          <div className="bg-white p-8 rounded-[32px] shadow-xl border border-gray-100 relative overflow-hidden text-left">
+          {/* SIMULADOR */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="bg-white p-8 rounded-[32px] shadow-xl border border-gray-100 relative overflow-hidden text-left"
+          >
             <div className="absolute top-0 right-0 p-6 opacity-5"><Star size={100} className="text-orange-600"/></div>
             
             <div className="flex items-center gap-3 mb-8 relative z-10">
@@ -163,7 +222,6 @@ export function Sobre() {
             </div>
 
             <div className="space-y-8 relative z-10">
-            
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Idade do Paciente</label>
@@ -176,7 +234,6 @@ export function Sobre() {
                 />
               </div>
 
-             
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Renda (Salários Mínimos)</label>
@@ -189,7 +246,6 @@ export function Sobre() {
                 />
               </div>
 
-             
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Nível de Dor relatado</label>
                 <div className="grid grid-cols-3 gap-2">
@@ -210,7 +266,6 @@ export function Sobre() {
               </div>
             </div>
 
-            
             <div className="mt-12 pt-8 border-t border-dashed border-gray-200 text-center relative z-10">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Score de Prioridade</p>
               <div className="text-7xl font-black text-orange-500 drop-shadow-sm">{score}</div>
@@ -221,10 +276,14 @@ export function Sobre() {
                 ></div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </section>
 
-        <img 
+        <motion.img 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
           src="/fiap.jpeg" 
           alt="Logo FIAP" 
           className="w-full max-w-[500px] block mx-auto mt-[60px] mb-[20px] rounded-[10px]" 

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import {
   Phone,
@@ -12,7 +13,7 @@ import {
   Copy,
   Check,
   Send,
-  ExternalLink,
+  ExternalLink
 } from 'lucide-react';
 
 const ENDERECO = {
@@ -22,8 +23,9 @@ const ENDERECO = {
   cep: '04120-020',
 };
 
+// URL correta do iframe do Google Maps
 const MAPA_URL = `https://maps.google.com/maps?q=${encodeURIComponent(
-  ENDERECO.rua
+  ENDERECO.rua + ', ' + ENDERECO.cidade
 )}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 
 const CONTATOS = [
@@ -71,7 +73,6 @@ function BotaoCopiar({ texto }: { texto: string }) {
     </button>
   );
 } 
-
 
 interface AccordionProps {
   titulo: string;
@@ -133,11 +134,16 @@ export function Contato() {
   const [redesOpen, setRedesOpen] = useState(false);
 
   return (
-    <main className="bg-[#F5F5DC] min-h-screen font-sans pt-[80px] lg:pt-[120px]">
+    <main className="bg-[#F5F5DC] min-h-screen font-sans pt-[80px] lg:pt-[120px] overflow-x-hidden">
       <div className="flex flex-col md:flex-row items-start gap-10 lg:gap-20 max-w-[1200px] mx-auto my-12 px-5">
 
-        {/* ── Coluna esquerda ── */}
-        <div className="flex-1 w-full">
+        {/* ── Coluna esquerda (Acordeões) ── */}
+        <motion.div 
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex-1 w-full"
+        >
           <h2 className="text-[#333] text-2xl lg:text-[34px] font-bold mb-2 mt-0">
             Contatos da empresa
           </h2>
@@ -229,9 +235,15 @@ export function Contato() {
               ))}
             </div>
           </Accordion>
-        </div>
+        </motion.div>
 
-        <div className="flex-1 w-full">
+        {/* ── Coluna direita (Mapa) ── */}
+        <motion.div 
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex-1 w-full"
+        >
           <div className="sticky top-[140px]">
             <iframe
               src={MAPA_URL}
@@ -244,7 +256,7 @@ export function Contato() {
             />
 
             {/* Card de endereço abaixo do mapa */}
-            <div className="mt-4 bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-start gap-3">
+            <div className="mt-4 bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-start gap-3 transition-shadow duration-300 hover:shadow-md">
               <MapPin size={20} className="text-orange-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-[#333] m-0">{ENDERECO.rua}</p>
@@ -254,7 +266,7 @@ export function Contato() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
       </div>
     </main>
