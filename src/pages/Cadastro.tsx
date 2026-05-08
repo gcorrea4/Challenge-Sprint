@@ -21,136 +21,160 @@ export function Cadastro() {
   const senha = watch('senha');
   const tipoPerfil = watch('tipo'); 
 
+  // Máscara de CPF: 000.000.000-00
   const handleCPF = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, ""); 
     if (value.length > 11) value = value.slice(0, 11);
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
     value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    setValue("documento", value); 
+    setValue("documento", value, { shouldValidate: true }); 
   };
 
+  // Máscara de CRO: 12345-SP
   const handleCRO = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ""); 
-    if (value.length > 10) value = value.slice(0, 10);
-    setValue("documento", value);
+    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (value.length > 8) value = value.slice(0, 8);
+    // Formata como 12345-SP (5 números, hífen, 2 letras)
+    if (value.length > 5) {
+      value = value.slice(0, 5) + "-" + value.slice(5, 7);
+    }
+    setValue("documento", value, { shouldValidate: true }); 
   };
 
   const onSubmit = async (data: CadastroFormData) => {
-    // Monta o objeto base
-    const novoUsuario: any = {
-      nome: data.nome,
-      email: data.email,
-      senha: data.senha,
-      tipoPerfil: data.tipo,  // Alterado de tipo_perfil para tipoPerfil
-      cidade: data.cidade
-    };
-
-    // Separa logicamente o documento em CPF ou CRO dependendo do tipo
-    if (data.tipo === 'paciente') {
-      novoUsuario.cpf = data.documento;
-    } else if (data.tipo === 'dentista') {
-      novoUsuario.cro = data.documento;
-    }
-
+    setMensagem({ texto: 'A processar o seu registo...', tipo: 'sucesso' });
+    
     try {
-      const response = await fetch('https://dentista-na-nuvem-production.up.railway.app/cadastrar-usuario', {
+      const url = data.tipo === 'paciente' 
+        ? 'https://dentista-na-nuvem-production.up.railway.app/pacientes'
+        : 'https://dentista-na-nuvem-production.up.railway.app/dentistas';
+
+      const payload = data.tipo === 'paciente' ? {
+        nome: data.nome,
+        email: data.email,
+        senha: data.senha,
+        cpf: data.documento,
+        tipo: data.tipo,
+        pais: data.pais,
+        cidade: data.cidade
+      } : {
+        nome: data.nome,
+        email: data.email,
+        senha: data.senha,
+        cro: data.documento,
+        tipo: data.tipo,
+        pais: data.pais,
+        cidade: data.cidade
+      };
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(novoUsuario),
+        body: JSON.stringify(payload),
       });
+
       if (response.ok) {
-        setMensagem({ texto: "Registo realizado com sucesso! Redirecionando...", tipo: "sucesso" });
-        setTimeout(() => navigate('/login'), 2000);
+        setMensagem({ texto: 'Registo concluído com sucesso! A redirecionar...', tipo: 'sucesso' });
+        setTimeout(() => navigate('/login'), 2500);
       } else {
-        const erroData = await response.json();
-        
-        let textoErro = "Erro ao realizar o registro.";
-        if (erroData.detail) {
-          if (Array.isArray(erroData.detail)) {
-            textoErro = "Verifique os campos preenchidos. Formato inválido.";
-          } else if (typeof erroData.detail === 'string') {
-            textoErro = erroData.detail;
-          }
-        }
-        
-        setMensagem({ texto: textoErro, tipo: "erro" });
+        const errorData = await response.json().catch(() => null);
+        setMensagem({ texto: errorData?.erro || 'Erro ao realizar o registo. Verifique os dados.', tipo: 'erro' });
       }
     } catch (error) {
-      setMensagem({ texto: "Erro ao conectar com o Servidor! Verifique a API.", tipo: "erro" });
+      console.error(error);
+      setMensagem({ texto: 'Erro de conexão. O servidor pode estar offline.', tipo: 'erro' });
     }
   };
-  
+
   return (
-    <main className="bg-[#F5F5DC] min-h-screen flex justify-center items-center py-[120px] px-[20px]">
-      <div className="bg-white w-full max-w-[500px] p-[30px] sm:p-[40px] rounded-[16px] shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-black/5">
-        
+    <div className="flex items-center justify-center min-h-screen bg-[#F5F5DC] p-[20px] pt-[85px] font-sans">
+      <div className="bg-white p-[40px] rounded-[20px] shadow-lg max-w-[600px] w-full relative">
         <div className="text-center mb-[30px]">
-          <h2 className="text-[#333] text-[2rem] m-[0_0_10px_0] font-bold">Crie sua Conta</h2>
-          <p className="text-[#666] m-0 text-[0.95rem]">Faça parte da nossa rede e ajude a transformar sorrisos.</p>
+          <h2 className="text-[2rem] text-[#FF8C00] font-black tracking-[1px] mb-[10px]">Crie a sua Conta</h2>
+          <p className="text-[#666] text-[1rem]">Junte-se à Turma do Bem e faça a diferença!</p>
         </div>
 
         {mensagem.texto && (
-          <div className={`p-[15px] rounded-[8px] mb-[20px] font-semibold text-center text-[0.95rem] ${mensagem.tipo === 'erro' ? 'bg-[#FFEFEF] text-[#D8000C] border border-[#FFD2D2]' : 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'}`}>
+          <div className={`p-[15px] mb-[20px] rounded-[8px] font-bold text-center animate-fade-in ${mensagem.tipo === 'sucesso' ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]' : 'bg-[#ffebee] text-[#c62828] border border-[#ffcdd2]'}`}>
             {mensagem.texto}
           </div>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Nome */}
           <div className="flex flex-col mb-[15px] w-full">
             <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Nome Completo</label>
             <input 
               type="text" 
-              placeholder="Digite seu nome"
+              placeholder="Ex: João da Silva"
               className={`p-[14px_16px] border-[2px] ${errors.nome ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-              {...register("nome", { required: true })}
+              {...register("nome", { required: "O nome é obrigatório" })}
             />
-            {/* ADICIONE ESTA LINHA ABAIXO DO INPUT */}
-            {errors.nome && <span className="text-[#D8000C] text-xs mt-1 font-semibold">O nome é obrigatório.</span>}
-          </div>
-          
-          <div className="flex flex-col mb-[15px] w-full">
-  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">E-mail (Login)</label>
-  <input 
-    type="email" 
-    placeholder="exemplo@email.com"
-    className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-    {...register("email", { 
-      required: "O E-mail é obrigatório.",
-      pattern: {
-        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        message: "E-mail em formato inválido."
-      }
-    })}
-  />
-  {errors.email && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.email.message}</span>}
-</div>
-
-          <div className="flex flex-col mb-[15px] w-full">
-            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Tipo de Perfil</label>
-            <select 
-            
-              className="p-[14px_16px] border-[2px] border-[#E0E0E0] rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]"
-              {...register("tipo", { required: true })}
-            >
-              <option value="">Selecione...</option>
-              <option value="paciente">Sou Beneficiado (Paciente)</option>
-              <option value="dentista">Sou Dentista Voluntário</option>
-            </select>
-            {errors.tipo && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Escolha seu tipo de Perfil.</span>}
+            {errors.nome && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.nome.message}</span>}
           </div>
 
+          <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px] mb-[15px]">
+            {/* Perfil */}
+            <div className="flex flex-col w-full sm:w-1/2">
+              <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Eu sou...</label>
+              <select 
+                className={`p-[14px_16px] border-[2px] ${errors.tipo ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+                {...register("tipo", { required: "Selecione o perfil" })}
+              >
+                <option value="">Selecione...</option>
+                <option value="paciente">Beneficiário (Paciente)</option>
+                <option value="dentista">Dentista Voluntário</option>
+              </select>
+              {errors.tipo && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.tipo.message}</span>}
+            </div>
+
+            {/* Documento Dinâmico (CPF ou CRO) */}
+            {tipoPerfil === 'paciente' && (
+               <div className="flex flex-col w-full sm:w-1/2 mt-[15px] sm:mt-0 animate-fade-in">
+                  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CPF</label>
+                  <input 
+                    type="text" 
+                    placeholder="123.456.789-00"
+                    className={`p-[14px_16px] border-[2px] ${errors.documento ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+                    {...register("documento", { 
+                      required: "O CPF é obrigatório",
+                      pattern: { value: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/, message: "CPF incompleto" },
+                      onChange: handleCPF 
+                    })}
+                  />
+                  {errors.documento && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.documento.message}</span>}
+               </div>
+            )}
+
+            {tipoPerfil === 'dentista' && (
+               <div className="flex flex-col w-full sm:w-1/2 mt-[15px] sm:mt-0 animate-fade-in">
+                  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CRO</label>
+                  <input 
+                    type="text" 
+                    placeholder="12345-SP"
+                    className={`p-[14px_16px] border-[2px] ${errors.documento ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+                    {...register("documento", { 
+                      required: "O CRO é obrigatório",
+                      pattern: { value: /^\d{5}-[A-Z]{2}$/, message: "Formato: 12345-UF" },
+                      onChange: handleCRO 
+                    })}
+                  />
+                  {errors.documento && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.documento.message}</span>}
+               </div>
+            )}
+          </div>
+
+          {/* País e Cidade */}
           {tipoPerfil && (
              <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px] mb-[15px] animate-fade-in">
                 <div className="flex flex-col w-full sm:w-1/2">
-                  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">
-                    País de Atuação
-                  </label>
+                  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">País</label>
                   <select 
                     className={`p-[14px_16px] border-[2px] ${errors.pais ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-                    {...register("pais", { required: true })}
+                    {...register("pais", { required: "Selecione o país" })}
                   >
-                    <option value="">Selecione o País...</option>
+                    <option value="">Selecione...</option>
                     <option value="Brasil">Brasil</option>
                     <option value="Argentina">Argentina</option>
                     <option value="México">México</option>
@@ -159,79 +183,63 @@ export function Cadastro() {
                     <option value="Chile">Chile</option>
                     <option value="Panamá">Panamá</option>
                   </select>
-                  {errors.pais && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Selecione o País!</span>}
                 </div>
 
                 <div className="flex flex-col w-full sm:w-1/2 mt-[15px] sm:mt-0">
-                  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">
-                    Cidade Principal
-                  </label>
+                  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Cidade</label>
                   <input 
                     type="text"
-                    placeholder="Ex: São Paulo, Bogotá..."
+                    placeholder="Ex: São Paulo"
                     className={`p-[14px_16px] border-[2px] ${errors.cidade ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-                    {...register("cidade", { required: true })}
+                    {...register("cidade", { required: "A cidade é obrigatória" })}
                   />
-                  {errors.cidade && <span className="text-[#D8000C] text-xs mt-1 font-semibold">A cidade é obrigatória!</span>}
                 </div>
              </div>
           )}
 
-          {tipoPerfil === 'paciente' && (
-            <div className="flex flex-col mb-[15px] w-full animate-fade-in">
-              <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CPF</label>
-              <input 
-                type="text" 
-                placeholder="000.000.000-00"
-                className={`p-[14px_16px] border-[2px] ${errors.documento ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-                {...register("documento", { required: true, minLength: 14 })}
-                onChange={handleCPF}
-              />
-              {errors.documento && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Digite seu CPF</span>}
-            </div>
-          )}
+          {/* E-mail */}
+          <div className="flex flex-col mb-[15px] w-full">
+            <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">E-mail</label>
+            <input 
+              type="email" 
+              placeholder="exemplo@email.com"
+              className={`p-[14px_16px] border-[2px] ${errors.email ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
+              {...register("email", { 
+                required: "O E-mail é obrigatório",
+                pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "E-mail inválido" }
+              })}
+            />
+            {errors.email && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.email.message}</span>}
+          </div>
 
-          {tipoPerfil === 'dentista' && (
-            <div className="flex flex-col mb-[15px] w-full animate-fade-in">
-  <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CRO</label>
-  <input 
-    type="text" 
-    placeholder="Ex: 12345-SP"
-    className={`p-[14px_16px] border-[2px] ${errors.documento ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-    {...register("documento", { 
-      required: "Digite seu CRO",
-      pattern: {
-        value: /^\d{4,6}-[A-Z]{2}$/i,
-        message: "Formato inválido. Use Ex: 12345-SP"
-      }
-    })}
-    onChange={handleCRO}
-  />
-  {errors.documento && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.documento.message}</span>}
-</div>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px]">
-            <div className="flex flex-col mb-[15px] w-full">
+          {/* Senhas com validação de 6 caracteres */}
+          <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px] mb-[25px]">
+            <div className="flex flex-col w-full sm:w-1/2">
               <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Senha</label>
               <input 
                 type="password" 
+                placeholder="Mínimo 6 dígitos"
                 className={`p-[14px_16px] border-[2px] ${errors.senha ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
-                {...register("senha", { required: true, minLength: 6 })}
+                {...register("senha", { 
+                  required: "Senha obrigatória", 
+                  minLength: { value: 6, message: "No mínimo 6 caracteres" } 
+                })}
               />
-              {errors.senha && <span className="text-[#D8000C] text-xs mt-1 font-semibold">Digite sua senha!</span>}
+              {errors.senha && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.senha.message}</span>}
             </div>
-            <div className="flex flex-col mb-[15px] w-full">
+
+            <div className="flex flex-col w-full sm:w-1/2 mt-[15px] sm:mt-0">
               <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Confirmar Senha</label>
               <input 
                 type="password" 
+                placeholder="Repita a senha"
                 className={`p-[14px_16px] border-[2px] ${errors.confirma ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
                 {...register("confirma", { 
-                  required: true, 
+                  required: "Confirme a senha", 
                   validate: value => value === senha || "As senhas não coincidem"
                 })}
               />
-              {errors.confirma && <span className="text-[#D8000C] text-xs mt-1 font-semibold">As senhas devem ser iguais.</span>}
+              {errors.confirma && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.confirma.message}</span>}
             </div>
           </div>
 
@@ -239,19 +247,14 @@ export function Cadastro() {
             type="submit" 
             className="w-full mt-[10px] cursor-pointer bg-[#FF8C00] text-white px-[45px] py-[16px] text-[1.1rem] font-bold rounded-[30px] uppercase tracking-[1px] shadow-md transition-all hover:bg-[#E67E22] hover:-translate-y-1"
           >
-            Cadastrar Agora
+            Concluir Registo
           </button>
         </form>
 
         <div className="mt-[25px] text-center border-t border-[#E0E0E0] pt-[20px]">
-          <p className="text-[#666] text-[0.95rem]">Já tem uma conta? <Link to="/login" className="text-[#FF8C00] font-bold no-underline hover:underline">Faça login</Link></p>
-        
-        
-        <p className="text-[#666] text-[0.95rem] bg-orange-50 py-2 rounded-lg border border-orange-100">
-            Deseja apoiar a causa? <Link to="/doador" className="text-[#FF8C00] font-black no-underline hover:underline">Seja um Doador</Link>
-          </p>
-          </div>
+          <p className="text-[#666] text-[0.95rem]">Já tem uma conta? <Link to="/login" className="text-[#FF8C00] font-bold no-underline hover:underline">Faça Login</Link></p>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
