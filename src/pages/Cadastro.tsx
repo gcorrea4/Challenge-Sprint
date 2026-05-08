@@ -30,7 +30,7 @@ export function Cadastro() {
     setValue("documento", value, { shouldValidate: true }); 
   };
 
-  // Nova máscara do CRO que aceita 4 a 6 números + Estado
+  // MÁSCARA INTELIGENTE: Detecta quando começam as letras para colocar o hífen
   const handleCRO = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
     if (value.length > 8) value = value.slice(0, 8);
@@ -48,13 +48,14 @@ export function Cadastro() {
   };
 
   const onSubmit = async (data: CadastroFormData) => {
-    setMensagem({ texto: 'A processar o seu registo...', tipo: 'sucesso' });
+    setMensagem({ texto: 'Processando registro...', tipo: 'sucesso' });
     
     try {
       const url = data.tipo === 'paciente' 
         ? 'https://dentista-na-nuvem-production.up.railway.app/pacientes'
         : 'https://dentista-na-nuvem-production.up.railway.app/dentistas';
 
+      // AQUI ESTÁ A SUA CORREÇÃO CIRÚRGICA:
       const payload = data.tipo === 'paciente' ? {
         nome: data.nome,
         email: data.email,
@@ -64,11 +65,11 @@ export function Cadastro() {
         pais: data.pais,
         cidade: data.cidade
       } : {
-        nome: data.nome,
+        nomeDentista: data.nome,  // <-- CORRIGIDO
         email: data.email,
         senha: data.senha,
         cro: data.documento,
-        tipo: data.tipo,
+        tipoPerfil: data.tipo,    // <-- CORRIGIDO
         pais: data.pais,
         cidade: data.cidade
       };
@@ -80,15 +81,15 @@ export function Cadastro() {
       });
 
       if (response.ok) {
-        setMensagem({ texto: 'Registo concluído com sucesso! A redirecionar...', tipo: 'sucesso' });
+        setMensagem({ texto: 'Registro concluído com sucesso! Redirecionando...', tipo: 'sucesso' });
         setTimeout(() => navigate('/login'), 2500);
       } else {
         const errorData = await response.json().catch(() => null);
-        setMensagem({ texto: errorData?.erro || 'Erro ao realizar o registo. Verifique os dados.', tipo: 'erro' });
+        setMensagem({ texto: errorData?.erro || 'Erro ao realizar o registro. Verifique os dados.', tipo: 'erro' });
       }
     } catch (error) {
       console.error(error);
-      setMensagem({ texto: 'Erro de conexão. O servidor pode estar offline.', tipo: 'erro' });
+      setMensagem({ texto: 'Erro de conexão com o servidor.', tipo: 'erro' });
     }
   };
 
@@ -96,8 +97,8 @@ export function Cadastro() {
     <div className="flex items-center justify-center min-h-screen bg-[#F5F5DC] p-[20px] pt-[85px] font-sans">
       <div className="bg-white p-[40px] rounded-[20px] shadow-lg max-w-[600px] w-full relative">
         <div className="text-center mb-[30px]">
-          <h2 className="text-[2rem] text-[#FF8C00] font-black tracking-[1px] mb-[10px]">Crie a sua Conta</h2>
-          <p className="text-[#666] text-[1rem]">Junte-se à Turma do Bem e faça a diferença!</p>
+          <h2 className="text-[2rem] text-[#FF8C00] font-black tracking-[1px] mb-[10px]">Crie sua Conta</h2>
+          <p className="text-[#666] text-[1rem]">Junte-se à Turma do Bem!</p>
         </div>
 
         {mensagem.texto && (
@@ -158,7 +159,7 @@ export function Cadastro() {
                     className={`p-[14px_16px] border-[2px] ${errors.documento ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
                     {...register("documento", { 
                       required: "O CRO é obrigatório",
-                      pattern: { value: /^\d{4,6}-[A-Z]{2}$/, message: "Formato: 12345-UF" },
+                      pattern: { value: /^\d{4,6}-[A-Z]{2}$/, message: "Formato: 1234-UF ou 123456-UF" },
                       onChange: handleCRO 
                     })}
                   />
@@ -182,7 +183,6 @@ export function Cadastro() {
                     <option value="Colômbia">Colômbia</option>
                     <option value="Peru">Peru</option>
                     <option value="Chile">Chile</option>
-                    <option value="Panamá">Panamá</option>
                   </select>
                 </div>
 
@@ -251,13 +251,8 @@ export function Cadastro() {
         </form>
 
         <div className="mt-[25px] text-center border-t border-[#E0E0E0] pt-[20px]">
-          <p className="text-[#666] text-[0.95rem]">Já tem uma conta? <Link to="/login" className="text-[#FF8C00] font-bold no-underline hover:underline">Faça login</Link></p>
-
-
-        <p className="text-[#666] text-[0.95rem] bg-orange-50 py-2 rounded-lg border border-orange-100">
-            Deseja apoiar a causa? <Link to="/doador" className="text-[#FF8C00] font-black no-underline hover:underline">Seja um Doador</Link>
-          </p>
-          </div>
+          <p className="text-[#666] text-[0.95rem]">Já tem uma conta? <Link to="/login" className="text-[#FF8C00] font-bold no-underline hover:underline">Faça Login</Link></p>
+        </div>
       </div>
     </div>
   );
