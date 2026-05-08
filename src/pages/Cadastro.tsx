@@ -21,7 +21,6 @@ export function Cadastro() {
   const senha = watch('senha');
   const tipoPerfil = watch('tipo'); 
 
-  // Máscara de CPF: 000.000.000-00
   const handleCPF = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, ""); 
     if (value.length > 11) value = value.slice(0, 11);
@@ -31,14 +30,20 @@ export function Cadastro() {
     setValue("documento", value, { shouldValidate: true }); 
   };
 
-  // Máscara de CRO: 12345-SP
+  // Nova máscara do CRO que aceita 4 a 6 números + Estado
   const handleCRO = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
     if (value.length > 8) value = value.slice(0, 8);
-    // Formata como 12345-SP (5 números, hífen, 2 letras)
-    if (value.length > 5) {
-      value = value.slice(0, 5) + "-" + value.slice(5, 7);
+    
+    const numeros = value.replace(/[^0-9]/g, '');
+    const letras = value.replace(/[0-9]/g, '');
+    
+    if (letras.length > 0) {
+      value = numeros + "-" + letras.slice(0, 2);
+    } else {
+      value = numeros;
     }
+    
     setValue("documento", value, { shouldValidate: true }); 
   };
 
@@ -102,7 +107,6 @@ export function Cadastro() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Nome */}
           <div className="flex flex-col mb-[15px] w-full">
             <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Nome Completo</label>
             <input 
@@ -115,7 +119,6 @@ export function Cadastro() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px] mb-[15px]">
-            {/* Perfil */}
             <div className="flex flex-col w-full sm:w-1/2">
               <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Eu sou...</label>
               <select 
@@ -129,7 +132,6 @@ export function Cadastro() {
               {errors.tipo && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.tipo.message}</span>}
             </div>
 
-            {/* Documento Dinâmico (CPF ou CRO) */}
             {tipoPerfil === 'paciente' && (
                <div className="flex flex-col w-full sm:w-1/2 mt-[15px] sm:mt-0 animate-fade-in">
                   <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">CPF</label>
@@ -156,7 +158,7 @@ export function Cadastro() {
                     className={`p-[14px_16px] border-[2px] ${errors.documento ? 'border-[#dc3545]' : 'border-[#E0E0E0]'} rounded-[8px] text-[1rem] bg-[#FAFAFA] focus:outline-none focus:border-[#FF8C00]`}
                     {...register("documento", { 
                       required: "O CRO é obrigatório",
-                      pattern: { value: /^\d{5}-[A-Z]{2}$/, message: "Formato: 12345-UF" },
+                      pattern: { value: /^\d{4,6}-[A-Z]{2}$/, message: "Formato: 12345-UF" },
                       onChange: handleCRO 
                     })}
                   />
@@ -165,7 +167,6 @@ export function Cadastro() {
             )}
           </div>
 
-          {/* País e Cidade */}
           {tipoPerfil && (
              <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px] mb-[15px] animate-fade-in">
                 <div className="flex flex-col w-full sm:w-1/2">
@@ -197,7 +198,6 @@ export function Cadastro() {
              </div>
           )}
 
-          {/* E-mail */}
           <div className="flex flex-col mb-[15px] w-full">
             <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">E-mail</label>
             <input 
@@ -212,7 +212,6 @@ export function Cadastro() {
             {errors.email && <span className="text-[#D8000C] text-xs mt-1 font-semibold">{errors.email.message}</span>}
           </div>
 
-          {/* Senhas com validação de 6 caracteres */}
           <div className="flex flex-col sm:flex-row gap-0 sm:gap-[15px] mb-[25px]">
             <div className="flex flex-col w-full sm:w-1/2">
               <label className="text-[0.9rem] font-semibold text-[#444] mb-[8px]">Senha</label>
@@ -247,18 +246,13 @@ export function Cadastro() {
             type="submit" 
             className="w-full mt-[10px] cursor-pointer bg-[#FF8C00] text-white px-[45px] py-[16px] text-[1.1rem] font-bold rounded-[30px] uppercase tracking-[1px] shadow-md transition-all hover:bg-[#E67E22] hover:-translate-y-1"
           >
-            Concluir Registro
+            Concluir Registo
           </button>
         </form>
 
         <div className="mt-[25px] text-center border-t border-[#E0E0E0] pt-[20px]">
-          <p className="text-[#666] text-[0.95rem]">Já tem uma conta? <Link to="/login" className="text-[#FF8C00] font-bold no-underline hover:underline">Faça login</Link></p>
-
-
-        <p className="text-[#666] text-[0.95rem] bg-orange-50 py-2 rounded-lg border border-orange-100">
-            Deseja apoiar a causa? <Link to="/doador" className="text-[#FF8C00] font-black no-underline hover:underline">Seja um Doador</Link>
-          </p>
-          </div>
+          <p className="text-[#666] text-[0.95rem]">Já tem uma conta? <Link to="/login" className="text-[#FF8C00] font-bold no-underline hover:underline">Faça Login</Link></p>
+        </div>
       </div>
     </div>
   );
