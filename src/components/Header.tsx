@@ -11,10 +11,9 @@ export function Header() {
   const handleLogout = () => {
     sessionStorage.removeItem("usuarioLogado");
     sessionStorage.removeItem("userRole");
-    sessionStorage.removeItem("dentistaBairro"); 
-    setIsMenuOpen(false); 
-    navigate('/'); 
-    window.location.reload(); 
+    sessionStorage.removeItem("dentistaCidade");
+    setIsMenuOpen(false);
+    navigate('/');
   };
 
   let rotaDashboard = "/login";

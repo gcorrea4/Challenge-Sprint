@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { User, Calendar, DollarSign, Activity, Clock, MapPin } from 'lucide-react';
 
@@ -7,19 +8,43 @@ interface TriagemFormData {
   renda: string;
   tipoDor: string;
   diasDor: string;
-  bairro: string;
+  pais: string;
+  cidade: string;
 }
 
 export function Formulario() {
   const { register, handleSubmit, formState: { errors } } = useForm<TriagemFormData>({
     defaultValues: {
-      tipoDor: 'leve' // valor padrão pro select
+      tipoDor: 'leve'
     }
   });
+  const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
 
-  const onSubmit = (data: TriagemFormData) => {
-    console.log("Dados da Triagem (React Hook Form):", data);
-    alert("Triagem enviada com sucesso!");
+  const onSubmit = async (data: TriagemFormData) => {
+    setMensagem({ texto: 'Enviando triagem...', tipo: 'sucesso' });
+    try {
+      const response = await fetch('https://dentista-na-nuvem-production.up.railway.app/pacientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: data.nome,
+          idade: Number(data.idade),
+          rendaSalarioMinimo: Number(data.renda),
+          tipoDor: data.tipoDor,
+          tempoDorDias: Number(data.diasDor),
+          pais: data.pais,
+          cidade: data.cidade,
+        }),
+      });
+      if (response.ok) {
+        setMensagem({ texto: 'Triagem enviada com sucesso! Entraremos em contacto em breve.', tipo: 'sucesso' });
+      } else {
+        const err = await response.json().catch(() => null);
+        setMensagem({ texto: err?.erro || 'Erro ao enviar triagem. Tente novamente.', tipo: 'erro' });
+      }
+    } catch {
+      setMensagem({ texto: 'Erro de conexão com o servidor.', tipo: 'erro' });
+    }
   };
 
   return (
@@ -32,6 +57,12 @@ export function Formulario() {
           <h2 className="text-2xl font-bold text-gray-800">Triagem Dentária</h2>
           <p className="text-gray-500 text-sm mt-1">Preencha os dados para calcular sua urgência.</p>
         </div>
+
+        {mensagem.texto && (
+          <div className={`mx-8 mt-6 p-4 rounded-lg font-bold text-center ${mensagem.tipo === 'sucesso' ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]' : 'bg-[#ffebee] text-[#c62828] border border-[#ffcdd2]'}`}>
+            {mensagem.texto}
+          </div>
+        )}
 
         {/* CORPO DO FORMULÁRIO */}
         <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-5">
@@ -128,21 +159,43 @@ export function Formulario() {
               {errors.diasDor && <span className="text-red-500 text-xs mt-1">Obrigatório</span>}
             </div>
 
-            {/* Bairro */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Bairro</label>
+            {/* País */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">País</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MapPin size={16} className="text-gray-400" />
+                </div>
+                <select
+                  {...register("pais", { required: true })}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors appearance-none cursor-pointer"
+                >
+                  <option value="">Selecione...</option>
+                  <option value="Brasil">Brasil</option>
+                  <option value="Argentina">Argentina</option>
+                  <option value="Colômbia">Colômbia</option>
+                  <option value="México">México</option>
+                  <option value="Chile">Chile</option>
+                </select>
+              </div>
+              {errors.pais && <span className="text-red-500 text-xs mt-1">País é obrigatório</span>}
+            </div>
+
+            {/* Cidade */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Cidade</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <MapPin size={16} className="text-gray-400" />
                 </div>
                 <input 
                   type="text" 
-                  placeholder="Ex: Tatuapé"
-                  {...register("bairro", { required: true })}
+                  placeholder="Ex: São Paulo"
+                  {...register("cidade", { required: true })}
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-1 focus:ring-[#FF8C00] focus:border-[#FF8C00] outline-none transition-colors"
                 />
               </div>
-              {errors.bairro && <span className="text-red-500 text-xs mt-1">Bairro é obrigatório</span>}
+              {errors.cidade && <span className="text-red-500 text-xs mt-1">Cidade é obrigatória</span>}
             </div>
 
           </div>

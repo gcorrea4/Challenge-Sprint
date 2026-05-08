@@ -37,8 +37,8 @@ export function Login() {
         sessionStorage.setItem("userRole", usuario.tipo || 'paciente'); 
         sessionStorage.setItem("usuarioLogado", usuario.nome); 
 
-        if (usuario.tipo === 'dentista' && usuario.bairro && usuario.bairro !== "N/A") {
-          sessionStorage.setItem("dentistaBairro", usuario.bairro);
+        if (usuario.tipo === 'dentista' && usuario.cidade && usuario.cidade !== "N/A") {
+          sessionStorage.setItem("dentistaCidade", usuario.cidade);
         }
 
         setMensagem({ texto: `Login aprovado! Bem-vindo(a).`, tipo: "sucesso" });

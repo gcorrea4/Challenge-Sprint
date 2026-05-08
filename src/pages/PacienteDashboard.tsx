@@ -62,14 +62,34 @@ export function PacienteDashboard() {
     navigate('/login');
   };
 
-  const onSubmit = (data: TriagemFormData) => {
-    console.log("Ficha enviada: ", data);
-    setMensagemSucesso('Ficha de triagem enviada com sucesso! Aguarde o contacto de um dentista voluntário.');
-    setFichaEnviada(true);
-    setTimeout(() => {
-      setTelaAtiva('painel');
-      setMensagemSucesso('');
-    }, 4000);
+  const onSubmit = async (data: TriagemFormData) => {
+    try {
+      const response = await fetch('https://dentista-na-nuvem-production.up.railway.app/pacientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: usuarioLogado,
+          idade: Number(data.idade),
+          rendaSalarioMinimo: Number(data.renda),
+          tipoDor: data.tipoDor,
+          tempoDorDias: Number(data.diasDor),
+          pais: data.pais,
+          cidade: data.cidade,
+        }),
+      });
+      if (response.ok) {
+        setMensagemSucesso('Ficha de triagem enviada com sucesso! Aguarde o contacto de um dentista voluntário.');
+        setFichaEnviada(true);
+        setTimeout(() => {
+          setTelaAtiva('painel');
+          setMensagemSucesso('');
+        }, 4000);
+      } else {
+        setMensagemSucesso('Erro ao enviar triagem. Tente novamente.');
+      }
+    } catch {
+      setMensagemSucesso('Erro de conexão com o servidor.');
+    }
   };
 
   return (

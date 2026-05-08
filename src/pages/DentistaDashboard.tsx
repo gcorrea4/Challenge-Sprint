@@ -178,7 +178,11 @@ export function DentistaDashboard() {
 
   const adotarPaciente = async (paciente: Paciente) => {
     try {
-      await fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes/${paciente.id}`, { method: 'DELETE' });
+      await fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes/${paciente.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...paciente, status: 'adotado', dentista: usuarioLogado }),
+      });
       setPacientes(pacientes.filter(p => p.nome !== paciente.nome));
       setMeusPacientes([...meusPacientes, paciente]);
       setPacienteSelecionado(null);

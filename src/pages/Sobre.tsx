@@ -90,13 +90,13 @@ export function Sobre() {
               <p className="text-[#555555] m-0">Foco no desenvolvimento do back-end, modelagem do banco de dados e criação das principais regras de negócio.</p>
             </div>
 
-            <div className="bg-orange-500/5 p-[20px_25px] rounded-[10px] border-l-[5px] border-orange-500 shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
-              <span className="inline-block bg-orange-500 text-white px-[12px] py-[5px] rounded-[20px] text-[0.85rem] font-bold mb-[10px]">Sprint 3 (Atual)</span>
+            <div className="bg-white p-[20px_25px] rounded-[10px] border-l-[5px] border-[#CCCCCC] shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
+              <span className="inline-block bg-[#333333] text-white px-[12px] py-[5px] rounded-[20px] text-[0.85rem] font-bold mb-[10px]">Sprint 3</span>
               <p className="text-[#555555] m-0">Implementação do chatbot e início da integração entre o front-end e o back-end para a troca de dados.</p>
             </div>
 
-            <div className="bg-white p-[20px_25px] rounded-[10px] border-l-[5px] border-[#CCCCCC] shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
-              <span className="inline-block bg-[#333333] text-white px-[12px] py-[5px] rounded-[20px] text-[0.85rem] font-bold mb-[10px]">Sprint 4</span>
+            <div className="bg-orange-500/5 p-[20px_25px] rounded-[10px] border-l-[5px] border-orange-500 shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
+              <span className="inline-block bg-orange-500 text-white px-[12px] py-[5px] rounded-[20px] text-[0.85rem] font-bold mb-[10px]">Sprint 4 (Atual)</span>
               <p className="text-[#555555] m-0">Integração final de todas as tecnologias, fase de testes, refatoração de código e preparação da solução para a apresentação final.</p>
             </div>
           </div>

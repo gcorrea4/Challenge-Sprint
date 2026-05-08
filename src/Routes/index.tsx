@@ -39,7 +39,7 @@ export function AppRoutes() {
             <Route path="/dashboard/paciente" element={<PacienteDashboard />} />
             <Route path='/Calculadura/Score' element={<CalculadoraScore /> } />
             <Route path='/FormularioContato' element={<FormularioContato /> } /> 
-            <Route path='/Prontuario' element={<Prontuario /> } />
+            <Route path='/prontuario/:nome' element={<Prontuario />} />
             <Route path='/Doador' element={<Doador />} />
           </Routes>
         </div>
