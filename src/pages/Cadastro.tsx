@@ -55,7 +55,6 @@ export function Cadastro() {
         ? 'https://dentista-na-nuvem-production.up.railway.app/pacientes'
         : 'https://dentista-na-nuvem-production.up.railway.app/dentistas';
 
-      // AQUI ESTÁ A SUA CORREÇÃO CIRÚRGICA:
       const payload = data.tipo === 'paciente' ? {
         nome: data.nome,
         email: data.email,
@@ -65,11 +64,11 @@ export function Cadastro() {
         pais: data.pais,
         cidade: data.cidade
       } : {
-        nomeDentista: data.nome,  // <-- CORRIGIDO
+        nome: data.nome,      // @JsonProperty("nome") → nomeDentista no backend
         email: data.email,
         senha: data.senha,
         cro: data.documento,
-        tipoPerfil: data.tipo,    // <-- CORRIGIDO
+        tipo: data.tipo,      // @JsonProperty("tipo") → tipoPerfil no backend
         pais: data.pais,
         cidade: data.cidade
       };
