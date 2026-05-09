@@ -55,6 +55,7 @@ export function Cadastro() {
         ? 'https://dentista-na-nuvem-production.up.railway.app/pacientes'
         : 'https://dentista-na-nuvem-production.up.railway.app/dentistas';
 
+      // PAYLOAD CORRETO: 'nome' e 'tipo' batem com o @JsonProperty do Java
       const payload = data.tipo === 'paciente' ? {
         nome: data.nome,
         email: data.email,
@@ -64,11 +65,11 @@ export function Cadastro() {
         pais: data.pais,
         cidade: data.cidade
       } : {
-        nome: data.nome,      // @JsonProperty("nome") → nomeDentista no backend
+        nome: data.nome,      
         email: data.email,
         senha: data.senha,
         cro: data.documento,
-        tipo: data.tipo,      // @JsonProperty("tipo") → tipoPerfil no backend
+        tipo: data.tipo,      
         pais: data.pais,
         cidade: data.cidade
       };
@@ -249,14 +250,15 @@ export function Cadastro() {
           </button>
         </form>
 
-        <div className="mt-[25px] text-center border-t border-[#E0E0E0] pt-[20px]">
-          <p className="text-[#666] text-[0.95rem]">Já tem uma conta? <Link to="/login" className="text-[#FF8C00] font-bold no-underline hover:underline">Faça login</Link></p>
+        <div className="mt-[25px] text-center border-t border-[#E0E0E0] pt-[20px] flex flex-col gap-3">
+          <p className="text-[#666] text-[0.95rem]">
+            Já tem uma conta? <Link to="/login" className="text-[#FF8C00] font-bold no-underline hover:underline">Faça login</Link>
+          </p>
 
-
-        <p className="text-[#666] text-[0.95rem] bg-orange-50 py-2 rounded-lg border border-orange-100">
+          <p className="text-[#666] text-[0.95rem] bg-orange-50 py-2 rounded-lg border border-orange-100">
             Deseja apoiar a causa? <Link to="/doador" className="text-[#FF8C00] font-black no-underline hover:underline">Seja um Doador</Link>
           </p>
-          </div>
+        </div>
       </div>
     </div>
   );
