@@ -98,7 +98,7 @@ export function DentistaDashboard() {
     }
 
     // A API agora procura por cidade
-    fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes?cidade=${cidadeAtiva}`)
+    fetch(`${import.meta.env.VITE_API_URL}/pacientes?cidade=${cidadeAtiva}`)
       .then(res => res.json())
       .then(data => {
         const pacientesMapeados = data.map((p: any) => {
@@ -143,7 +143,7 @@ export function DentistaDashboard() {
     setCarregandoIA(true);
     
     try {
-      const res = await fetch('https://dentista-na-nuvem-production.up.railway.app/IA/consultar', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/IA/consultar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -178,7 +178,7 @@ export function DentistaDashboard() {
 
   const adotarPaciente = async (paciente: Paciente) => {
     try {
-      await fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes/${paciente.id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/pacientes/${paciente.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...paciente, status: 'adotado', dentista: usuarioLogado }),

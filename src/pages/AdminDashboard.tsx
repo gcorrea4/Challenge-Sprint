@@ -49,7 +49,7 @@ export function AdminDashboard() {
       return;
     }
     
-    fetch('https://dentista-na-nuvem-production.up.railway.app/admin/estatisticas')
+    fetch(`${import.meta.env.VITE_API_URL}/admin/estatisticas`)
       .then(res => {
         if (!res.ok) throw new Error("Erro 500 do servidor"); 
         return res.json();

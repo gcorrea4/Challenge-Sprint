@@ -25,7 +25,7 @@ export function Login() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await fetch('https://dentista-na-nuvem-production.up.railway.app/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: data.email, senha: data.senha }),
@@ -34,8 +34,9 @@ export function Login() {
       if (response.ok) {
         const usuario = await response.json();
         
-        sessionStorage.setItem("userRole", usuario.tipo || 'paciente'); 
-        sessionStorage.setItem("usuarioLogado", usuario.nome); 
+        sessionStorage.setItem("userRole", usuario.tipo || 'paciente');
+        sessionStorage.setItem("usuarioLogado", usuario.nome);
+        sessionStorage.setItem("userId", String(usuario.id || ''));
 
         if (usuario.tipo === 'dentista' && usuario.cidade && usuario.cidade !== "N/A") {
           sessionStorage.setItem("dentistaCidade", usuario.cidade);

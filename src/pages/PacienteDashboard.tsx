@@ -46,7 +46,7 @@ export function PacienteDashboard() {
     }
     
     // FETCH REAL: Busca o histórico na Base de Dados usando o ID do Paciente!
-    fetch(`https://dentista-na-nuvem-production.up.railway.app/pacientes/${userId}/historico`)
+    fetch(`${import.meta.env.VITE_API_URL}/pacientes/${userId}/historico`)
       .then(res => res.json())
       .then(data => {
         if(Array.isArray(data)) {
@@ -64,7 +64,7 @@ export function PacienteDashboard() {
 
   const onSubmit = async (data: TriagemFormData) => {
     try {
-      const response = await fetch('https://dentista-na-nuvem-production.up.railway.app/pacientes', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/pacientes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

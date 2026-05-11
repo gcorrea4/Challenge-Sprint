@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Send, ArrowLeft, User, Mail, HelpCircle, MessageSquare } from 'lucide-react';
@@ -11,16 +12,30 @@ interface ContatoFormData {
 
 export function FormularioContato() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [erro, setErro] = useState('');
   const { register, handleSubmit, formState: { errors } } = useForm<ContatoFormData>({
     defaultValues: {
       assunto: ''
     }
   });
 
-  const onSubmit = (data: ContatoFormData) => {
-    console.log("Mensagem de Contato Institucional (React Hook Form):", data);
-    alert("Mensagem enviada com sucesso! A nossa equipe entrará em contato em breve.");
-    navigate('/contato'); 
+  const onSubmit = async (data: ContatoFormData) => {
+    setIsLoading(true);
+    setErro('');
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/mensagens`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Erro ao enviar');
+      navigate('/contato');
+    } catch {
+      setErro('Não foi possível enviar a mensagem. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -127,12 +142,16 @@ export function FormularioContato() {
           </div>
 
           <div className="pt-6 mt-6 border-t border-gray-100">
-            <button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-[#FF8C00] to-[#f39c12] text-white font-bold text-lg py-4 rounded-xl shadow-[0_8px_20px_rgba(255,140,0,0.25)] hover:shadow-[0_10px_25px_rgba(255,140,0,0.35)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
+            {erro && (
+              <p className="text-red-600 text-sm font-semibold text-center mb-4 bg-red-50 border border-red-200 rounded-xl py-2 px-4">{erro}</p>
+            )}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-[#FF8C00] to-[#f39c12] text-white font-bold text-lg py-4 rounded-xl shadow-[0_8px_20px_rgba(255,140,0,0.25)] hover:shadow-[0_10px_25px_rgba(255,140,0,0.35)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             >
               <Send size={20} />
-              Enviar Mensagem
+              {isLoading ? 'Enviando...' : 'Enviar Mensagem'}
             </button>
           </div>
 

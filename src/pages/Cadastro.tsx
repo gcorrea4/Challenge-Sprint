@@ -52,8 +52,8 @@ export function Cadastro() {
     
     try {
       const url = data.tipo === 'paciente' 
-        ? 'https://dentista-na-nuvem-production.up.railway.app/pacientes'
-        : 'https://dentista-na-nuvem-production.up.railway.app/dentistas';
+        ? `${import.meta.env.VITE_API_URL}/pacientes`
+        : `${import.meta.env.VITE_API_URL}/dentistas`;
 
       // PAYLOAD CORRETO: 'nome' e 'tipo' batem com o @JsonProperty do Java
       const payload = data.tipo === 'paciente' ? {

@@ -25,7 +25,7 @@ export function Formulario() {
     setIsSubmitting(true);
     setMensagem({ texto: 'A processar a triagem...', tipo: 'sucesso' });
     try {
-      const response = await fetch('https://dentista-na-nuvem-production.up.railway.app/pacientes', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/pacientes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
