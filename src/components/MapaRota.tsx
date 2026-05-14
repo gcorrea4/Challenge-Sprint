@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Map, { Source, Layer, Marker, NavigationControl } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { X, Navigation, Clock, Car, Footprints, ExternalLink, AlertCircle, ArrowRight } from 'lucide-react';
+import { X, Navigation, Car, Footprints, ExternalLink, AlertCircle, ArrowRight } from 'lucide-react';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 

@@ -39,11 +39,7 @@ interface Agendamento {
   tipo: string;
 }
 
-interface AgendamentoFormData {
-  data: string;
-  hora: string;
-  tipo: string;
-}
+
 
 interface SlotProposto {
   id: string;
