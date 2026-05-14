@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign, Trash2, AlertTriangle, Search, UserX } from 'lucide-react';
 import Map, { Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -32,10 +32,36 @@ interface AgendamentoAdmin {
   cidade: string; // <-- Trocado bairro por cidade
 }
 
+interface UsuarioPaciente {
+  id: number;
+  nomePaciente?: string;
+  nome?: string;
+  email: string;
+  cidade: string;
+  pais: string;
+  tipoDor?: string;
+}
+
+interface UsuarioDentista {
+  id: number;
+  nomeDentista?: string;
+  nome?: string;
+  email: string;
+  cidade: string;
+  cro?: string;
+}
+
 export function AdminDashboard() {
   const navigate = useNavigate();
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Admin";
-  
+
+  const [telaAtiva, setTelaAtiva] = useState<'painel' | 'usuarios'>('painel');
+  const [pacientes, setPacientes] = useState<UsuarioPaciente[]>([]);
+  const [dentistas, setDentistas] = useState<UsuarioDentista[]>([]);
+  const [filtroBusca, setFiltroBusca] = useState('');
+  const [carregandoUsuarios, setCarregandoUsuarios] = useState(false);
+  const [mensagemAdmin, setMensagemAdmin] = useState('');
+
   const [statsAdmin, setStatsAdmin] = useState({
     total_beneficiarios: 0, 
     total_dentistas: 0, 
@@ -73,6 +99,37 @@ export function AdminDashboard() {
         });
       });
   }, [navigate]);
+
+  const carregarUsuarios = () => {
+    setCarregandoUsuarios(true);
+    Promise.all([
+      fetch(`${import.meta.env.VITE_API_URL}/pacientes`).then(r => r.json()).catch(() => []),
+      fetch(`${import.meta.env.VITE_API_URL}/dentistas`).then(r => r.json()).catch(() => []),
+    ]).then(([pacs, dents]) => {
+      setPacientes(pacs);
+      setDentistas(dents);
+    }).finally(() => setCarregandoUsuarios(false));
+  };
+
+  useEffect(() => {
+    if (telaAtiva === 'usuarios') carregarUsuarios();
+  }, [telaAtiva]);
+
+  const deletarPaciente = async (id: number, nome: string) => {
+    if (!window.confirm(`Excluir permanentemente a conta de "${nome}"? Esta ação não pode ser desfeita.`)) return;
+    await fetch(`${import.meta.env.VITE_API_URL}/pacientes/${id}`, { method: 'DELETE' });
+    setPacientes(prev => prev.filter(p => p.id !== id));
+    setMensagemAdmin(`Conta de ${nome} excluída.`);
+    setTimeout(() => setMensagemAdmin(''), 3000);
+  };
+
+  const deletarDentista = async (id: number, nome: string) => {
+    if (!window.confirm(`Excluir permanentemente a conta de "${nome}"? Esta ação não pode ser desfeita.`)) return;
+    await fetch(`${import.meta.env.VITE_API_URL}/dentistas/${id}`, { method: 'DELETE' });
+    setDentistas(prev => prev.filter(d => d.id !== id));
+    setMensagemAdmin(`Conta de ${nome} excluída.`);
+    setTimeout(() => setMensagemAdmin(''), 3000);
+  };
 
   const handleLogout = () => { sessionStorage.clear(); navigate('/login'); };
 
@@ -124,16 +181,123 @@ export function AdminDashboard() {
         <div><p className="text-sm font-bold text-gray-800 truncate w-[160px]">{usuarioLogado}</p><p className="text-[0.7rem] uppercase tracking-wider text-[#FF8C00] font-bold">Administrador</p></div>
       </div>
       <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
-        <button className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold bg-[#FF8C00] text-white shadow-md"><LayoutDashboard size={20} /> Visão Geral</button>
+        <button onClick={() => setTelaAtiva('painel')} className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-colors ${telaAtiva === 'painel' ? 'bg-[#FF8C00] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}><LayoutDashboard size={20} /> Visão Geral</button>
+        <button onClick={() => setTelaAtiva('usuarios')} className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-colors ${telaAtiva === 'usuarios' ? 'bg-[#FF8C00] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}><Users size={20} /> Gerenciar Usuários</button>
       </nav>
       <div className="p-4 border-t border-gray-100"><button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:text-red-600"><LogOut size={20} /> Sair</button></div>
     </aside>
+  );
+
+  const pacientesFiltrados = pacientes.filter(p =>
+    (p.nomePaciente || p.nome || '').toLowerCase().includes(filtroBusca.toLowerCase()) ||
+    p.email.toLowerCase().includes(filtroBusca.toLowerCase())
+  );
+  const dentistasFiltrados = dentistas.filter(d =>
+    (d.nomeDentista || d.nome || '').toLowerCase().includes(filtroBusca.toLowerCase()) ||
+    d.email.toLowerCase().includes(filtroBusca.toLowerCase())
   );
 
   return (
     <div className="flex min-h-screen bg-[#F5F5DC] font-sans pt-[65px] items-start">
       {renderSidebar()}
       <main className="flex-1 p-6 md:p-8 max-w-[1400px] mx-auto w-full animate-fade-in">
+
+        {mensagemAdmin && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2">
+            <AlertTriangle size={16} /> {mensagemAdmin}
+          </div>
+        )}
+
+        {telaAtiva === 'usuarios' && (
+          <div className="animate-fade-in">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">Gerenciar Usuários</h2>
+                <p className="text-gray-500 text-sm mt-1">Visualize e remova contas de pacientes e dentistas.</p>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <input type="text" placeholder="Buscar por nome ou e-mail..." value={filtroBusca}
+                  onChange={(e) => setFiltroBusca(e.target.value)}
+                  className="pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm w-full md:w-[280px] focus:ring-2 focus:ring-[#FF8C00]/20 focus:border-[#FF8C00] outline-none" />
+              </div>
+            </div>
+
+            {carregandoUsuarios ? (
+              <div className="text-center py-20 text-gray-400 font-medium">A carregar utilizadores...</div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Pacientes */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                    <h3 className="font-bold text-gray-800 flex items-center gap-2"><Users size={18} className="text-[#8dc63f]" /> Pacientes ({pacientesFiltrados.length})</h3>
+                  </div>
+                  <div className="divide-y divide-gray-50 max-h-[500px] overflow-y-auto">
+                    {pacientesFiltrados.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+                        <UserX size={32} className="mb-2" />
+                        <p className="text-sm font-medium">Nenhum paciente encontrado.</p>
+                      </div>
+                    ) : pacientesFiltrados.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-full bg-orange-100 text-[#FF8C00] flex items-center justify-center font-bold text-sm shrink-0">
+                            {(p.nomePaciente || p.nome || '?').charAt(0)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-gray-800 text-sm truncate">{p.nomePaciente || p.nome}</p>
+                            <p className="text-xs text-gray-400 truncate">{p.email}</p>
+                            <p className="text-[11px] text-gray-400">{p.cidade}, {p.pais}</p>
+                          </div>
+                        </div>
+                        <button onClick={() => deletarPaciente(p.id, p.nomePaciente || p.nome || '')}
+                          className="ml-3 shrink-0 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                          title="Excluir conta">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dentistas */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                    <h3 className="font-bold text-gray-800 flex items-center gap-2"><Heart size={18} className="text-[#FF8C00]" /> Dentistas ({dentistasFiltrados.length})</h3>
+                  </div>
+                  <div className="divide-y divide-gray-50 max-h-[500px] overflow-y-auto">
+                    {dentistasFiltrados.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+                        <UserX size={32} className="mb-2" />
+                        <p className="text-sm font-medium">Nenhum dentista encontrado.</p>
+                      </div>
+                    ) : dentistasFiltrados.map((d) => (
+                      <div key={d.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-full bg-orange-100 text-[#FF8C00] flex items-center justify-center font-bold text-sm shrink-0">
+                            {(d.nomeDentista || d.nome || '?').charAt(0)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-gray-800 text-sm truncate">{d.nomeDentista || d.nome}</p>
+                            <p className="text-xs text-gray-400 truncate">{d.email}</p>
+                            {d.cro && <p className="text-[11px] text-gray-400">CRO: {d.cro}</p>}
+                          </div>
+                        </div>
+                        <button onClick={() => deletarDentista(d.id, d.nomeDentista || d.nome || '')}
+                          className="ml-3 shrink-0 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                          title="Excluir conta">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {telaAtiva === 'painel' && <>
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-800">Painel Administrativo</h2>
           <p className="text-gray-500 mt-1">Visão geral da operação global da Turma do Bem.</p>
@@ -228,6 +392,7 @@ export function AdminDashboard() {
             </div>
           </div>
         </div>
+        </>}
       </main>
     </div>
   );

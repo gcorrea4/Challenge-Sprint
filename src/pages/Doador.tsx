@@ -51,10 +51,10 @@ export function Doador() {
       );
     } else if (valor > 0) {
       return (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-200 flex items-center gap-6 animate-fade-in">
-          <div className="bg-blue-50 p-4 rounded-full text-blue-500"><Smile size={32} /></div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-200 flex items-center gap-6 animate-fade-in">
+          <div className="bg-orange-50 p-4 rounded-full text-[#FF8C00]"><Smile size={32} /></div>
           <div>
-            <h3 className="font-black text-xl text-blue-600">Prevenção e Higiene</h3>
+            <h3 className="font-black text-xl text-[#FF8C00]">Prevenção e Higiene</h3>
             <p className="text-gray-600 font-medium mt-1">Garante Kits de Higiene Oral completos (escova, pasta, fio dental) para jovens na fila de triagem.</p>
           </div>
         </div>

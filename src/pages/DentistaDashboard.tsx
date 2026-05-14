@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
 import {
   LayoutDashboard, Users, Calendar, LogOut,
   Search, MessageSquare, Send,
   MapPin, Phone, AlertCircle, Star, Target, Filter, Clock, CheckCircle2, X,
-  Heart, Activity 
+  Heart, Activity, FileText, Printer, Plus, Trash2, Ban, CalendarCheck
 } from 'lucide-react';
 
 interface HistoricoConsulta {
@@ -46,6 +45,22 @@ interface AgendamentoFormData {
   tipo: string;
 }
 
+interface SlotProposto {
+  id: string;
+  data: string;
+  hora: string;
+}
+
+interface OfertaAgendamento {
+  dentistaNome: string;
+  dentistaCidade: string;
+  procedimento: string;
+  slots: SlotProposto[];
+  status: 'pendente' | 'confirmado';
+  slotEscolhido?: { data: string; hora: string };
+  criadaEm: string;
+}
+
 export function DentistaDashboard() {
   const navigate = useNavigate();
 
@@ -68,6 +83,19 @@ export function DentistaDashboard() {
     return salvos ? JSON.parse(salvos) : [];
   });
 
+  // Slot-offer scheduling — declarados ANTES dos useEffects que os referenciam
+  const [slotsPropostos, setSlotsPropostos] = useState<SlotProposto[]>([]);
+  const [novaData, setNovaData] = useState('');
+  const [novaHora, setNovaHora] = useState('');
+  const [procedimentoOferta, setProcedimentoOferta] = useState('Primeira Consulta - Avaliação');
+  const [ofertasMapa, setOfertasMapa] = useState<Record<string, OfertaAgendamento>>(() => {
+    const salvos = localStorage.getItem('tdb_ofertasHorario');
+    return salvos ? JSON.parse(salvos) : {};
+  });
+
+  const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
+  const [fichaAtiva, setFichaAtiva] = useState<Paciente | null>(null);
+
   useEffect(() => {
     localStorage.setItem('tdb_meusPacientes', JSON.stringify(meusPacientes));
   }, [meusPacientes]);
@@ -76,12 +104,10 @@ export function DentistaDashboard() {
     localStorage.setItem('tdb_agendamentos', JSON.stringify(agendamentos));
   }, [agendamentos]);
 
-  const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
-  const [fichaAtiva, setFichaAtiva] = useState<Paciente | null>(null);
+  useEffect(() => {
+    localStorage.setItem('tdb_ofertasHorario', JSON.stringify(ofertasMapa));
+  }, [ofertasMapa]);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<AgendamentoFormData>({
-    defaultValues: { tipo: 'Primeira Consulta - Avaliação' }
-  });
 
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista";
   const userRole = sessionStorage.getItem("userRole");
@@ -132,6 +158,107 @@ export function DentistaDashboard() {
       })
       .catch(err => console.error("Erro ao buscar pacientes:", err));
   }, [navigate, cidadeAtiva, userRole, meusPacientes]);
+
+  // Slots already taken by confirmed agendamentos (key: "data|hora")
+  const slotsOcupados = agendamentos.map(a => `${a.data}|${a.hora}`);
+
+  const handleAdicionarSlot = () => {
+    if (!novaData || !novaHora) return;
+    const chave = `${novaData}|${novaHora}`;
+    if (slotsPropostos.find(s => `${s.data}|${s.hora}` === chave)) return;
+    setSlotsPropostos(prev => [...prev, { id: Date.now().toString(), data: novaData, hora: novaHora }]);
+    setNovaHora('');
+  };
+
+  const handleRemoverSlot = (id: string) => {
+    setSlotsPropostos(prev => prev.filter(s => s.id !== id));
+  };
+
+  const handleEnviarOferta = () => {
+    if (!fichaAtiva || slotsPropostos.length === 0) return;
+    const slotsValidos = slotsPropostos.filter(s => !slotsOcupados.includes(`${s.data}|${s.hora}`));
+    if (slotsValidos.length === 0) return;
+    const oferta: OfertaAgendamento = {
+      dentistaNome: usuarioLogado,
+      dentistaCidade: cidadeAtiva,
+      procedimento: procedimentoOferta,
+      slots: slotsValidos,
+      status: 'pendente',
+      criadaEm: new Date().toISOString(),
+    };
+    setOfertasMapa(prev => ({ ...prev, [fichaAtiva.nome]: oferta }));
+    setSlotsPropostos([]);
+    setNovaData('');
+    setNovaHora('');
+    setMensagem(`Horários enviados para ${fichaAtiva.nome} com sucesso!`);
+    setTimeout(() => setMensagem(''), 3500);
+  };
+
+  const gerarRelatorio = (paciente: Paciente) => {
+    const historico = paciente.historico || [];
+    const concluidas = historico.filter(h => h.status !== 'Agendado').length;
+    const agendadasCount = historico.filter(h => h.status === 'Agendado').length;
+    const dataEmissao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
+    <title>Relatório — ${paciente.nome}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:40px;color:#333;max-width:800px;margin:0 auto}
+      h1{color:#FF8C00;border-bottom:3px solid #FF8C00;padding-bottom:12px;margin-bottom:4px}
+      .sub{color:#888;font-size:13px;margin-bottom:24px}
+      h2{color:#555;font-size:15px;text-transform:uppercase;letter-spacing:1px;margin-top:28px;margin-bottom:10px;border-left:4px solid #FF8C00;padding-left:10px}
+      .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:8px}
+      .card{background:#f9f9f9;border-radius:8px;padding:12px;border:1px solid #eee}
+      .card-label{font-size:10px;text-transform:uppercase;color:#aaa;font-weight:bold;display:block;margin-bottom:4px}
+      .card-val{font-size:16px;font-weight:bold;color:#333}
+      .stats{display:flex;gap:32px;margin:16px 0;background:#fff8f0;padding:20px;border-radius:12px;border:1px solid #ffe0b2}
+      .stat{text-align:center}
+      .stat-n{font-size:36px;font-weight:900;color:#FF8C00}
+      .stat-n.green{color:#8dc63f}
+      .stat-n.orange{color:#e67e22}
+      .stat-l{font-size:11px;color:#888;margin-top:4px}
+      .item{border-left:4px solid #FF8C00;padding:12px 16px;margin:8px 0;background:#fff8f0;border-radius:0 8px 8px 0}
+      .item.done{border-color:#8dc63f;background:#f0fff4}
+      .item-title{font-weight:bold;font-size:14px}
+      .badge{display:inline-block;font-size:10px;font-weight:bold;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-left:8px}
+      .badge.ag{background:#fff3e0;color:#e67e22}
+      .badge.ok{background:#e8f5e9;color:#2e7d32}
+      .item-meta{font-size:12px;color:#888;margin-top:6px}
+      .empty{color:#bbb;font-style:italic;font-size:13px}
+      footer{margin-top:48px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#bbb;text-align:center}
+      @media print{body{padding:20px}button{display:none!important}}
+    </style></head><body>
+    <h1>📋 Relatório do Paciente — Turma do Bem</h1>
+    <p class="sub">Emitido em ${dataEmissao} &nbsp;·&nbsp; Dr(a). ${usuarioLogado}</p>
+    <h2>Dados do Paciente</h2>
+    <div class="grid">
+      <div class="card"><span class="card-label">Nome</span><span class="card-val">${paciente.nome}</span></div>
+      <div class="card"><span class="card-label">Idade</span><span class="card-val">${paciente.idade} anos</span></div>
+      <div class="card"><span class="card-label">Localização</span><span class="card-val">${paciente.cidade}, ${paciente.pais}</span></div>
+      <div class="card"><span class="card-label">Tipo de Dor</span><span class="card-val">${paciente.tipo_dor || '—'}</span></div>
+      <div class="card"><span class="card-label">Renda Familiar</span><span class="card-val">${paciente.renda} SM</span></div>
+      <div class="card"><span class="card-label">Dias com Dor</span><span class="card-val">${paciente.tempo_dor} dias</span></div>
+    </div>
+    <h2>Resumo do Tratamento</h2>
+    <div class="stats">
+      <div class="stat"><div class="stat-n">${historico.length}</div><div class="stat-l">Total Consultas</div></div>
+      <div class="stat"><div class="stat-n green">${concluidas}</div><div class="stat-l">Concluídas</div></div>
+      <div class="stat"><div class="stat-n orange">${agendadasCount}</div><div class="stat-l">Agendadas</div></div>
+    </div>
+    <h2>Histórico de Consultas</h2>
+    ${historico.length === 0
+      ? '<p class="empty">Nenhuma consulta registrada.</p>'
+      : historico.map(h => `
+        <div class="item ${h.status !== 'Agendado' ? 'done' : ''}">
+          <span class="item-title">${h.proc || h.titulo || 'Procedimento'}</span>
+          <span class="badge ${h.status === 'Agendado' ? 'ag' : 'ok'}">${h.status}</span>
+          <div class="item-meta">📅 ${h.data || '—'}${h.hora ? ' &nbsp;·&nbsp; ⏰ ' + h.hora : ''} &nbsp;·&nbsp; 👨‍⚕️ Dr(a). ${h.dentista || usuarioLogado}</div>
+        </div>`).join('')
+    }
+    <footer>Relatório gerado automaticamente pelo sistema Dentista na Nuvem — Turma do Bem &nbsp;|&nbsp; Dr(a). ${usuarioLogado} &nbsp;|&nbsp; ${dataEmissao}</footer>
+    </body></html>`;
+    const win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.close(); win.focus(); setTimeout(() => win.print(), 500); }
+  };
 
   const handleLogout = () => {
     sessionStorage.clear();
@@ -199,41 +326,6 @@ export function DentistaDashboard() {
     }
   };
 
-  const onAgendarConsulta = (data: AgendamentoFormData) => {
-    if (!fichaAtiva) return;
-
-    const consultaMarcada: Agendamento = {
-      id: Date.now(),
-      paciente: fichaAtiva,
-      data: data.data,
-      hora: data.hora,
-      tipo: data.tipo
-    };
-
-    setAgendamentos([...agendamentos, consultaMarcada]);
-    
-    setMensagem(`Consulta agendada para ${fichaAtiva.nome} com sucesso!`);
-    setTimeout(() => setMensagem(''), 3000);
-    
-    const pacienteAtualizado = { ...fichaAtiva };
-    if (!pacienteAtualizado.historico) pacienteAtualizado.historico = [];
-    
-    const dataParts = data.data.split('-');
-    const dataFormatada = dataParts.length === 3 ? `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}` : data.data;
-    
-    pacienteAtualizado.historico.push({
-      status: 'Agendado',
-      data: dataFormatada,
-      proc: data.tipo,
-      dentista: usuarioLogado
-    });
-    
-    setMeusPacientes(meusPacientes.map(p => p.nome === fichaAtiva.nome ? pacienteAtualizado : p));
-
-    setFichaAtiva(null);
-    reset(); 
-    setTelaAtiva('agenda');
-  };
 
   const formatarDataAgenda = (dataISO: string) => {
     if (!dataISO) return { diaSemana: 'DIA', diaMes: '00' };
@@ -449,17 +541,48 @@ export function DentistaDashboard() {
                           <CheckCircle2 size={12} /> Adotado
                         </span>
                       </div>
-                      <div className="space-y-2 mb-4">
+                      <div className="space-y-2 mb-3">
                         <p className="text-sm text-gray-600 flex items-center gap-2"><Phone size={14} className="text-gray-400" /> {p.telefone || '(11) 90000-0000'}</p>
                         <p className="text-sm text-gray-600 flex items-center gap-2"><MapPin size={14} className="text-gray-400" /> {p.cidade}, {p.pais}</p>
                       </div>
+                      {/* Status do agendamento */}
+                      {(() => {
+                        const oferta = ofertasMapa[p.nome];
+                        const temAgendamento = agendamentos.some(a => a.paciente?.nome === p.nome);
+                        if (oferta?.status === 'confirmado' || temAgendamento) {
+                          return (
+                            <div className="mb-4 flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded-lg w-fit">
+                              <CalendarCheck size={13} /> Agendado
+                            </div>
+                          );
+                        } else if (oferta?.status === 'pendente') {
+                          return (
+                            <div className="mb-4 flex items-center gap-1.5 text-xs font-bold text-orange-600 bg-orange-50 border border-orange-200 px-2.5 py-1.5 rounded-lg w-fit">
+                              <Clock size={13} /> Em Andamento
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div className="mb-4 flex items-center gap-1.5 text-xs font-bold text-gray-500 bg-gray-100 border border-gray-200 px-2.5 py-1.5 rounded-lg w-fit">
+                              <Ban size={13} /> Não Agendado
+                            </div>
+                          );
+                        }
+                      })()}
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setFichaAtiva(p)}
+                        onClick={() => { setFichaAtiva(p); setSlotsPropostos([]); setNovaData(''); setNovaHora(''); setProcedimentoOferta('Primeira Consulta - Avaliação'); }}
                         className="flex-1 bg-gray-50 text-[#FF8C00] border border-orange-200 py-2.5 rounded-xl font-bold text-sm hover:bg-orange-50 hover:border-[#FF8C00] flex items-center justify-center gap-2 transition-all"
                       >
-                        <Calendar size={16} /> Ver Prontuário
+                        <Calendar size={16} /> Prontuário
+                      </button>
+                      <button
+                        onClick={() => gerarRelatorio(p)}
+                        className="bg-gray-50 text-gray-500 border border-gray-200 px-3 py-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all flex items-center justify-center"
+                        title="Gerar Relatório"
+                      >
+                        <FileText size={18} />
                       </button>
                       <button
                         onClick={() => removerAdocao(p)}
@@ -553,8 +676,8 @@ export function DentistaDashboard() {
 
       {/* === MODAIS === */}
       {pacienteSelecionado && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-scale-in">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4" onClick={() => setPacienteSelecionado(null)}>
+          <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-scale-in" onClick={e => e.stopPropagation()}>
             <div className="p-8 md:w-1/2 overflow-y-auto">
               <button onClick={() => setPacienteSelecionado(null)} className="mb-6 text-gray-400 hover:text-gray-800 text-sm font-bold transition-colors">← Fechar</button>
               <div className="flex items-center gap-4 mb-8">
@@ -589,54 +712,120 @@ export function DentistaDashboard() {
       )}
 
       {fichaAtiva && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-scale-in">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4" onClick={() => setFichaAtiva(null)}>
+          <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-scale-in" onClick={e => e.stopPropagation()}>
 
             <div className="p-8 md:w-1/2 overflow-y-auto bg-white border-r border-gray-100">
-              <div className="flex justify-between items-center mb-6 pb-6 border-b border-dashed border-gray-200">
-                <div>
-                  <h3 className="text-2xl font-black text-gray-800">{fichaAtiva.nome}</h3>
-                  <p className="text-sm text-gray-500 flex items-center gap-2 mt-1"><MapPin size={14} /> {fichaAtiva.cidade}, {fichaAtiva.pais} | <Phone size={14} /> {fichaAtiva.telefone || '(11) 90000-0000'}</p>
+              {/* Header */}
+              <div className="flex justify-between items-start mb-6 pb-6 border-b border-dashed border-gray-200">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-2xl font-black text-gray-800 truncate">{fichaAtiva.nome}</h3>
+                  <p className="text-sm text-gray-500 flex items-center gap-2 mt-1"><MapPin size={14} /> {fichaAtiva.cidade}, {fichaAtiva.pais}</p>
                 </div>
-                <div className="w-12 h-12 bg-orange-100 text-orange-500 rounded-xl flex items-center justify-center font-black text-xl border-2 border-orange-200">
-                  {fichaAtiva.idade}
+                <div className="flex flex-col items-end gap-2 ml-3 flex-shrink-0">
+                  <div className="w-12 h-12 bg-orange-100 text-orange-500 rounded-xl flex items-center justify-center font-black text-xl border-2 border-orange-200">
+                    {fichaAtiva.idade}
+                  </div>
+                  <button onClick={() => gerarRelatorio(fichaAtiva)}
+                    className="flex items-center gap-1 text-[10px] font-bold text-gray-400 hover:text-blue-600 border border-gray-200 hover:border-blue-300 px-2 py-1 rounded-lg transition-all uppercase tracking-wide">
+                    <Printer size={12} /> Relatório
+                  </button>
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit(onAgendarConsulta)} className="space-y-5">
-                <h4 className="font-bold text-gray-800 flex items-center gap-2"><Calendar size={18} className="text-[#8dc63f]" /> Agendar Nova Consulta</h4>
+              {/* Slot-offer builder */}
+              <div className="space-y-5">
+                <h4 className="font-bold text-gray-800 flex items-center gap-2">
+                  <CalendarCheck size={18} className="text-[#8dc63f]" /> Propor Horários ao Paciente
+                </h4>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Data</label>
-                    <input 
-                      type="date" 
-                      min={dataHoje} 
-                      {...register("data", { required: true })} 
-                      className={`w-full bg-gray-50 border ${errors.data ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]`} 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Horário</label>
-                    <input type="time" {...register("hora", { required: true })} className={`w-full bg-gray-50 border ${errors.hora ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]`} />
-                  </div>
-                </div>
-
+                {/* Procedimento */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Procedimento Clínico</label>
-                  <select {...register("tipo", { required: true })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00] appearance-none cursor-pointer">
-                    <option value="Primeira Consulta - Avaliação">Primeira Consulta - Avaliação</option>
-                    <option value="Restauração (Cárie)">Restauração (Cárie)</option>
-                    <option value="Limpeza (Profilaxia)">Limpeza (Profilaxia)</option>
-                    <option value="Canal (Endodontia)">Canal (Endodontia)</option>
-                    <option value="Extração Simples">Extração Simples</option>
+                  <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Procedimento</label>
+                  <select value={procedimentoOferta} onChange={e => setProcedimentoOferta(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 outline-none focus:border-[#FF8C00] appearance-none cursor-pointer">
+                    <option>Primeira Consulta - Avaliação</option>
+                    <option>Restauração (Cárie)</option>
+                    <option>Limpeza (Profilaxia)</option>
+                    <option>Canal (Endodontia)</option>
+                    <option>Extração Simples</option>
                   </select>
                 </div>
 
-                <button type="submit" className="w-full mt-4 bg-[#8dc63f] text-white font-bold py-4 rounded-xl hover:bg-[#7ebd34] transition-colors shadow-sm flex items-center justify-center gap-2 text-lg">
-                  Confirmar Agendamento
+                {/* Add slot row */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Adicionar Opção de Horário</label>
+                  <div className="flex gap-2">
+                    <input type="date" min={dataHoje} value={novaData} onChange={e => setNovaData(e.target.value)}
+                      className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#FF8C00]" />
+                    <input type="time" value={novaHora} onChange={e => setNovaHora(e.target.value)}
+                      className="w-[110px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#FF8C00]" />
+                    <button type="button" onClick={handleAdicionarSlot}
+                      className="bg-[#FF8C00] text-white p-2.5 rounded-xl hover:bg-[#E67E22] transition-colors flex-shrink-0">
+                      <Plus size={18} />
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-1.5">Adicione várias opções para o paciente escolher a melhor.</p>
+                </div>
+
+                {/* Proposed slots list */}
+                {slotsPropostos.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Horários na proposta:</p>
+                    {slotsPropostos.map(slot => {
+                      const ocupado = slotsOcupados.includes(`${slot.data}|${slot.hora}`);
+                      return (
+                        <div key={slot.id} className={`flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm font-medium ${ocupado ? 'bg-red-50 border-red-200 text-red-600' : 'bg-green-50 border-green-200 text-green-700'}`}>
+                          <span className="flex items-center gap-2">
+                            {ocupado ? <Ban size={14} /> : <CheckCircle2 size={14} />}
+                            {slot.data.split('-').reverse().join('/')} às {slot.hora}
+                            {ocupado && <span className="text-[10px] font-bold uppercase bg-red-100 text-red-500 px-2 py-0.5 rounded ml-1">Horário Ocupado</span>}
+                          </span>
+                          <button type="button" onClick={() => handleRemoverSlot(slot.id)} className="text-gray-300 hover:text-red-500 ml-2 transition-colors">
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Send offer button */}
+                <button type="button" onClick={handleEnviarOferta}
+                  disabled={slotsPropostos.filter(s => !slotsOcupados.includes(`${s.data}|${s.hora}`)).length === 0}
+                  className="w-full bg-[#8dc63f] text-white font-bold py-4 rounded-xl hover:bg-[#7ebd34] transition-colors shadow-sm flex items-center justify-center gap-2 text-base disabled:opacity-40 disabled:cursor-not-allowed">
+                  <Send size={18} />
+                  Enviar Proposta ao Paciente
+                  {slotsPropostos.filter(s => !slotsOcupados.includes(`${s.data}|${s.hora}`)).length > 0 &&
+                    <span className="bg-white/30 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {slotsPropostos.filter(s => !slotsOcupados.includes(`${s.data}|${s.hora}`)).length} opção(ões)
+                    </span>
+                  }
                 </button>
-              </form>
+
+                {/* Existing offer status */}
+                {ofertasMapa[fichaAtiva.nome] && (
+                  <div className={`p-4 rounded-xl border text-sm ${ofertasMapa[fichaAtiva.nome].status === 'confirmado' ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
+                    <p className="font-bold text-gray-700 flex items-center gap-2 mb-1">
+                      {ofertasMapa[fichaAtiva.nome].status === 'confirmado'
+                        ? <><CheckCircle2 size={16} className="text-green-500" /> Consulta confirmada pelo paciente!</>
+                        : <><Clock size={16} className="text-[#FF8C00]" /> Proposta enviada — aguardando escolha...</>
+                      }
+                    </p>
+                    <p className="text-gray-500 text-xs">{ofertasMapa[fichaAtiva.nome].procedimento}</p>
+                    {ofertasMapa[fichaAtiva.nome].status === 'confirmado' && ofertasMapa[fichaAtiva.nome].slotEscolhido && (
+                      <p className="text-green-700 font-bold text-xs mt-1">
+                        📅 {ofertasMapa[fichaAtiva.nome].slotEscolhido!.data.split('-').reverse().join('/')} às {ofertasMapa[fichaAtiva.nome].slotEscolhido!.hora}
+                      </p>
+                    )}
+                    {ofertasMapa[fichaAtiva.nome].status === 'pendente' && (
+                      <p className="text-gray-400 text-xs mt-1">
+                        {ofertasMapa[fichaAtiva.nome].slots.length} opção(ões) enviada(s)
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="p-8 md:w-1/2 overflow-y-auto bg-gray-50/50">
@@ -649,7 +838,7 @@ export function DentistaDashboard() {
                 {fichaAtiva.historico && fichaAtiva.historico.length > 0 ? (
                   fichaAtiva.historico.map((item, idx) => (
                     <div key={idx} className="relative pl-6 animate-fade-in">
-                      <div className={`absolute w-5 h-5 rounded-full -left-[11px] top-0.5 border-4 border-white shadow-sm ${item.status === 'Agendado' ? 'bg-[#FF8C00]' : 'bg-blue-500'}`}></div>
+                      <div className={`absolute w-5 h-5 rounded-full -left-[11px] top-0.5 border-4 border-white shadow-sm ${item.status === 'Agendado' ? 'bg-[#FF8C00]' : 'bg-[#8dc63f]'}`}></div>
                       <p className="text-xs font-bold text-gray-400 mb-1">{item.data}</p>
                       <div className={`p-4 rounded-xl border ${item.status === 'Agendado' ? 'bg-orange-50 border-orange-100' : 'bg-white border-gray-100 shadow-sm'}`}>
                         <h4 className={`font-bold text-sm ${item.status === 'Agendado' ? 'text-orange-800' : 'text-gray-800'}`}>
