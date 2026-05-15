@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 import {
   LayoutDashboard, Users, Calendar, LogOut,
   Search, MessageSquare, Send,
@@ -74,20 +75,14 @@ export function DentistaDashboard() {
     return salvos ? JSON.parse(salvos) : [];
   });
 
-  const [agendamentos, setAgendamentos] = useState<Agendamento[]>(() => {
-    const salvos = localStorage.getItem('tdb_agendamentos');
-    return salvos ? JSON.parse(salvos) : [];
-  });
+  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
 
   // Slot-offer scheduling — declarados ANTES dos useEffects que os referenciam
   const [slotsPropostos, setSlotsPropostos] = useState<SlotProposto[]>([]);
   const [novaData, setNovaData] = useState('');
   const [novaHora, setNovaHora] = useState('');
   const [procedimentoOferta, setProcedimentoOferta] = useState('Primeira Consulta - Avaliação');
-  const [ofertasMapa, setOfertasMapa] = useState<Record<string, OfertaAgendamento>>(() => {
-    const salvos = localStorage.getItem('tdb_ofertasHorario');
-    return salvos ? JSON.parse(salvos) : {};
-  });
+  const [ofertasMapa, setOfertasMapa] = useState<Record<string, OfertaAgendamento>>({});
 
   const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
   const [fichaAtiva, setFichaAtiva] = useState<Paciente | null>(null);
@@ -103,6 +98,45 @@ export function DentistaDashboard() {
   useEffect(() => {
     localStorage.setItem('tdb_ofertasHorario', JSON.stringify(ofertasMapa));
   }, [ofertasMapa]);
+
+  // Load offers and confirmed agenda from API on mount
+  useEffect(() => {
+    const idDentista = sessionStorage.getItem('userId');
+    if (!idDentista) return;
+
+    fetch(`${API_URL}/ofertas/dentista/${idDentista}`)
+      .then(res => res.json())
+      .then((ofertas: any[]) => {
+        if (!Array.isArray(ofertas)) return;
+        const mapa: Record<string, OfertaAgendamento> = {};
+        const agendados: Agendamento[] = [];
+
+        for (const o of ofertas) {
+          mapa[o.pacienteNome] = {
+            dentistaNome: usuarioLogado,
+            dentistaCidade: cidadeAtiva,
+            procedimento: o.procedimento,
+            slots: [],
+            status: o.status as 'pendente' | 'confirmado',
+            slotEscolhido: o.status === 'confirmado' ? { data: o.data, hora: o.hora } : undefined,
+            criadaEm: '',
+          };
+          if (o.status === 'confirmado') {
+            agendados.push({
+              id: o.id,
+              paciente: { id: o.idPaciente, nome: o.pacienteNome, idade: 0, pais: '', cidade: '', tipo_dor: '', score_match: 0, renda: 0, tempo_dor: 0 },
+              data: o.data,
+              hora: o.hora,
+              tipo: o.procedimento,
+            });
+          }
+        }
+
+        setOfertasMapa(mapa);
+        setAgendamentos(agendados);
+      })
+      .catch(err => console.error('Erro ao carregar ofertas:', err));
+  }, [usuarioLogado, cidadeAtiva]);
 
 
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista";
@@ -120,7 +154,7 @@ export function DentistaDashboard() {
     }
 
     // A API agora procura por cidade
-    fetch(`${import.meta.env.VITE_API_URL}/pacientes?cidade=${cidadeAtiva}`)
+    fetch(`${API_URL}/pacientes?cidade=${cidadeAtiva}`)
       .then(res => res.json())
       .then(data => {
         const pacientesMapeados = data.map((p: any) => {
@@ -170,24 +204,45 @@ export function DentistaDashboard() {
     setSlotsPropostos(prev => prev.filter(s => s.id !== id));
   };
 
-  const handleEnviarOferta = () => {
+  const handleEnviarOferta = async () => {
     if (!fichaAtiva || slotsPropostos.length === 0) return;
     const slotsValidos = slotsPropostos.filter(s => !slotsOcupados.includes(`${s.data}|${s.hora}`));
     if (slotsValidos.length === 0) return;
-    const oferta: OfertaAgendamento = {
-      dentistaNome: usuarioLogado,
-      dentistaCidade: cidadeAtiva,
-      procedimento: procedimentoOferta,
-      slots: slotsValidos,
-      status: 'pendente',
-      criadaEm: new Date().toISOString(),
-    };
-    setOfertasMapa(prev => ({ ...prev, [fichaAtiva.nome]: oferta }));
-    setSlotsPropostos([]);
-    setNovaData('');
-    setNovaHora('');
-    setMensagem(`Horários enviados para ${fichaAtiva.nome} com sucesso!`);
-    setTimeout(() => setMensagem(''), 3500);
+
+    const idDentista = sessionStorage.getItem('userId');
+    try {
+      const res = await fetch(`${API_URL}/ofertas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idDentista: Number(idDentista),
+          idPaciente: fichaAtiva.id,
+          procedimento: procedimentoOferta,
+          slots: slotsValidos.map(s => ({ data: s.data, hora: s.hora })),
+        }),
+      });
+
+      if (!res.ok) throw new Error('API error');
+
+      const oferta: OfertaAgendamento = {
+        dentistaNome: usuarioLogado,
+        dentistaCidade: cidadeAtiva,
+        procedimento: procedimentoOferta,
+        slots: slotsValidos,
+        status: 'pendente',
+        criadaEm: new Date().toISOString(),
+      };
+      setOfertasMapa(prev => ({ ...prev, [fichaAtiva.nome]: oferta }));
+      setSlotsPropostos([]);
+      setNovaData('');
+      setNovaHora('');
+      setMensagem(`Horários enviados para ${fichaAtiva.nome} com sucesso!`);
+      setTimeout(() => setMensagem(''), 3500);
+    } catch (err) {
+      console.error('Erro ao enviar oferta:', err);
+      setMensagem('Erro ao enviar proposta. Tente novamente.');
+      setTimeout(() => setMensagem(''), 3500);
+    }
   };
 
   const gerarRelatorio = (paciente: Paciente) => {
@@ -266,7 +321,7 @@ export function DentistaDashboard() {
     setCarregandoIA(true);
     
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/IA/consultar`, {
+      const res = await fetch(`${API_URL}/IA/consultar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -301,7 +356,7 @@ export function DentistaDashboard() {
 
   const adotarPaciente = async (paciente: Paciente) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/pacientes/${paciente.id}`, {
+      await fetch(`${API_URL}/pacientes/${paciente.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...paciente, status: 'adotado', dentista: usuarioLogado }),

@@ -16,7 +16,7 @@
  *   e remova a linha  %dev.quarkus.mailer.mock=true  do application.properties.
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import { API_URL } from '../config';
 
 // ─── tipos ───────────────────────────────────────────────────────────────────
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { DADOS_PAISES } from '../data/estadosCidades';
+import { API_URL } from '../config';
 
 interface CadastroFormData {
   nome?: string;
@@ -61,8 +62,8 @@ export function Cadastro() {
     setMensagem({ texto: 'Processando registro...', tipo: 'sucesso' });
     try {
       const url = data.tipo === 'paciente'
-        ? `${import.meta.env.VITE_API_URL}/pacientes`
-        : `${import.meta.env.VITE_API_URL}/dentistas`;
+        ? `${API_URL}/pacientes`
+        : `${API_URL}/dentistas`;
 
       const payload = data.tipo === 'paciente' ? {
         nome: data.nome, email: data.email, senha: data.senha,

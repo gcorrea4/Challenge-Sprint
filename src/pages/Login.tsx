@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 interface LoginFormData {
   email?: string;
@@ -25,7 +26,7 @@ export function Login() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
+      const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: data.email, senha: data.senha }),

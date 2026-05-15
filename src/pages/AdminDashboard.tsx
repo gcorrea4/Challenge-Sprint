@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign, Trash2, AlertTriangle, Search, UserX } from 'lucide-react';
 import Map, { Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -75,7 +76,7 @@ export function AdminDashboard() {
       return;
     }
     
-    fetch(`${import.meta.env.VITE_API_URL}/admin/estatisticas`)
+    fetch(`${API_URL}/admin/estatisticas`)
       .then(res => {
         if (!res.ok) throw new Error("Erro 500 do servidor"); 
         return res.json();
@@ -103,8 +104,8 @@ export function AdminDashboard() {
   const carregarUsuarios = () => {
     setCarregandoUsuarios(true);
     Promise.all([
-      fetch(`${import.meta.env.VITE_API_URL}/pacientes`).then(r => r.json()).catch(() => []),
-      fetch(`${import.meta.env.VITE_API_URL}/dentistas`).then(r => r.json()).catch(() => []),
+      fetch(`${API_URL}/pacientes`).then(r => r.json()).catch(() => []),
+      fetch(`${API_URL}/dentistas`).then(r => r.json()).catch(() => []),
     ]).then(([pacs, dents]) => {
       setPacientes(pacs);
       setDentistas(dents);
@@ -117,7 +118,7 @@ export function AdminDashboard() {
 
   const deletarPaciente = async (id: number, nome: string) => {
     if (!window.confirm(`Excluir permanentemente a conta de "${nome}"? Esta ação não pode ser desfeita.`)) return;
-    await fetch(`${import.meta.env.VITE_API_URL}/pacientes/${id}`, { method: 'DELETE' });
+    await fetch(`${API_URL}/pacientes/${id}`, { method: 'DELETE' });
     setPacientes(prev => prev.filter(p => p.id !== id));
     setMensagemAdmin(`Conta de ${nome} excluída.`);
     setTimeout(() => setMensagemAdmin(''), 3000);
@@ -125,7 +126,7 @@ export function AdminDashboard() {
 
   const deletarDentista = async (id: number, nome: string) => {
     if (!window.confirm(`Excluir permanentemente a conta de "${nome}"? Esta ação não pode ser desfeita.`)) return;
-    await fetch(`${import.meta.env.VITE_API_URL}/dentistas/${id}`, { method: 'DELETE' });
+    await fetch(`${API_URL}/dentistas/${id}`, { method: 'DELETE' });
     setDentistas(prev => prev.filter(d => d.id !== id));
     setMensagemAdmin(`Conta de ${nome} excluída.`);
     setTimeout(() => setMensagemAdmin(''), 3000);

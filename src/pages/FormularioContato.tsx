@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Send, ArrowLeft, User, Mail, HelpCircle, MessageSquare } from 'lucide-react';
+import { API_URL } from '../config';
 
 interface ContatoFormData {
   nome: string;
@@ -24,7 +25,7 @@ export function FormularioContato() {
     setIsLoading(true);
     setErro('');
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/mensagens`, {
+      const response = await fetch(`${API_URL}/mensagens`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

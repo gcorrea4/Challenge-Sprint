@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { User, Calendar, DollarSign, Activity, Clock, MapPin, ShieldAlert } from 'lucide-react';
+import { API_URL } from '../config';
 import { ESTADOS_BRASIL, CIDADES_POR_ESTADO } from '../data/estadosCidades';
 
 interface TriagemFormData {
@@ -41,7 +42,7 @@ export function Formulario() {
     setIsSubmitting(true);
     setMensagem({ texto: 'A processar a triagem...', tipo: 'sucesso' });
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/pacientes`, {
+      const response = await fetch(`${API_URL}/pacientes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

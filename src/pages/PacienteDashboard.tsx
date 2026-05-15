@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import { useForm } from 'react-hook-form';
 import { LayoutDashboard, LogOut, Clock, CalendarDays, Users, ClipboardList, Activity, CheckCircle2, AlertCircle, TrendingUp, Bell, CalendarCheck, ChevronRight, Phone, Mail, Navigation } from 'lucide-react';
 import { MapaRota } from '../components/MapaRota';
@@ -22,6 +23,7 @@ interface SlotOferta {
 }
 
 interface OfertaAgendamento {
+  id?: number;
   dentistaNome: string;
   dentistaCidade?: string;
   procedimento: string;
@@ -65,25 +67,25 @@ export function PacienteDashboard() {
       navigate('/login');
       return;
     }
-    fetch(`${import.meta.env.VITE_API_URL}/pacientes/${userId}`)
+    fetch(`${API_URL}/pacientes/${userId}`)
       .then(res => res.json())
       .then(data => {
         if (data?.cidade) setPacienteInfo({ cidade: data.cidade, pais: data.pais || 'Brasil' });
       })
       .catch(() => {});
 
-    fetch(`${import.meta.env.VITE_API_URL}/pacientes/${userId}/historico`)
+    fetch(`${API_URL}/pacientes/${userId}/historico`)
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setHistoricoPaciente(data); })
       .catch(err => console.error('Erro ao buscar histórico:', err));
 
-    // Load slot offer from dentist
-    try {
-      const ofertasMap = JSON.parse(localStorage.getItem('tdb_ofertasHorario') || '{}');
-      if (usuarioLogado && ofertasMap[usuarioLogado]) {
-        setOfertaRecebida(ofertasMap[usuarioLogado]);
-      }
-    } catch { /* ignore */ }
+    // Load slot offer from dentist via API
+    fetch(`${API_URL}/ofertas/paciente/${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.id) setOfertaRecebida(data as OfertaAgendamento);
+      })
+      .catch(() => {});
 
     // Verifica e dispara lembretes de e-mail pendentes para hoje
     if (usuarioLogado) verificarEEnviarLembretes(usuarioLogado);
@@ -121,8 +123,8 @@ export function PacienteDashboard() {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/pacientes`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/pacientes/${userId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         signal: controller.signal,
@@ -141,7 +143,7 @@ export function PacienteDashboard() {
     }
   };
 
-  const handleConfirmarSlot = () => {
+  const handleConfirmarSlot = async () => {
     if (!ofertaRecebida || !slotEscolhidoId || !usuarioLogado) return;
     const slot = ofertaRecebida.slots.find(s => s.id === slotEscolhidoId);
     if (!slot) return;
@@ -149,32 +151,20 @@ export function PacienteDashboard() {
     const dataParts = slot.data.split('-');
     const dataFormatada = `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}`;
 
-    // 1. Save to tdb_agendamentos (dentist agenda)
-    try {
-      const agendamentos = JSON.parse(localStorage.getItem('tdb_agendamentos') || '[]');
-      agendamentos.push({ id: Date.now(), paciente: { nome: usuarioLogado }, data: slot.data, hora: slot.hora, tipo: ofertaRecebida.procedimento });
-      localStorage.setItem('tdb_agendamentos', JSON.stringify(agendamentos));
-    } catch { /* ignore */ }
-
-    // 2. Update dentist's meusPacientes historico
-    try {
-      const meusPacientes = JSON.parse(localStorage.getItem('tdb_meusPacientes') || '[]');
-      const idx = meusPacientes.findIndex((p: any) => p.nome === usuarioLogado);
-      if (idx !== -1) {
-        if (!meusPacientes[idx].historico) meusPacientes[idx].historico = [];
-        meusPacientes[idx].historico.push({ status: 'Agendado', data: dataFormatada, hora: slot.hora, proc: ofertaRecebida.procedimento, dentista: ofertaRecebida.dentistaNome });
-        localStorage.setItem('tdb_meusPacientes', JSON.stringify(meusPacientes));
+    // Confirm via API
+    if (ofertaRecebida.id) {
+      try {
+        await fetch(`${API_URL}/ofertas/${ofertaRecebida.id}/confirmar`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: slot.data, hora: slot.hora }),
+        });
+      } catch (err) {
+        console.warn('[Oferta] Falha ao confirmar via API:', err);
       }
-    } catch { /* ignore */ }
+    }
 
-    // 3. Mark offer as confirmed
-    try {
-      const ofertasMap = JSON.parse(localStorage.getItem('tdb_ofertasHorario') || '{}');
-      ofertasMap[usuarioLogado] = { ...ofertasMap[usuarioLogado], status: 'confirmado', slotEscolhido: { data: slot.data, hora: slot.hora } };
-      localStorage.setItem('tdb_ofertasHorario', JSON.stringify(ofertasMap));
-    } catch { /* ignore */ }
-
-    // 4. Update local state
+    // Update local state
     const ofertaAtualizada = { ...ofertaRecebida, status: 'confirmado' as const, slotEscolhido: { data: slot.data, hora: slot.hora } };
     setOfertaRecebida(ofertaAtualizada);
     setHistoricoPaciente(prev => [...prev, { status: 'Agendado', data: dataFormatada, hora: slot.hora, proc: ofertaRecebida.procedimento, dentista: ofertaRecebida.dentistaNome }]);
