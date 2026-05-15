@@ -87,6 +87,10 @@ export function DentistaDashboard() {
   const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
   const [fichaAtiva, setFichaAtiva] = useState<Paciente | null>(null);
 
+  const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista";
+  const userRole = sessionStorage.getItem("userRole");
+  const [cidadeAtiva, setCidadeAtiva] = useState(sessionStorage.getItem("dentistaCidade") || "São Paulo");
+
   useEffect(() => {
     localStorage.setItem('tdb_meusPacientes', JSON.stringify(meusPacientes));
   }, [meusPacientes]);
@@ -137,13 +141,6 @@ export function DentistaDashboard() {
       })
       .catch(err => console.error('Erro ao carregar ofertas:', err));
   }, [usuarioLogado, cidadeAtiva]);
-
-
-  const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Dentista";
-  const userRole = sessionStorage.getItem("userRole");
-  
-  // Substituído de Bairro para Cidade
-  const [cidadeAtiva, setCidadeAtiva] = useState(sessionStorage.getItem("dentistaCidade") || "São Paulo");
 
   const dataHoje = new Date().toISOString().split('T')[0];
 
