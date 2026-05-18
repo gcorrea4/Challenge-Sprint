@@ -1,25 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calculator } from 'lucide-react';
-
-type TipoDor = 'leve' | 'moderada' | 'forte' | 'urgente';
-
-const GRAVIDADE_SCORE: Record<TipoDor, number> = {
-  leve: 5,
-  moderada: 15,
-  forte: 30,
-  urgente: 45,
-};
-
-const IDADE_SCORE: Record<number, number> = {
-  17: 20, 16: 17, 15: 14, 14: 11, 13: 8, 12: 5, 11: 3,
-};
-
-function calcularRenda(renda: number): number {
-  if (renda <= 0.5) return 35;
-  if (renda <= 1) return 28;
-  if (renda <= 2) return 15;
-  return 5;
-}
+import { type TipoDor, GRAVIDADE_SCORE, IDADE_SCORE, calcularRenda } from '../utils/scoreUtils';
 
 export function CalculadoraScore() {
   const [idade, setIdade] = useState(14);
@@ -33,6 +14,7 @@ export function CalculadoraScore() {
     const financeiro = calcularRenda(renda);
     const idadePts = IDADE_SCORE[idade] ?? 0;
     const total = gravidade + financeiro + idadePts;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setBreakdown({ gravidade, financeiro, idade: idadePts });
     setScore(total);
   }, [idade, renda, tipoDor]);

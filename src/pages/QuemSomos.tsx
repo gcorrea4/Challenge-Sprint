@@ -1,4 +1,7 @@
 import { motion } from 'framer-motion';
+import fotoCorrea from '../img/foto-correa.jpg';
+import fotoKay from '../img/foto-kay.jpg';
+import fotoEric from '../img/foto-eric.jpg';
 
 export function QuemSomos() {
   const equipe = [
@@ -6,7 +9,7 @@ export function QuemSomos() {
       nome: "Gabriel Correa",
       rm: "567903",
       turma: "1TDSPB",
-      foto: "/foto-correa.jpg",
+      foto: fotoCorrea,
       github: "https://github.com/gcorrea4",
       linkedin: "https://www.linkedin.com/in/gabriel-correa-souza-763135271/"
     },
@@ -14,7 +17,7 @@ export function QuemSomos() {
       nome: "Kayque Duarte",
       rm: "567980",
       turma: "1TDSPB",
-      foto: "/foto-kay.jpg",
+      foto: fotoKay,
       github: "https://github.com/Kayque2012",
       linkedin: "https://www.linkedin.com/in/kayque-duarte-b24313361"
     },
@@ -22,7 +25,7 @@ export function QuemSomos() {
       nome: "Eric Maciel",
       rm: "567398",
       turma: "1TDSPB",
-      foto: "/foto-eric.jpg",
+      foto: fotoEric,
       github: "https://github.com/Eric-devops-tech",
       linkedin: "https://www.linkedin.com/in/eric-maciel-144058389"
     }

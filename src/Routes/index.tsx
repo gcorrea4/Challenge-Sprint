@@ -18,29 +18,50 @@ import { FormularioContato } from '../pages/FormularioContato';
 import { Prontuario } from '../pages/Prontuario';
 import { Doador } from '../pages/Doador';
 
+/**
+ * Roteamento da aplicação Turma do Bem.
+ *
+ * Não há Route Guards centralizados aqui — cada dashboard faz sua própria
+ * verificação de sessão no useEffect de mount e redireciona para /login
+ * se o usuário não estiver autenticado ou não tiver o perfil correto.
+ *
+ * Grupos de rotas:
+ *   Públicas       → /, /faq, /quem-somos, /sobre, /reconhecimentos,
+ *                    /contato, /formulario, /cadastro, /login, /Doador
+ *   Protegidas     → /dashboard/admin    (role: admin | dev)
+ *                    /dashboard/dentista (role: dentista | dev)
+ *                    /dashboard/paciente (role: paciente)
+ *   Utilitários    → /Calculadora/Score, /FormularioContato,
+ *                    /prontuario/:nome
+ */
 export function AppRoutes() {
   return (
     <BrowserRouter>
       <div className="min-h-screen flex flex-col bg-[#F5F5DC]">
-        <Header /> 
+        <Header />
         <div className="flex-grow">
           <Routes>
+            {/* ── Páginas públicas ── */}
             <Route path="/" element={<Home />} />
-            <Route path="/faq" element={<FAQ />} /> 
-            <Route path="/reconhecimentos" element={<Reconhecimentos />} /> 
-            <Route path="/quem-somos" element={<QuemSomos />} /> 
-            <Route path="/sobre" element={<Sobre />} /> 
-            <Route path="/contato" element={<Contato />} /> 
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/reconhecimentos" element={<Reconhecimentos />} />
+            <Route path="/quem-somos" element={<QuemSomos />} />
+            <Route path="/sobre" element={<Sobre />} />
+            <Route path="/contato" element={<Contato />} />
             <Route path="/formulario" element={<Formulario />} />
             <Route path="/cadastro" element={<Cadastro />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/Doador" element={<Doador />} />
+
+            {/* ── Dashboards protegidos (auth verificada internamente) ── */}
+            <Route path="/dashboard/admin"    element={<AdminDashboard />} />
             <Route path="/dashboard/dentista" element={<DentistaDashboard />} />
             <Route path="/dashboard/paciente" element={<PacienteDashboard />} />
-            <Route path='/Calculadura/Score' element={<CalculadoraScore /> } />
-            <Route path='/FormularioContato' element={<FormularioContato /> } /> 
-            <Route path='/prontuario/:nome' element={<Prontuario />} />
-            <Route path='/Doador' element={<Doador />} />
+
+            {/* ── Utilitários ── */}
+            <Route path="/Calculadora/Score"   element={<CalculadoraScore />} />
+            <Route path="/FormularioContato"   element={<FormularioContato />} />
+            <Route path="/prontuario/:nome"    element={<Prontuario />} />
           </Routes>
         </div>
         <Footer />

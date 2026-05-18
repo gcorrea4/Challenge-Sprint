@@ -4,7 +4,6 @@ import { API_URL } from '../config';
 import { useForm } from 'react-hook-form';
 import { LayoutDashboard, LogOut, Clock, CalendarDays, Users, ClipboardList, Activity, CheckCircle2, AlertCircle, TrendingUp, Bell, CalendarCheck, ChevronRight, Phone, Mail, Navigation } from 'lucide-react';
 import { MapaRota } from '../components/MapaRota';
-import { salvarDadosLembrete, enviarConfirmacao, verificarEEnviarLembretes, lembretesStatus, lerDadosLembrete } from '../utils/emailService';
 
 interface HistoricoConsulta {
   id?: number;
@@ -26,6 +25,7 @@ interface OfertaAgendamento {
   id?: number;
   dentistaNome: string;
   dentistaCidade?: string;
+  dentistaPais?: string;
   procedimento: string;
   slots: SlotOferta[];
   status: 'pendente' | 'confirmado';
@@ -58,15 +58,30 @@ export function PacienteDashboard() {
   const [slotEscolhidoId, setSlotEscolhidoId] = useState<string>('');
   const [mapaRotaAberto, setMapaRotaAberto] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<TriagemFormData>({ defaultValues: { tipoDor: 'leve' } });
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<TriagemFormData>({ defaultValues: { tipoDor: 'leve' } });
+
+  const aplicarMascaraTelefone = (valor: string): string => {
+    const d = valor.replace(/\D/g, '').slice(0, 11);
+    if (d.length === 0) return '';
+    if (d.length <= 2) return `(${d}`;
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  };
 
   const [pacienteInfo, setPacienteInfo] = useState<{ cidade: string; pais: string }>({ cidade: '', pais: 'Brasil' });
 
+  // Carrega todos os dados do paciente ao montar o dashboard:
+  //   1. Cidade/país → filtra a fila de dentistas da região
+  //   2. Histórico de consultas → linha do tempo e cálculo de progresso
+  //   3. Oferta de agendamento → proposta de horário enviada por algum dentista
+  //   4. Lembretes de e-mail → verifica se há consulta hoje e dispara e-mail se necessário
   useEffect(() => {
     if (!usuarioLogado || userRole !== 'paciente' || !userId) {
       navigate('/login');
       return;
     }
+
     fetch(`${API_URL}/pacientes/${userId}`)
       .then(res => res.json())
       .then(data => {
@@ -77,9 +92,8 @@ export function PacienteDashboard() {
     fetch(`${API_URL}/pacientes/${userId}/historico`)
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setHistoricoPaciente(data); })
-      .catch(err => console.error('Erro ao buscar histórico:', err));
+      .catch(() => {});
 
-    // Load slot offer from dentist via API
     fetch(`${API_URL}/ofertas/paciente/${userId}`)
       .then(res => res.json())
       .then(data => {
@@ -87,13 +101,11 @@ export function PacienteDashboard() {
       })
       .catch(() => {});
 
-    // Verifica e dispara lembretes de e-mail pendentes para hoje
-    if (usuarioLogado) verificarEEnviarLembretes(usuarioLogado);
   }, [navigate, userRole, userId, usuarioLogado]);
 
   const handleLogout = () => { sessionStorage.clear(); navigate('/login'); };
 
-  const consultasConcluidas = historicoPaciente.filter(h => h.status !== 'Agendado').length;
+  const consultasConcluidas = historicoPaciente.filter(h => h.status === 'Concluído').length;
   const consultasAgendadas = historicoPaciente.filter(h => h.status === 'Agendado').length;
   const progressoPct = Math.min(Math.round((consultasConcluidas / TOTAL_CONSULTAS_PLANO) * 100), 100);
 
@@ -110,19 +122,9 @@ export function PacienteDashboard() {
       email: data.email,
     };
 
-    const salvarSucesso = () => {
-      if (usuarioLogado) {
-        localStorage.setItem(`tdb_contato_${usuarioLogado}`, JSON.stringify({ email: data.email, telefone: data.telefone }));
-        localStorage.setItem(`tdb_triagem_${usuarioLogado}`, JSON.stringify(payload));
-      }
-      setMensagemSucesso('Ficha de triagem enviada com sucesso! Aguarde o contacto de um dentista voluntário.');
-      setFichaEnviada(true);
-      setTimeout(() => { setTelaAtiva('painel'); setMensagemSucesso(''); }, 4000);
-    };
-
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
+      const timeout = setTimeout(() => controller.abort(), 8000);
       const response = await fetch(`${API_URL}/pacientes/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -131,15 +133,22 @@ export function PacienteDashboard() {
       });
       clearTimeout(timeout);
 
-      // Sucesso ou falha na API — em ambos os casos salva localmente e prossegue
-      salvarSucesso();
-      if (!response.ok) {
-        console.warn('[Triagem] API retornou', response.status, '— dados salvos localmente.');
+      if (response.ok) {
+        if (usuarioLogado) {
+          localStorage.setItem(`tdb_contato_${usuarioLogado}`, JSON.stringify({ email: data.email, telefone: data.telefone }));
+          localStorage.setItem(`tdb_triagem_${usuarioLogado}`, JSON.stringify(payload));
+        }
+        setMensagemSucesso('Ficha de triagem enviada com sucesso! Aguarde o contacto de um dentista voluntário.');
+        setFichaEnviada(true);
+        setTimeout(() => { setTelaAtiva('painel'); setMensagemSucesso(''); }, 4000);
+      } else {
+        const err = await response.json().catch(() => null);
+        setMensagemSucesso('__erro__' + (err?.erro || 'Erro ao enviar triagem. Tente novamente.'));
+        setTimeout(() => setMensagemSucesso(''), 4000);
       }
     } catch {
-      // Sem conexão com o backend — salva localmente e continua normalmente
-      console.warn('[Triagem] Backend indisponível — dados salvos localmente.');
-      salvarSucesso();
+      setMensagemSucesso('__erro__Sem conexão com o servidor. Verifique sua internet e tente novamente.');
+      setTimeout(() => setMensagemSucesso(''), 4000);
     }
   };
 
@@ -151,43 +160,34 @@ export function PacienteDashboard() {
     const dataParts = slot.data.split('-');
     const dataFormatada = `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}`;
 
-    // Confirm via API
+    // Confirm via API — só atualiza estado local após confirmação do servidor
     if (ofertaRecebida.id) {
       try {
-        await fetch(`${API_URL}/ofertas/${ofertaRecebida.id}/confirmar`, {
+        const res = await fetch(`${API_URL}/ofertas/${ofertaRecebida.id}/confirmar`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: slot.data, hora: slot.hora }),
         });
-      } catch (err) {
-        console.warn('[Oferta] Falha ao confirmar via API:', err);
+        if (!res.ok) {
+          const err = await res.json().catch(() => null);
+          setMensagemSucesso('__erro__' + (err?.erro || 'Erro ao confirmar agendamento. Tente novamente.'));
+          setTimeout(() => setMensagemSucesso(''), 4000);
+          return;
+        }
+      } catch {
+        setMensagemSucesso('__erro__Sem conexão com o servidor. Tente novamente.');
+        setTimeout(() => setMensagemSucesso(''), 4000);
+        return;
       }
     }
 
-    // Update local state
+    // Atualiza estado local somente após backend confirmar
     const ofertaAtualizada = { ...ofertaRecebida, status: 'confirmado' as const, slotEscolhido: { data: slot.data, hora: slot.hora } };
     setOfertaRecebida(ofertaAtualizada);
     setHistoricoPaciente(prev => [...prev, { status: 'Agendado', data: dataFormatada, hora: slot.hora, proc: ofertaRecebida.procedimento, dentista: ofertaRecebida.dentistaNome }]);
     setMensagemSucesso(`Consulta confirmada para ${dataFormatada} às ${slot.hora}! O seu dentista foi notificado.`);
     setTimeout(() => { setTelaAtiva('painel'); setMensagemSucesso(''); }, 4000);
 
-    // 5. Agenda lembretes por e-mail
-    if (usuarioLogado) {
-      const contatoRaw = localStorage.getItem(`tdb_contato_${usuarioLogado}`);
-      const emailPaciente = contatoRaw ? JSON.parse(contatoRaw).email : '';
-      if (emailPaciente) {
-        const dadosLembrete = {
-          email: emailPaciente,
-          nome: usuarioLogado,
-          procedimento: ofertaRecebida.procedimento,
-          data: slot.data,
-          hora: slot.hora,
-          dentista: ofertaRecebida.dentistaNome,
-        };
-        salvarDadosLembrete(dadosLembrete);
-        enviarConfirmacao(dadosLembrete); // fire-and-forget
-      }
-    }
   };
 
   const navBtnClass = (ativa: boolean) =>
@@ -231,11 +231,15 @@ export function PacienteDashboard() {
       </aside>
 
       <main className="flex-1 p-6 md:p-8 max-w-[1000px] mx-auto w-full relative">
-        {mensagemSucesso && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] px-6 py-3 rounded-xl shadow-lg font-bold flex items-center gap-2 w-max">
-            <CheckCircle2 size={20} /> {mensagemSucesso}
-          </div>
-        )}
+        {mensagemSucesso && (() => {
+          const isErro = mensagemSucesso.startsWith('__erro__');
+          const texto = isErro ? mensagemSucesso.replace('__erro__', '') : mensagemSucesso;
+          return (
+            <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg font-bold flex items-center gap-2 w-max ${isErro ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'}`}>
+              <CheckCircle2 size={20} /> {texto}
+            </div>
+          );
+        })()}
 
         {telaAtiva === 'painel' && (
           <div className="animate-fade-in space-y-8">
@@ -442,44 +446,6 @@ export function PacienteDashboard() {
                   </button>
                 </div>
 
-                {/* Lembretes por e-mail */}
-                {usuarioLogado && lerDadosLembrete(usuarioLogado) && (() => {
-                  const dados = lerDadosLembrete(usuarioLogado)!;
-                  const status = lembretesStatus(dados);
-                  return (
-                    <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Mail size={18} className="text-[#FF8C00]" />
-                        <h4 className="font-bold text-gray-800 text-sm">Lembretes por E-mail</h4>
-                        <span className="text-xs text-gray-400 ml-1">→ {dados.email}</span>
-                      </div>
-                      <div className="space-y-2">
-                        {status.map(s => (
-                          <div key={s.diasAntes}
-                            className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm ${s.enviado ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex items-center gap-2">
-                              {s.enviado
-                                ? <CheckCircle2 size={15} className="text-[#8dc63f] flex-shrink-0" />
-                                : <Bell size={15} className="text-gray-400 flex-shrink-0" />}
-                              <span className={`font-medium ${s.enviado ? 'text-green-700' : 'text-gray-600'}`}>
-                                {s.label}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-400">{s.dataEnvio}</span>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${s.enviado ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'}`}>
-                                {s.enviado ? 'ENVIADO' : 'PENDENTE'}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-[11px] text-gray-400 mt-3 text-center">
-                        Os lembretes são enviados automaticamente ao abrir o painel no dia previsto.
-                      </p>
-                    </div>
-                  );
-                })()}
               </div>
             ) : (
               <div className="bg-white p-12 rounded-3xl border border-gray-100 shadow-sm text-center flex flex-col items-center min-h-[350px] justify-center">
@@ -523,18 +489,25 @@ export function PacienteDashboard() {
                         <Phone size={14} className="text-gray-400" /> Telefone para Contato
                       </label>
                       <input type="tel" placeholder="(11) 99999-9999"
-                        {...register('telefone', { required: true, minLength: 8 })}
+                        {...register('telefone', {
+                          required: 'Telefone obrigatório',
+                          pattern: { value: /^\(\d{2}\)\s\d{4,5}-\d{4}$/, message: 'Formato inválido. Use (11) 99999-9999' }
+                        })}
+                        onChange={e => setValue('telefone', aplicarMascaraTelefone(e.target.value), { shouldValidate: !!errors.telefone })}
                         className={`${inputClass} ${errors.telefone ? 'border-red-500' : ''}`} />
-                      {errors.telefone && <span className="text-red-500 text-xs mt-1">Telefone obrigatório</span>}
+                      {errors.telefone && <span className="text-red-500 text-xs mt-1">{errors.telefone.message}</span>}
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
                         <Mail size={14} className="text-gray-400" /> E-mail para Lembretes
                       </label>
                       <input type="email" placeholder="seu@email.com"
-                        {...register('email', { required: true })}
+                        {...register('email', {
+                          required: 'E-mail obrigatório',
+                          pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'E-mail inválido' }
+                        })}
                         className={`${inputClass} ${errors.email ? 'border-red-500' : ''}`} />
-                      {errors.email && <span className="text-red-500 text-xs mt-1">E-mail inválido</span>}
+                      {errors.email && <span className="text-red-500 text-xs mt-1">{errors.email.message}</span>}
                       <p className="text-[11px] text-gray-400 mt-1">Você receberá lembretes 3, 2 e 1 dia(s) antes da consulta.</p>
                     </div>
                   </div>
@@ -551,9 +524,12 @@ export function PacienteDashboard() {
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-1.5">Renda Familiar (Salários Mínimos)</label>
                       <input type="number" step="0.5" min="0" placeholder="Ex: 1.5"
-                        {...register('renda', { required: true })}
+                        {...register('renda', {
+                          required: 'Campo obrigatório',
+                          min: { value: 0, message: 'Renda não pode ser negativa' }
+                        })}
                         className={`${inputClass} ${errors.renda ? 'border-red-500' : ''}`} />
-                      {errors.renda && <span className="text-red-500 text-xs mt-1">Campo obrigatório</span>}
+                      {errors.renda && <span className="text-red-500 text-xs mt-1">{errors.renda.message}</span>}
                     </div>
                   </div>
 
@@ -574,9 +550,12 @@ export function PacienteDashboard() {
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-1.5">Dias com Dor</label>
                       <input type="number" min="0" placeholder="Ex: 5"
-                        {...register('diasDor', { required: true })}
+                        {...register('diasDor', {
+                          required: 'Campo obrigatório',
+                          min: { value: 0, message: 'Valor não pode ser negativo' }
+                        })}
                         className={`${inputClass} ${errors.diasDor ? 'border-red-500' : ''}`} />
-                      {errors.diasDor && <span className="text-red-500 text-xs mt-1">Campo obrigatório</span>}
+                      {errors.diasDor && <span className="text-red-500 text-xs mt-1">{errors.diasDor.message}</span>}
                     </div>
                   </div>
 
@@ -595,7 +574,8 @@ export function PacienteDashboard() {
       {/* ── Modal de Rota (fullscreen, estilo Waze) ── */}
       {mapaRotaAberto && ofertaRecebida?.slotEscolhido && (
         <MapaRota
-          dentistaCidade={ofertaRecebida.dentistaCidade || 'São Paulo, Brasil'}
+          dentistaCidade={ofertaRecebida.dentistaCidade || 'São Paulo'}
+          dentistaPais={ofertaRecebida.dentistaPais || 'Brasil'}
           dentistaNome={ofertaRecebida.dentistaNome}
           data={ofertaRecebida.slotEscolhido.data}
           hora={ofertaRecebida.slotEscolhido.hora}

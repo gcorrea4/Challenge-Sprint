@@ -11,16 +11,55 @@ interface LoginFormData {
 export function Login() {
   const { register, handleSubmit, getValues, formState: { errors } } = useForm<LoginFormData>();
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
+  const [mostrarRedefinicao, setMostrarRedefinicao] = useState(false);
+  const [novaSenha, setNovaSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [enviandoRedefinicao, setEnviandoRedefinicao] = useState(false);
   const navigate = useNavigate();
 
   const handleEsqueciSenha = (e: React.MouseEvent) => {
-    e.preventDefault(); 
+    e.preventDefault();
     const emailDigitado = getValues("email");
-    
     if (!emailDigitado) {
-      setMensagem({ texto: "Digite seu e-mail no campo acima para recuperar a senha.", tipo: "erro" });
-    } else {
-      setMensagem({ texto: `Um link de recuperação foi enviado para ${emailDigitado}!`, tipo: "sucesso" });
+      setMensagem({ texto: "Digite seu e-mail no campo acima antes de redefinir a senha.", tipo: "erro" });
+      return;
+    }
+    setMensagem({ texto: '', tipo: '' });
+    setNovaSenha('');
+    setConfirmarSenha('');
+    setMostrarRedefinicao(prev => !prev);
+  };
+
+  const handleRedefinirSenha = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (novaSenha.length < 6) {
+      setMensagem({ texto: "A senha deve ter no mínimo 6 caracteres.", tipo: "erro" });
+      return;
+    }
+    if (novaSenha !== confirmarSenha) {
+      setMensagem({ texto: "As senhas não coincidem.", tipo: "erro" });
+      return;
+    }
+    setEnviandoRedefinicao(true);
+    try {
+      const res = await fetch(`${API_URL}/pacientes/redefinir-senha`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: getValues("email"), novaSenha }),
+      });
+      if (res.ok) {
+        setMensagem({ texto: "Senha redefinida com sucesso! Faça login com a nova senha.", tipo: "sucesso" });
+        setMostrarRedefinicao(false);
+        setNovaSenha('');
+        setConfirmarSenha('');
+      } else {
+        const err = await res.json().catch(() => null);
+        setMensagem({ texto: err?.erro || "Erro ao redefinir senha. Tente novamente.", tipo: "erro" });
+      }
+    } catch {
+      setMensagem({ texto: "Erro ao conectar com o servidor.", tipo: "erro" });
+    } finally {
+      setEnviandoRedefinicao(false);
     }
   };
 
@@ -34,33 +73,37 @@ export function Login() {
 
       if (response.ok) {
         const usuario = await response.json();
-        
+
+        // Persiste dados de sessão — os dashboards leem esses valores via sessionStorage
         sessionStorage.setItem("userRole", usuario.tipo || 'paciente');
         sessionStorage.setItem("usuarioLogado", usuario.nome);
         sessionStorage.setItem("userId", String(usuario.id || ''));
 
+        // dentistaCidade é lido pelo DentistaDashboard para filtrar a fila de triagem
         if (usuario.tipo === 'dentista' && usuario.cidade && usuario.cidade !== "N/A") {
           sessionStorage.setItem("dentistaCidade", usuario.cidade);
         }
 
         setMensagem({ texto: `Login aprovado! Bem-vindo(a).`, tipo: "sucesso" });
-        
+
+        // Redireciona pelo tipo de perfil após breve feedback visual
         setTimeout(() => {
           if (usuario.tipo === 'admin') {
             navigate('/dashboard/admin');
           } else if (usuario.tipo === 'dentista' || usuario.tipo === 'dev') {
+            // 'dev' tem acesso ao dashboard de dentista (para testes)
             navigate('/dashboard/dentista');
           } else if (usuario.tipo === 'paciente') {
-            navigate('/dashboard/paciente'); 
+            navigate('/dashboard/paciente');
           } else {
-            navigate('/'); 
+            navigate('/');
           }
         }, 1500);
 
       } else {
         setMensagem({ texto: "Email ou senha incorretos.", tipo: "erro" });
       }
-    } catch(err) {
+    } catch {
        setMensagem({ texto: "Erro ao conectar com o Servidor.", tipo: "erro" });
     }
   };
@@ -103,16 +146,51 @@ export function Login() {
           </div>
 
           <div className="text-right mt-[-10px] mb-[25px]">
-            <a 
-              href="#" 
-              onClick={handleEsqueciSenha} 
+            <a
+              href="#"
+              onClick={handleEsqueciSenha}
               className="text-[0.85rem] text-[#FF8C00] font-semibold no-underline hover:text-[#E67E22] hover:underline"
             >
               Esqueci minha senha
             </a>
           </div>
 
-          <button 
+          {mostrarRedefinicao && (
+            <div className="mb-5 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+              <p className="text-sm font-bold text-gray-700 mb-3">Redefinir Senha</p>
+              <form onSubmit={handleRedefinirSenha} className="space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 mb-1 block">Nova Senha</label>
+                  <input
+                    type="password"
+                    value={novaSenha}
+                    onChange={e => setNovaSenha(e.target.value)}
+                    placeholder="Mínimo 6 caracteres"
+                    className="w-full p-[12px_14px] border-2 border-[#E0E0E0] rounded-[8px] text-[0.95rem] bg-white focus:outline-none focus:border-[#FF8C00]"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 mb-1 block">Confirme a Nova Senha</label>
+                  <input
+                    type="password"
+                    value={confirmarSenha}
+                    onChange={e => setConfirmarSenha(e.target.value)}
+                    placeholder="Repita a senha"
+                    className="w-full p-[12px_14px] border-2 border-[#E0E0E0] rounded-[8px] text-[0.95rem] bg-white focus:outline-none focus:border-[#FF8C00]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={enviandoRedefinicao}
+                  className="w-full cursor-pointer bg-[#FF8C00] text-white font-bold py-3 rounded-xl hover:bg-[#E67E22] transition-colors disabled:opacity-60"
+                >
+                  {enviandoRedefinicao ? 'Redefinindo...' : 'Redefinir Senha'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          <button
             type="submit" 
             className="w-full cursor-pointer bg-[#FF8C00] text-white px-[45px] py-[16px] text-[1.1rem] font-bold rounded-[30px] uppercase tracking-[1px] shadow-md transition-all hover:bg-[#E67E22] hover:-translate-y-1"
           >

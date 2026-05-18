@@ -1,28 +1,28 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calculator, Star, CheckCircle2 } from 'lucide-react';
+import { calcularScore, type TipoDor } from '../utils/scoreUtils';
+import fiap from '../img/fiap.jpeg';
 
 export function Sobre() {
  
   const [idade, setIdade] = useState(14);
   const [renda, setRenda] = useState(1);
-  const [dor, setDor] = useState(15); 
+  const [tipoDor, setTipoDor] = useState<TipoDor>('forte');
   const [score, setScore] = useState(0);
 
+  // Usa o algoritmo real de calcularScore() — mesmo cálculo usado pelo DentistaDashboard
+  // para ordenar a fila de triagem. Reflete a prioridade real do programa.
   useEffect(() => {
-    let pontos = 0;
-    
-    if (idade >= 11 && idade <= 17) pontos += 40;
-    else if (idade >= 18 && idade <= 21) pontos += 20;
+    setScore(calcularScore(tipoDor, renda, idade));
+  }, [idade, renda, tipoDor]);
 
-    if (renda <= 1.0) pontos += 30;
-    else if (renda <= 2.0) pontos += 15;
-
-    pontos += dor;
-    pontos += 10; 
-    
-    setScore(pontos);
-  }, [idade, renda, dor]);
+  // Critérios do algoritmo de match — pesos reais usados em scoreUtils.ts
+  const regrasMatch = [
+    { titulo: "Gravidade da Dor e Urgência Clínica", peso: "até +45 pts" },
+    { titulo: "Baixa Renda Familiar",                peso: "até +35 pts" },
+    { titulo: "Proximidade dos 18 anos",             peso: "até +20 pts" },
+  ];
 
   // Arrays para facilitar a renderização e animação em cascata (stagger)
   const tecnologias = [
@@ -30,13 +30,6 @@ export function Sobre() {
     { titulo: "Back-End", desc: "Java e Python para construir a lógica do servidor, processamento de dados e regras de negócio." },
     { titulo: "Banco de Dados", desc: "Um sistema de banco de dados relacional para garantir a segurança e a integridade das informações." },
     { titulo: "Inteligência Artificial", desc: "Um chatbot para a automação da triagem inicial." }
-  ];
-
-  const regrasMatch = [
-    { titulo: "Foco em Jovens (11-17 anos)", peso: "+40 Pontos" },
-    { titulo: "Baixa Renda Familiar", peso: "+30 Pontos" },
-    { titulo: "Gravidade da Dor e Clínica", peso: "+20 Pontos" },
-    { titulo: "Proximidade Geográfica", peso: "+10 Pontos" }
   ];
 
   return (
@@ -222,15 +215,16 @@ export function Sobre() {
             </div>
 
             <div className="space-y-8 relative z-10">
+
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Idade do Paciente</label>
                   <span className="text-orange-600 font-black text-lg">{idade} anos</span>
                 </div>
-                <input 
-                  type="range" min="5" max="60" value={idade} 
+                <input
+                  type="range" min="11" max="17" step="1" value={idade}
                   onChange={(e) => setIdade(Number(e.target.value))}
-                  className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-orange-500" 
+                  className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-orange-500"
                 />
               </div>
 
@@ -239,25 +233,25 @@ export function Sobre() {
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Renda (Salários Mínimos)</label>
                   <span className="text-orange-600 font-black text-lg">{renda} SM</span>
                 </div>
-                <input 
-                  type="range" min="0" max="5" step="0.5" value={renda} 
+                <input
+                  type="range" min="0" max="5" step="0.5" value={renda}
                   onChange={(e) => setRenda(Number(e.target.value))}
-                  className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-orange-500" 
+                  className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-orange-500"
                 />
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Nível de Dor relatado</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: 'Leve', pts: 5 },
-                    { label: 'Forte', pts: 15 },
-                    { label: 'Urgente', pts: 20 }
-                  ].map(item => (
-                    <button 
-                      key={item.label} 
-                      onClick={() => setDor(item.pts)}
-                      className={`py-3 rounded-2xl text-[10px] font-black uppercase transition-all duration-300 ${dor === item.pts ? 'bg-orange-500 text-white shadow-lg shadow-orange-200 scale-105' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                  {([
+                    { label: 'Leve',    valor: 'leve'    },
+                    { label: 'Forte',   valor: 'forte'   },
+                    { label: 'Urgente', valor: 'urgente' },
+                  ] as { label: string; valor: TipoDor }[]).map(item => (
+                    <button
+                      key={item.valor}
+                      onClick={() => setTipoDor(item.valor)}
+                      className={`py-3 rounded-2xl text-[10px] font-black uppercase transition-all duration-300 ${tipoDor === item.valor ? 'bg-orange-500 text-white shadow-lg shadow-orange-200 scale-105' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                     >
                       {item.label}
                     </button>
@@ -284,7 +278,7 @@ export function Sobre() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          src="/fiap.jpeg" 
+          src={fiap}
           alt="Logo FIAP" 
           className="w-full max-w-[500px] block mx-auto mt-[60px] mb-[20px] rounded-[10px]" 
         />

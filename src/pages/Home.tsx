@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Heart, ShieldCheck, Zap, Calculator, Users, MessageCircle } from 'lucide-react';
+import turmaDoRemHero from '../img/turma-do-bem-hero.jpg';
 
 export function Home() {
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -90,7 +91,7 @@ export function Home() {
       {/* HERO SECTION */}
       <section 
         className="relative w-full min-h-screen flex justify-center items-center text-center pt-20 box-border bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('/turma-do-bem-hero.jpg')` }}
+        style={{ backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('${turmaDoRemHero}')` }}
       >
         <div className="relative z-10 max-w-[800px] p-5">
           <motion.h1 
@@ -103,10 +104,11 @@ export function Home() {
           <p className="text-[#E0E0E0] text-lg md:text-[1.2rem] mb-10 font-normal leading-[1.6]">
             Uma solução integrada para agilizar a triagem e a gestão de atendimentos da maior rede de voluntariado especializado do mundo.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/cadastro" className="bg-[#FF8C00] text-white px-8 py-4 text-lg font-bold rounded-full hover:bg-[#E67E22] transition-all">Faça Parte do Projeto</Link>
-            <Link to="/sobre" className="bg-transparent border-2 border-white text-white px-8 py-4 text-lg font-bold rounded-full hover:bg-white hover:text-[#333] transition-all">Conheça a Solução</Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
+            <Link to="/cadastro" className="bg-[#FF8C00] text-white px-8 py-4 text-lg font-bold rounded-full hover:bg-[#E67E22] transition-all shadow-[0_4px_20px_rgba(255,140,0,0.4)]">Preciso de Atendimento</Link>
+            <Link to="/cadastro" className="bg-transparent border-2 border-white text-white px-8 py-4 text-lg font-bold rounded-full hover:bg-white hover:text-[#333] transition-all">Sou Dentista Voluntário</Link>
           </div>
+          <Link to="/sobre" className="text-white/50 text-sm hover:text-white/80 transition-colors mt-3 block text-center hover:underline underline-offset-2">Conheça o projeto →</Link>
         </div>
       </section>
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { User, Calendar, DollarSign, Activity, Clock, MapPin, ShieldAlert } from 'lucide-react';
+import { User, Calendar, DollarSign, Activity, Clock, MapPin, ShieldAlert, Mail, Lock } from 'lucide-react';
 import { API_URL } from '../config';
 import { ESTADOS_BRASIL, CIDADES_POR_ESTADO } from '../data/estadosCidades';
 
@@ -10,6 +10,8 @@ interface TriagemFormData {
   renda: string;
   tipoDor: string;
   diasDor: string;
+  email: string;
+  senha: string;
 }
 
 export function Formulario() {
@@ -47,16 +49,19 @@ export function Formulario() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nome: data.nome,
+          email: data.email,
+          senha: data.senha,
           idade: Number(data.idade),
           rendaSalarioMinimo: Number(data.renda),
           tipoDor: data.tipoDor,
           tempoDorDias: Number(data.diasDor),
           pais: 'Brasil',
           cidade: cidadeValida,
+          estado: ESTADOS_BRASIL.find(e => e.sigla === estadoSelecionado)?.nome || estadoSelecionado,
         }),
       });
       if (response.ok) {
-        setMensagem({ texto: 'Triagem enviada com sucesso! A nossa equipa entrará em contacto.', tipo: 'sucesso' });
+        setMensagem({ texto: 'Triagem enviada! Acesse sua conta com o e-mail e senha cadastrados para acompanhar o atendimento.', tipo: 'sucesso' });
         reset();
         setEstadoSelecionado('');
         setCidadeInput('');
@@ -164,6 +169,33 @@ export function Formulario() {
                   {...register('diasDor', { required: true })} className={inputClass} />
               </div>
               {errors.diasDor && <span className="text-red-500 text-xs mt-1.5 block font-medium">Obrigatório</span>}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-[13px] font-bold text-gray-700 uppercase tracking-wide mb-2">E-mail</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <Mail size={18} className="text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                </div>
+                <input type="email" placeholder="seu@email.com"
+                  {...register('email', { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ })} className={inputClass} />
+              </div>
+              {errors.email && <span className="text-red-500 text-xs mt-1.5 block font-medium">E-mail válido é obrigatório</span>}
+            </div>
+
+            {/* Senha */}
+            <div>
+              <label className="block text-[13px] font-bold text-gray-700 uppercase tracking-wide mb-2">Senha (para acessar o painel)</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <Lock size={18} className="text-gray-400 group-focus-within:text-orange-500 transition-colors" />
+                </div>
+                <input type="password" placeholder="Mínimo 6 caracteres"
+                  {...register('senha', { required: true, minLength: 6 })} className={inputClass} />
+              </div>
+              {errors.senha && <span className="text-red-500 text-xs mt-1.5 block font-medium">Senha deve ter pelo menos 6 caracteres</span>}
+              <p className="text-[11px] text-gray-400 mt-1">Guarde sua senha para acompanhar o atendimento no painel.</p>
             </div>
 
             {/* Estado */}

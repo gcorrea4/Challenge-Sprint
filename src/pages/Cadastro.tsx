@@ -35,17 +35,19 @@ export function Cadastro() {
     c.toLowerCase().includes(cidadeInput.toLowerCase())
   );
 
+  // Formata CPF em tempo real: 000.000.000-00
   const handleCPF = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length > 11) value = value.slice(0, 11);
+    let value = e.target.value.replace(/\D/g, '');          // remove tudo que não é dígito
+    if (value.length > 11) value = value.slice(0, 11);      // limite de 11 dígitos
     value = value.replace(/(\d{3})(\d)/, '$1.$2');
     value = value.replace(/(\d{3})(\d)/, '$1.$2');
     value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
     setValue('documento', value, { shouldValidate: true });
   };
 
+  // Formata CRO em tempo real: 1234-SP (dígitos + hífen + UF)
   const handleCRO = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); // só letras e números
     if (value.length > 8) value = value.slice(0, 8);
     const numeros = value.replace(/[^0-9]/g, '');
     const letras = value.replace(/[0-9]/g, '');
@@ -54,6 +56,11 @@ export function Cadastro() {
   };
 
   const onSubmit = async (data: CadastroFormData) => {
+    // Valida seleção de estado quando o país tem estados cadastrados
+    if (dadosPais && estadosPais.length > 0 && !estadoSelecionado) {
+      setMensagem({ texto: 'Selecione o estado antes de escolher a cidade.', tipo: 'erro' });
+      return;
+    }
     if (dadosPais && !cidadeValida) {
       setMensagem({ texto: 'Selecione uma cidade da lista.', tipo: 'erro' });
       return;
@@ -65,14 +72,15 @@ export function Cadastro() {
         ? `${API_URL}/pacientes`
         : `${API_URL}/dentistas`;
 
+      const nomeEstado = estadosPais.find(e => e.sigla === estadoSelecionado)?.nome || estadoSelecionado;
       const payload = data.tipo === 'paciente' ? {
         nome: data.nome, email: data.email, senha: data.senha,
         cpf: data.documento, tipo: data.tipo,
-        pais: data.pais, cidade: cidadeFinal,
+        pais: data.pais, cidade: cidadeFinal, estado: nomeEstado,
       } : {
         nome: data.nome, email: data.email, senha: data.senha,
         cro: data.documento, tipo: data.tipo,
-        pais: data.pais, cidade: cidadeFinal,
+        pais: data.pais, cidade: cidadeFinal, estado: nomeEstado,
       };
 
       const response = await fetch(url, {
@@ -88,8 +96,7 @@ export function Cadastro() {
         const errorData = await response.json().catch(() => null);
         setMensagem({ texto: errorData?.erro || 'Erro ao realizar o registro. Verifique os dados.', tipo: 'erro' });
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       setMensagem({ texto: 'Erro de conexão com o servidor.', tipo: 'erro' });
     }
   };
