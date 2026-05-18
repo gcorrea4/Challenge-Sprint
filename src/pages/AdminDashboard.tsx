@@ -281,13 +281,14 @@ export function AdminDashboard() {
   );
 
   const pacientesFiltrados = pacientes.filter(p =>
-    (p.nomePaciente || p.nome || '').toLowerCase().includes(filtroBusca.toLowerCase()) ||
-    p.email.toLowerCase().includes(filtroBusca.toLowerCase())
-  );
-  const dentistasFiltrados = dentistas.filter(d =>
-    (d.nomeDentista || d.nome || '').toLowerCase().includes(filtroBusca.toLowerCase()) ||
-    d.email.toLowerCase().includes(filtroBusca.toLowerCase())
-  );
+  (p.nomePaciente || p.nome || '').toLowerCase().includes(filtroBusca.toLowerCase()) ||
+  (p.email || '').toLowerCase().includes(filtroBusca.toLowerCase()) 
+);
+
+const dentistasFiltrados = dentistas.filter(d =>
+  (d.nomeDentista || d.nome || '').toLowerCase().includes(filtroBusca.toLowerCase()) ||
+  (d.email || '').toLowerCase().includes(filtroBusca.toLowerCase()) 
+);
 
   return (
     <div className="flex min-h-screen bg-[#F5F5DC] font-sans pt-[65px] items-start">
