@@ -123,7 +123,7 @@ export function Login() {
         <div className="absolute right-16 bottom-16 w-32 h-32 bg-white/10 rounded-full pointer-events-none" />
 
         {/* Logo */}
-        <div className="relative z-10">
+        <div className="relative z-10 mt-9">
           <h1 className="text-2xl font-black text-white tracking-tight">Turma do Bem</h1>
           <p className="text-orange-100 text-sm mt-0.5">Odontologia voluntária para jovens</p>
         </div>
