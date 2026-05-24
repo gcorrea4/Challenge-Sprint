@@ -5,6 +5,8 @@
 
 export type TipoDor = 'leve' | 'moderada' | 'forte' | 'urgente';
 
+export type PacienteComScore = { nome: string; tipo_dor: TipoDor; renda: number; idade: number } & { score_calculado: number };
+
 /** Pontos por gravidade da dor (máx 45) */
 export const GRAVIDADE_SCORE: Record<TipoDor, number> = {
   leve: 5,

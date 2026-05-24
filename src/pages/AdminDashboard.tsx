@@ -1,10 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { API_URL } from '../config';
-import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign, Trash2, AlertTriangle, Search, UserX } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign, Archive, AlertTriangle, CheckCircle2, Search, UserX, FileDown, Sheet } from 'lucide-react';
+import {
+  exportarPacientesPDF, exportarPacientesCSV,
+  exportarDentistasPDF, exportarDentistasCSV,
+  exportarAtendimentosPDF, exportarAtendimentosCSV,
+} from '../utils/adminExportUtils';
+import { Skeleton, EmptyState } from '../components/ui';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { LATAM_COORDINATES, normalizarCidade } from '../data/latamCoordinates';
 
@@ -74,7 +79,7 @@ interface AgendamentoAdmin {
   dentista: string;
   data: string;
   hora: string;
-  cidade: string; // <-- Trocado bairro por cidade
+  cidade: string; 
 }
 
 interface UsuarioPaciente {
@@ -96,6 +101,25 @@ interface UsuarioDentista {
   cro?: string;
 }
 
+function BotoesExportar({ onPDF, onCSV }: { onPDF: () => void; onCSV: () => void }) {
+  return (
+    <div className="flex gap-2">
+      <button
+        onClick={onPDF}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600 hover:text-orange-500 hover:border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors"
+      >
+        <FileDown size={13} /> PDF
+      </button>
+      <button
+        onClick={onCSV}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600 hover:text-orange-500 hover:border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors"
+      >
+        <Sheet size={13} /> CSV
+      </button>
+    </div>
+  );
+}
+
 export function AdminDashboard() {
   const navigate = useNavigate();
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Admin";
@@ -106,6 +130,12 @@ export function AdminDashboard() {
   const [filtroBusca, setFiltroBusca] = useState('');
   const [carregandoUsuarios, setCarregandoUsuarios] = useState(false);
   const [mensagemAdmin, setMensagemAdmin] = useState('');
+  const [tipoMensagemAdmin, setTipoMensagemAdmin] = useState<'sucesso' | 'erro'>('sucesso');
+  const [confirmacaoPendente, setConfirmacaoPendente] = useState<{
+    tipo: 'pacientes' | 'dentistas';
+    id: number;
+    nome: string;
+  } | null>(null);
 
   const [statsAdmin, setStatsAdmin] = useState({
     total_beneficiarios: 0,
@@ -115,12 +145,8 @@ export function AdminDashboard() {
     coordenadas: {} as Record<string, [number, number]>,
   });
 
+  // Carrega estatísticas globais (auth centralizada em ProtectedRoute)
   useEffect(() => {
-    if (!sessionStorage.getItem("usuarioLogado") || (sessionStorage.getItem("userRole") !== "admin" && sessionStorage.getItem("userRole") !== "dev")) {
-      navigate('/login');
-      return;
-    }
-
     fetch(`${API_URL}/admin/estatisticas`)
       .then(res => {
         if (!res.ok) throw new Error("Erro 500 do servidor");
@@ -144,7 +170,7 @@ export function AdminDashboard() {
           coordenadas: {},
         });
       });
-  }, [navigate]);
+  }, []);
 
   /**
    * Busca pacientes e dentistas em paralelo — sem setState, só retorna a Promise.
@@ -195,29 +221,31 @@ export function AdminDashboard() {
     return () => clearInterval(id);
   }, []);
 
-  /**
-   * Exclui um usuário (paciente ou dentista) pelo endpoint correto.
-   * Após confirmação do admin, chama a API e atualiza o estado local —
-   * o mapa de calor recomputa automaticamente via useMemo([pacientes, dentistas]).
-   */
-  const deletarUsuario = async (
-    tipo: 'pacientes' | 'dentistas',
-    id: number,
-    nome: string
-  ) => {
-    if (!window.confirm(`Excluir permanentemente a conta de "${nome}"? Esta ação não pode ser desfeita.`)) return;
+  // Abre o modal de confirmação — o fetch só acontece em handleConfirmarInativacao.
+  const deletarUsuario = (tipo: 'pacientes' | 'dentistas', id: number, nome: string) => {
+    setConfirmacaoPendente({ tipo, id, nome });
+  };
+
+  // Chamada HTTP idêntica à anterior (DELETE) — apenas renomeada e movida para cá.
+  const handleConfirmarInativacao = async () => {
+    if (!confirmacaoPendente) return;
+    const { tipo, id, nome } = confirmacaoPendente;
+    setConfirmacaoPendente(null);
     try {
       const res = await fetch(`${API_URL}/${tipo}/${id}`, { method: 'DELETE' });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        setMensagemAdmin(`Erro ao excluir "${nome}": ${(err as {erro?: string}).erro ?? `HTTP ${res.status}`}`);
+        setTipoMensagemAdmin('erro');
+        setMensagemAdmin(`Erro ao inativar "${nome}": ${(err as { erro?: string }).erro ?? `HTTP ${res.status}`}`);
       } else {
         if (tipo === 'pacientes') setPacientes(prev => prev.filter(p => p.id !== id));
         else setDentistas(prev => prev.filter(d => d.id !== id));
-        setMensagemAdmin(`Conta de ${nome} excluída com sucesso.`);
+        setTipoMensagemAdmin('sucesso');
+        setMensagemAdmin(`Conta de ${nome} inativada com sucesso.`);
       }
     } catch {
-      setMensagemAdmin(`Erro de conexão ao tentar excluir "${nome}".`);
+      setTipoMensagemAdmin('erro');
+      setMensagemAdmin(`Erro de conexão ao tentar inativar "${nome}".`);
     }
     setTimeout(() => setMensagemAdmin(''), 4000);
   };
@@ -264,21 +292,10 @@ export function AdminDashboard() {
       return [lat, lng, qtd / maxQtdCidade] as [number, number, number];
     });
 
-  const renderSidebar = () => (
-    <aside className="w-[260px] min-w-[260px] bg-white border-r border-gray-200 hidden md:flex flex-col sticky top-[65px] self-start h-[calc(100vh-65px)] z-10 shadow-sm">
-      <div className="p-6 border-b border-gray-100 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-[#FFF3E0] text-[#FF8C00] flex items-center justify-center font-bold text-xl border-2 border-[#FF8C00]">
-          {usuarioLogado.charAt(0).toUpperCase()}
-        </div>
-        <div><p className="text-sm font-bold text-gray-800 truncate w-[160px]">{usuarioLogado}</p><p className="text-[0.7rem] uppercase tracking-wider text-[#FF8C00] font-bold">Administrador</p></div>
-      </div>
-      <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
-        <button onClick={() => setTelaAtiva('painel')} className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-colors ${telaAtiva === 'painel' ? 'bg-[#FF8C00] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}><LayoutDashboard size={20} /> Visão Geral</button>
-        <button onClick={() => { setTelaAtiva('usuarios'); setCarregandoUsuarios(true); }} className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-colors ${telaAtiva === 'usuarios' ? 'bg-[#FF8C00] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}><Users size={20} /> Gerenciar Usuários</button>
-      </nav>
-      <div className="p-4 border-t border-gray-100"><button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:text-red-600"><LogOut size={20} /> Sair</button></div>
-    </aside>
-  );
+  const navItems = [
+    { id: 'painel',   icon: <LayoutDashboard size={20} />, label: 'Visão Geral', badge: 0 },
+    { id: 'usuarios', icon: <Users size={20} />,           label: 'Usuários',    badge: pacientes.length + dentistas.length },
+  ] as const;
 
   const pacientesFiltrados = pacientes.filter(p =>
   (p.nomePaciente || p.nome || '').toLowerCase().includes(filtroBusca.toLowerCase()) ||
@@ -291,13 +308,70 @@ const dentistasFiltrados = dentistas.filter(d =>
 );
 
   return (
-    <div className="flex min-h-screen bg-[#F5F5DC] font-sans pt-[65px] items-start">
-      {renderSidebar()}
-      <main className="flex-1 p-6 md:p-8 max-w-[1400px] mx-auto w-full animate-fade-in">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans pb-16 md:pb-0 transition-colors duration-300">
+
+      {/* ── Top navigation bar ── */}
+      <header className="sticky top-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center gap-4">
+
+          {/* User info */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="w-9 h-9 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl text-white flex items-center justify-center font-black text-base shadow-sm">
+              {usuarioLogado.charAt(0).toUpperCase()}
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-sm font-bold text-gray-900 dark:text-white leading-none truncate max-w-[140px]">{usuarioLogado}</p>
+              <p className="text-xs text-orange-500 font-semibold mt-0.5">Administrador</p>
+            </div>
+          </div>
+
+          {/* Tab navigation — desktop */}
+          <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-700 rounded-xl p-1 mx-auto">
+            {navItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => { setTelaAtiva(item.id); if (item.id === 'usuarios') setCarregandoUsuarios(true); }}
+                className={`relative flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
+                  telaAtiva === item.id
+                    ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-600/60'
+                }`}
+              >
+                {item.icon}
+                {item.label}
+                {item.badge > 0 && (
+                  <span className="bg-orange-500 text-white text-[10px] font-black w-[18px] h-[18px] rounded-full flex items-center justify-center leading-none">
+                    {item.badge > 99 ? '99' : item.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="ml-auto flex items-center gap-2 text-slate-400 hover:text-red-500 text-sm font-bold transition-colors px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30"
+            title="Sair"
+          >
+            <LogOut size={16} />
+            <span className="hidden sm:inline">Sair</span>
+          </button>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full animate-fade-in">
 
         {mensagemAdmin && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2">
-            <AlertTriangle size={16} /> {mensagemAdmin}
+          <div className={`mb-6 px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2 ${
+            tipoMensagemAdmin === 'sucesso'
+              ? 'bg-green-50 border border-green-200 text-green-700'
+              : 'bg-red-50 border border-red-200 text-red-700'
+          }`}>
+            {tipoMensagemAdmin === 'sucesso'
+              ? <CheckCircle2 size={16} />
+              : <AlertTriangle size={16} />}
+            {mensagemAdmin}
           </div>
         )}
 
@@ -305,48 +379,52 @@ const dentistasFiltrados = dentistas.filter(d =>
           <div className="animate-fade-in">
             <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Gerenciar Usuários</h2>
-                <p className="text-gray-500 text-sm mt-1">Visualize e remova contas de pacientes e dentistas.</p>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Gerenciar Usuários</h2>
+                <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Visualize e remova contas de pacientes e dentistas.</p>
               </div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                 <input type="text" placeholder="Buscar por nome ou e-mail..." value={filtroBusca}
                   onChange={(e) => setFiltroBusca(e.target.value)}
-                  className="pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm w-full md:w-[280px] focus:ring-2 focus:ring-[#FF8C00]/20 focus:border-[#FF8C00] outline-none" />
+                  className="pl-9 pr-4 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-400 w-full md:w-[280px] focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" />
               </div>
             </div>
 
             {carregandoUsuarios ? (
-              <div className="text-center py-20 text-gray-400 font-medium">A carregar utilizadores...</div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Skeleton variant="card" className="h-64" />
+                <Skeleton variant="card" className="h-64" />
+              </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Pacientes */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2"><Users size={18} className="text-[#8dc63f]" /> Pacientes ({pacientesFiltrados.length})</h3>
+                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
+                  <div className="p-5 border-b border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700/30 flex items-center justify-between">
+                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><Users size={18} className="text-[#8dc63f]" /> Pacientes ({pacientesFiltrados.length})</h3>
+                    <BotoesExportar
+                      onPDF={() => exportarPacientesPDF(pacientesFiltrados)}
+                      onCSV={() => exportarPacientesCSV(pacientesFiltrados)}
+                    />
                   </div>
-                  <div className="divide-y divide-gray-50 max-h-[500px] overflow-y-auto">
+                  <div className="divide-y divide-gray-50 dark:divide-slate-700 max-h-[500px] overflow-y-auto">
                     {pacientesFiltrados.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-                        <UserX size={32} className="mb-2" />
-                        <p className="text-sm font-medium">Nenhum paciente encontrado.</p>
-                      </div>
+                      <EmptyState icon={UserX} title="Nenhum paciente encontrado" />
                     ) : pacientesFiltrados.map((p) => (
-                      <div key={p.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                      <div key={p.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/40 transition-colors">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-orange-100 text-[#FF8C00] flex items-center justify-center font-bold text-sm shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-950/40 text-[#FF8C00] flex items-center justify-center font-bold text-sm shrink-0">
                             {(p.nomePaciente || p.nome || '?').charAt(0)}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-bold text-gray-800 text-sm truncate">{p.nomePaciente || p.nome}</p>
-                            <p className="text-xs text-gray-400 truncate">{p.email}</p>
-                            <p className="text-[11px] text-gray-400">{p.cidade}, {p.pais}</p>
+                            <p className="font-bold text-gray-800 dark:text-white text-sm truncate">{p.nomePaciente || p.nome}</p>
+                            <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{p.email}</p>
+                            <p className="text-[11px] text-gray-400 dark:text-slate-500">{p.cidade}, {p.pais}</p>
                           </div>
                         </div>
                         <button onClick={() => deletarUsuario('pacientes', p.id, p.nomePaciente || p.nome || '')}
-                          className="ml-3 shrink-0 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                          title="Excluir conta">
-                          <Trash2 size={16} />
+                          className="ml-3 shrink-0 p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
+                          title="Inativar conta">
+                          <Archive size={16} />
                         </button>
                       </div>
                     ))}
@@ -354,32 +432,33 @@ const dentistasFiltrados = dentistas.filter(d =>
                 </div>
 
                 {/* Dentistas */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2"><Heart size={18} className="text-[#FF8C00]" /> Dentistas ({dentistasFiltrados.length})</h3>
+                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
+                  <div className="p-5 border-b border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700/30 flex items-center justify-between">
+                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><Heart size={18} className="text-[#FF8C00]" /> Dentistas ({dentistasFiltrados.length})</h3>
+                    <BotoesExportar
+                      onPDF={() => exportarDentistasPDF(dentistasFiltrados)}
+                      onCSV={() => exportarDentistasCSV(dentistasFiltrados)}
+                    />
                   </div>
-                  <div className="divide-y divide-gray-50 max-h-[500px] overflow-y-auto">
+                  <div className="divide-y divide-gray-50 dark:divide-slate-700 max-h-[500px] overflow-y-auto">
                     {dentistasFiltrados.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-                        <UserX size={32} className="mb-2" />
-                        <p className="text-sm font-medium">Nenhum dentista encontrado.</p>
-                      </div>
+                      <EmptyState icon={UserX} title="Nenhum dentista encontrado" />
                     ) : dentistasFiltrados.map((d) => (
-                      <div key={d.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                      <div key={d.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/40 transition-colors">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-orange-100 text-[#FF8C00] flex items-center justify-center font-bold text-sm shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-950/40 text-[#FF8C00] flex items-center justify-center font-bold text-sm shrink-0">
                             {(d.nomeDentista || d.nome || '?').charAt(0)}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-bold text-gray-800 text-sm truncate">{d.nomeDentista || d.nome}</p>
-                            <p className="text-xs text-gray-400 truncate">{d.email}</p>
-                            {d.cro && <p className="text-[11px] text-gray-400">CRO: {d.cro}</p>}
+                            <p className="font-bold text-gray-800 dark:text-white text-sm truncate">{d.nomeDentista || d.nome}</p>
+                            <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{d.email}</p>
+                            {d.cro && <p className="text-[11px] text-gray-400 dark:text-slate-500">CRO: {d.cro}</p>}
                           </div>
                         </div>
                         <button onClick={() => deletarUsuario('dentistas', d.id, d.nomeDentista || d.nome || '')}
-                          className="ml-3 shrink-0 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                          title="Excluir conta">
-                          <Trash2 size={16} />
+                          className="ml-3 shrink-0 p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
+                          title="Inativar conta">
+                          <Archive size={16} />
                         </button>
                       </div>
                     ))}
@@ -392,12 +471,12 @@ const dentistasFiltrados = dentistas.filter(d =>
 
         {telaAtiva === 'painel' && <>
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">Painel Administrativo</h2>
-          <p className="text-gray-500 mt-1">Visão geral da operação global da Turma do Bem.</p>
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Painel Administrativo</h2>
+          <p className="text-gray-500 dark:text-slate-400 mt-1">Visão geral da operação global da Turma do Bem.</p>
         </div>
 
         <div className="mb-8">
-          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><TrendingUp size={22} className="text-[#FF8C00]"/> Relatório de Impacto (2026)</h3>
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><TrendingUp size={22} className="text-[#FF8C00]"/> Relatório de Impacto (2026)</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-gradient-to-br from-[#FF8C00] to-orange-600 p-6 rounded-2xl shadow-md text-white relative overflow-hidden group">
               <Smile className="absolute -right-4 -bottom-4 text-white/20 group-hover:scale-110 transition-transform" size={100} />
@@ -411,37 +490,37 @@ const dentistasFiltrados = dentistas.filter(d =>
               <h4 className="text-4xl font-black">{horasDoadas}h</h4>
               <p className="text-xs text-green-200 mt-2">Pelos Dentistas Voluntários</p>
             </div>
-            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm relative overflow-hidden group">
-              <DollarSign className="absolute -right-4 -bottom-4 text-gray-100 group-hover:scale-110 transition-transform" size={100} />
-              <p className="text-gray-500 font-bold text-sm uppercase tracking-wider mb-1">Economia Social Gerada</p>
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm relative overflow-hidden group">
+              <DollarSign className="absolute -right-4 -bottom-4 text-gray-100 dark:text-slate-700 group-hover:scale-110 transition-transform" size={100} />
+              <p className="text-gray-500 dark:text-slate-400 font-bold text-sm uppercase tracking-wider mb-1">Economia Social Gerada</p>
               <h4 className="text-3xl font-black text-[#FF8C00]">{economiaGerada}</h4>
-              <p className="text-xs text-gray-400 mt-2">Valor poupado pelas famílias</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-2">Valor poupado pelas famílias</p>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm flex items-center justify-between">
             <div>
-              <h3 className="text-gray-500 text-sm font-bold mb-1 uppercase tracking-widest">Jovens na Fila</h3>
-              <p className="text-5xl font-black text-gray-800">{statsAdmin.total_beneficiarios}</p>
+              <h3 className="text-gray-500 dark:text-slate-400 text-sm font-bold mb-1 uppercase tracking-widest">Jovens na Fila</h3>
+              <p className="text-5xl font-black text-gray-800 dark:text-white">{statsAdmin.total_beneficiarios}</p>
             </div>
-            <div className="p-4 bg-gray-50 rounded-xl"><Users size={40} className="text-[#8dc63f]"/></div>
+            <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-xl"><Users size={40} className="text-[#8dc63f]"/></div>
           </div>
-          
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm flex items-center justify-between">
             <div>
-              <h3 className="text-gray-500 text-sm font-bold mb-1 uppercase tracking-widest">Dentistas Voluntários</h3>
-              <p className="text-5xl font-black text-gray-800">{statsAdmin.total_dentistas}</p>
+              <h3 className="text-gray-500 dark:text-slate-400 text-sm font-bold mb-1 uppercase tracking-widest">Dentistas Voluntários</h3>
+              <p className="text-5xl font-black text-gray-800 dark:text-white">{statsAdmin.total_dentistas}</p>
             </div>
-            <div className="p-4 bg-gray-50 rounded-xl"><Heart size={40} className="text-[#FF8C00]"/></div>
+            <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-xl"><Heart size={40} className="text-[#FF8C00]"/></div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100 h-full flex flex-col">
-            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><MapPin size={24} className="text-[#FF8C00]"/> Mapa de Calor (Demandas)</h3>
-            <div className="flex-1 w-full rounded-2xl overflow-hidden border border-gray-200 relative" style={{ minHeight: '380px' }}>
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm p-8 border border-gray-100 dark:border-slate-700 h-full flex flex-col">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2"><MapPin size={24} className="text-[#FF8C00]"/> Mapa de Calor (Demandas)</h3>
+            <div className="flex-1 w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-600 relative" style={{ minHeight: '380px' }}>
               <MapContainer
                 center={[-15.0, -60.0]}
                 zoom={3}
@@ -464,37 +543,109 @@ const dentistasFiltrados = dentistas.filter(d =>
                 <span className="text-white text-[10px] font-bold whitespace-nowrap">Baixa → Alta demanda</span>
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-4 text-center font-medium">Zonas quentes indicam maior concentração de jovens na fila. Passe o mouse sobre os pontos para ver detalhes.</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500 mt-4 text-center font-medium">Zonas quentes indicam maior concentração de jovens na fila. Passe o mouse sobre os pontos para ver detalhes.</p>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-sm p-8 border border-gray-100 h-full">
-            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><CalendarDays size={24} className="text-[#8dc63f]"/> Agenda da Rede</h3>
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm p-8 border border-gray-100 dark:border-slate-700 h-full">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2"><CalendarDays size={24} className="text-[#8dc63f]"/> Agenda da Rede</h3>
+              <BotoesExportar
+                onPDF={() => exportarAtendimentosPDF(statsAdmin.ultimos_agendamentos)}
+                onCSV={() => exportarAtendimentosCSV(statsAdmin.ultimos_agendamentos)}
+              />
+            </div>
             <div className="space-y-4">
               {statsAdmin.ultimos_agendamentos && statsAdmin.ultimos_agendamentos.map((ag: AgendamentoAdmin, index: number) => (
-                <div key={index} className="p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-orange-200 transition-colors flex flex-col gap-2">
+                <div key={index} className="p-5 rounded-2xl border border-gray-100 dark:border-slate-700 dark:bg-slate-700/50 shadow-sm hover:border-orange-200 dark:hover:border-orange-700/60 transition-colors flex flex-col gap-2">
                   <div className="flex justify-between items-start">
-                    <p className="font-bold text-gray-800 text-lg">{ag.paciente}</p>
-                    <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-md ${ag.prioridade === 'Urgente' ? 'bg-red-100 text-red-600' : ag.prioridade === 'Alta' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>{ag.prioridade}</span>
+                    <p className="font-bold text-gray-800 dark:text-white text-lg">{ag.paciente}</p>
+                    <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-md ${ag.prioridade === 'Urgente' ? 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400' : ag.prioridade === 'Alta' ? 'bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400' : 'bg-green-100 text-green-600 dark:bg-green-950/40 dark:text-green-400'}`}>{ag.prioridade}</span>
                   </div>
-                  <p className="text-sm text-gray-500 font-medium">{ag.proc} com <strong className="text-gray-700">{ag.dentista}</strong></p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">{ag.proc} com <strong className="text-gray-700 dark:text-slate-200">{ag.dentista}</strong></p>
                   <div className="flex flex-wrap items-center gap-3 mt-2">
-                    <span className="text-xs font-bold text-gray-600 flex items-center gap-1 bg-gray-50 px-2.5 py-1.5 rounded-lg"><CalendarDays size={14}/> {ag.data}</span>
-                    <span className="text-xs font-bold text-[#FF8C00] flex items-center gap-1 bg-orange-50 px-2.5 py-1.5 rounded-lg"><Clock size={14}/> {ag.hora}</span>
-                    <span className="text-xs font-bold text-gray-600 flex items-center gap-1 bg-gray-50 px-2.5 py-1.5 rounded-lg"><MapPin size={14}/> {ag.cidade}</span>
+                    <span className="text-xs font-bold text-gray-600 dark:text-slate-300 flex items-center gap-1 bg-gray-50 dark:bg-slate-700 px-2.5 py-1.5 rounded-lg"><CalendarDays size={14}/> {ag.data}</span>
+                    <span className="text-xs font-bold text-[#FF8C00] flex items-center gap-1 bg-orange-50 dark:bg-orange-950/30 px-2.5 py-1.5 rounded-lg"><Clock size={14}/> {ag.hora}</span>
+                    <span className="text-xs font-bold text-gray-600 dark:text-slate-300 flex items-center gap-1 bg-gray-50 dark:bg-slate-700 px-2.5 py-1.5 rounded-lg"><MapPin size={14}/> {ag.cidade}</span>
                   </div>
                 </div>
               ))}
               {(!statsAdmin.ultimos_agendamentos || statsAdmin.ultimos_agendamentos.length === 0) && (
-                <div className="flex flex-col items-center justify-center py-10 text-center border-2 border-dashed border-gray-200 rounded-2xl">
-                  <CalendarDays size={40} className="text-gray-300 mb-3" />
-                  <p className="text-gray-400 font-bold">Sem atendimentos previstos.</p>
-                </div>
+                <EmptyState
+                  icon={CalendarDays}
+                  title="Sem atendimentos previstos"
+                  description="Os próximos agendamentos da rede aparecerão aqui."
+                />
               )}
             </div>
           </div>
         </div>
         </>}
       </main>
+
+      {/* ── Mobile bottom navigation ── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div className="flex">
+          {navItems.map(item => (
+            <button
+              key={item.id}
+              onClick={() => { setTelaAtiva(item.id); if (item.id === 'usuarios') setCarregandoUsuarios(true); }}
+              className={`flex-1 flex flex-col items-center gap-1 py-3 px-1 transition-colors ${
+                telaAtiva === item.id ? 'text-orange-500' : 'text-slate-400'
+              }`}
+            >
+              <span className="relative">
+                {item.icon}
+                {item.badge > 0 && (
+                  <span className="absolute -top-1.5 -right-2.5 w-4 h-4 bg-orange-500 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none">
+                    {item.badge > 9 ? '9+' : item.badge}
+                  </span>
+                )}
+              </span>
+              <span className="text-[10px] font-bold leading-none">{item.label.split(' ')[0]}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {/* ── Modal de confirmação de inativação ── */}
+      {confirmacaoPendente && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setConfirmacaoPendente(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 border border-slate-100"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-4 mb-5">
+              <div className="bg-amber-50 p-3 rounded-xl shrink-0">
+                <Archive size={24} className="text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-800">Inativar Conta</h3>
+                <p className="text-sm text-gray-500 truncate max-w-xs">{confirmacaoPendente.nome}</p>
+              </div>
+            </div>
+            <p className="text-gray-600 text-sm mb-8 leading-relaxed">
+              Deseja inativar este usuário? Ele perderá acesso à plataforma mas seus dados serão preservados.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmacaoPendente(null)}
+                className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-gray-600 font-bold text-sm hover:bg-slate-50 transition-colors"
+              >
+                Voltar
+              </button>
+              <button
+                onClick={handleConfirmarInativacao}
+                className="flex-1 px-4 py-3 rounded-xl bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 transition-colors"
+              >
+                Inativar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

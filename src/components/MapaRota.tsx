@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { X, Navigation, Car, Footprints, ExternalLink, AlertCircle, ArrowRight } from 'lucide-react';
 import { LATAM_COORDINATES, normalizarCidade } from '../data/latamCoordinates';
 
