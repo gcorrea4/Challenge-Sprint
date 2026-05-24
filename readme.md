@@ -23,8 +23,8 @@ A aplicação foi desenvolvida em **React + Vite + TypeScript** com integração
 |---|---|
 |  **Aplicação online (Vercel)** | https://challenge-sprint-rose.vercel.app/ |
 |  **Repositório GitHub (Front-End)** | https://github.com/gcorrea4/Challenge-Sprint |
-|  **Vídeo de apresentação (YouTube)** | `[ADICIONAR LINK]` |
-|  **API Java (Azure)** | https://challengesprint-api.azurewebsites.net |
+|  **Vídeo de apresentação (YouTube)** | `[...]` |
+|  **API Java (Azure)** | [...] |
 
 ### Executar localmente
 
