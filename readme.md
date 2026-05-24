@@ -183,12 +183,12 @@ O wrapper `apiFetch` (em `src/utils/api.ts`) injeta automaticamente o header `Au
 
 ---
 
-## 📸 Imagens e Screenshots
+##  Imagens e Screenshots
 
-> **Atenção:** adicione capturas de tela da aplicação rodando (desktop e mobile) nesta seção antes da entrega. Sugestão de caminho: `public/screenshot-desktop.png` e `public/screenshot-mobile.png`.
 
-<!-- ![Desktop Screenshot](public/screenshot-desktop.png) -->
-<!-- ![Mobile Screenshot](public/screenshot-mobile.png) -->
+
+<!-- ![Desktop Screenshot](src/img/pc-screenshot.png) -->
+<!-- ![Mobile Screenshot](src/img/mobile-screenshot.png) -->
 
 ---
 

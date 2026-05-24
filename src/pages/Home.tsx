@@ -115,7 +115,7 @@ export function Home() {
           </span>
         </motion.div>
 
-        <div className="relative z-10 max-w-[860px] px-5">
+        <div className="relative z-10 max-w-[860px] px-5 pb-24">
           <motion.h1
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
