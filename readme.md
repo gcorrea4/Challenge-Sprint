@@ -23,8 +23,9 @@ A aplicação foi desenvolvida em **React + Vite + TypeScript** com integração
 |---|---|
 |  **Aplicação online (Vercel)** | https://challenge-sprint-rose.vercel.app/ |
 |  **Repositório GitHub (Front-End)** | https://github.com/gcorrea4/Challenge-Sprint |
-|  **Vídeo de apresentação (YouTube)** | `[...]` |
-|  **API Java (Azure)** | [...] |
+|  **Vídeo de apresentação (YouTube)** | https://www.youtube.com/watch?v=eGBnTpVKl-Q |
+|  **API Java (Azure)** | app-dentista-na-nuvem.azurewebsites.net & https://app-dentista-na-nuvem.azurewebsites.net/q/swagger-ui |
+
 
 ### Executar localmente
 
@@ -187,8 +188,8 @@ O wrapper `apiFetch` (em `src/utils/api.ts`) injeta automaticamente o header `Au
 
 
 
-<!-- ![Desktop Screenshot](src/img/pc-screenshot.png) -->
-<!-- ![Mobile Screenshot](src/img/mobile-screenshot.png) -->
+ ![Desktop Screenshot](src/img/pc-screenshot.png) 
+ ![Mobile Screenshot](src/img/mobile-screenshot.png) 
 
 ---
 
