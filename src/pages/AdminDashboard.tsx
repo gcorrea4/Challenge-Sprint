@@ -1,13 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
-import { API_URL } from '../config';
-import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign, Archive, AlertTriangle, CheckCircle2, Search, UserX, FileDown, Sheet } from 'lucide-react';
+import { apiFetch } from '../utils/api';
+import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign, Archive, AlertTriangle, CheckCircle2, Search, UserX, FileDown, Sheet, Database } from 'lucide-react';
+import { MetricasOperacionais } from './MetricasOperacionais';
 import {
   exportarPacientesPDF, exportarPacientesCSV,
   exportarDentistasPDF, exportarDentistasCSV,
   exportarAtendimentosPDF, exportarAtendimentosCSV,
 } from '../utils/adminExportUtils';
-import { Skeleton, EmptyState } from '../components/ui';
+import { Skeleton, EmptyState, DemoBadge } from '../components/ui';
+import { FiltroStatus, TicketBadge } from '../components/ticket';
+import type { TicketStatus } from '../lib/api';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet.heat';
@@ -90,6 +93,7 @@ interface UsuarioPaciente {
   cidade: string;
   pais: string;
   tipoDor?: string;
+  statusTicket?: TicketStatus;
 }
 
 interface UsuarioDentista {
@@ -124,13 +128,14 @@ export function AdminDashboard() {
   const navigate = useNavigate();
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Admin";
 
-  const [telaAtiva, setTelaAtiva] = useState<'painel' | 'usuarios'>('painel');
+  const [telaAtiva, setTelaAtiva] = useState<'painel' | 'usuarios' | 'metricas'>('painel');
   const [pacientes, setPacientes] = useState<UsuarioPaciente[]>([]);
   const [dentistas, setDentistas] = useState<UsuarioDentista[]>([]);
   const [filtroBusca, setFiltroBusca] = useState('');
   const [carregandoUsuarios, setCarregandoUsuarios] = useState(false);
   const [mensagemAdmin, setMensagemAdmin] = useState('');
   const [tipoMensagemAdmin, setTipoMensagemAdmin] = useState<'sucesso' | 'erro'>('sucesso');
+  const [filtroStatus, setFiltroStatus] = useState<TicketStatus | null>(null);
   const [confirmacaoPendente, setConfirmacaoPendente] = useState<{
     tipo: 'pacientes' | 'dentistas';
     id: number;
@@ -147,7 +152,7 @@ export function AdminDashboard() {
 
   // Carrega estatísticas globais (auth centralizada em ProtectedRoute)
   useEffect(() => {
-    fetch(`${API_URL}/admin/estatisticas`)
+    apiFetch('/admin/estatisticas')
       .then(res => {
         if (!res.ok) throw new Error("Erro 500 do servidor");
         return res.json();
@@ -178,8 +183,19 @@ export function AdminDashboard() {
    */
   const fetchTodos = () =>
     Promise.all([
-      fetch(`${API_URL}/pacientes`).then(r => r.json()).catch((): UsuarioPaciente[] => []),
-      fetch(`${API_URL}/dentistas`).then(r => r.json()).catch((): UsuarioDentista[] => []),
+      apiFetch('/pacientes')
+        .then(r => r.json())
+        .then((d: unknown) => {
+          const arr = Array.isArray(d)
+            ? d
+            : d && typeof d === 'object'
+              ? (Object.values(d as Record<string, unknown>).find(Array.isArray) ?? [])
+              : [];
+          console.log('[ADMIN] /pacientes raw shape:', typeof d, Array.isArray(d) ? 'array' : JSON.stringify(d).slice(0, 120), '→ arr.length:', (arr as unknown[]).length);
+          return arr as UsuarioPaciente[];
+        })
+        .catch((): UsuarioPaciente[] => []),
+      apiFetch('/dentistas').then(r => r.json()).catch((): UsuarioDentista[] => []),
     ]);
 
   // 1. Mount: alimenta o mapa de calor com dados iniciais.
@@ -188,7 +204,7 @@ export function AdminDashboard() {
     let live = true;
     fetchTodos().then(([pacs, dents]) => {
       if (!live) return;
-      if (Array.isArray(pacs)) setPacientes(pacs);
+      setPacientes(pacs);
       if (Array.isArray(dents)) setDentistas(dents);
     });
     return () => { live = false; };
@@ -202,7 +218,7 @@ export function AdminDashboard() {
     let live = true;
     fetchTodos().then(([pacs, dents]) => {
       if (!live) return;
-      if (Array.isArray(pacs)) setPacientes(pacs);
+      setPacientes(pacs);
       if (Array.isArray(dents)) setDentistas(dents);
       setCarregandoUsuarios(false);
     });
@@ -214,7 +230,7 @@ export function AdminDashboard() {
   useEffect(() => {
     const id = setInterval(() => {
       fetchTodos().then(([pacs, dents]) => {
-        if (Array.isArray(pacs)) setPacientes(pacs);
+        setPacientes(pacs);
         if (Array.isArray(dents)) setDentistas(dents);
       });
     }, 30_000);
@@ -232,7 +248,7 @@ export function AdminDashboard() {
     const { tipo, id, nome } = confirmacaoPendente;
     setConfirmacaoPendente(null);
     try {
-      const res = await fetch(`${API_URL}/${tipo}/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/${tipo}/${id}`, { method: 'DELETE' });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         setTipoMensagemAdmin('erro');
@@ -295,20 +311,38 @@ export function AdminDashboard() {
   const navItems = [
     { id: 'painel',   icon: <LayoutDashboard size={20} />, label: 'Visão Geral', badge: 0 },
     { id: 'usuarios', icon: <Users size={20} />,           label: 'Usuários',    badge: pacientes.length + dentistas.length },
+    { id: 'metricas', icon: <Database size={20} />,        label: 'Métricas',    badge: 0 },
   ] as const;
 
+  const contagemStatus = useMemo<Partial<Record<TicketStatus, number>>>(() => {
+    const map: Partial<Record<TicketStatus, number>> = {};
+    for (const p of pacientes) {
+      if (p.statusTicket) map[p.statusTicket] = (map[p.statusTicket] ?? 0) + 1;
+    }
+    return map;
+  }, [pacientes]);
+
   const pacientesFiltrados = pacientes.filter(p =>
-  (p.nomePaciente || p.nome || '').toLowerCase().includes(filtroBusca.toLowerCase()) ||
-  (p.email || '').toLowerCase().includes(filtroBusca.toLowerCase()) 
-);
+    ((p.nomePaciente || p.nome || '').toLowerCase().includes(filtroBusca.toLowerCase()) ||
+    (p.email || '').toLowerCase().includes(filtroBusca.toLowerCase())) &&
+    (filtroStatus === null || p.statusTicket === filtroStatus)
+  );
 
 const dentistasFiltrados = dentistas.filter(d =>
   (d.nomeDentista || d.nome || '').toLowerCase().includes(filtroBusca.toLowerCase()) ||
-  (d.email || '').toLowerCase().includes(filtroBusca.toLowerCase()) 
+  (d.email || '').toLowerCase().includes(filtroBusca.toLowerCase())
 );
+
+  useEffect(() => {
+    const filtrados = pacientes.filter(p =>
+      (filtroStatus === null || p.statusTicket === filtroStatus)
+    );
+    console.log('[ADMIN] pacientes recebidos:', pacientes.length, 'filtrados:', filtrados.length, 'filtro:', filtroStatus);
+  }, [pacientes, filtroStatus]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans pb-16 md:pb-0 transition-colors duration-300">
+      <title>Painel Admin · Turma do Bem</title>
 
       {/* ── Top navigation bar ── */}
       <header className="sticky top-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
@@ -323,6 +357,7 @@ const dentistasFiltrados = dentistas.filter(d =>
               <p className="text-sm font-bold text-gray-900 dark:text-white leading-none truncate max-w-[140px]">{usuarioLogado}</p>
               <p className="text-xs text-orange-500 font-semibold mt-0.5">Administrador</p>
             </div>
+            <DemoBadge />
           </div>
 
           {/* Tab navigation — desktop */}
@@ -406,6 +441,15 @@ const dentistasFiltrados = dentistas.filter(d =>
                       onCSV={() => exportarPacientesCSV(pacientesFiltrados)}
                     />
                   </div>
+                  {Object.keys(contagemStatus).length > 0 && (
+                    <div className="px-5 py-3 border-b border-gray-100 dark:border-slate-700">
+                      <FiltroStatus
+                        contagem={contagemStatus}
+                        valor={filtroStatus}
+                        onChange={setFiltroStatus}
+                      />
+                    </div>
+                  )}
                   <div className="divide-y divide-gray-50 dark:divide-slate-700 max-h-[500px] overflow-y-auto">
                     {pacientesFiltrados.length === 0 ? (
                       <EmptyState icon={UserX} title="Nenhum paciente encontrado" />
@@ -419,6 +463,7 @@ const dentistasFiltrados = dentistas.filter(d =>
                             <p className="font-bold text-gray-800 dark:text-white text-sm truncate">{p.nomePaciente || p.nome}</p>
                             <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{p.email}</p>
                             <p className="text-[11px] text-gray-400 dark:text-slate-500">{p.cidade}, {p.pais}</p>
+                            {p.statusTicket && <span className="mt-1 inline-block"><TicketBadge status={p.statusTicket} size="sm" /></span>}
                           </div>
                         </div>
                         <button onClick={() => deletarUsuario('pacientes', p.id, p.nomePaciente || p.nome || '')}
@@ -468,6 +513,8 @@ const dentistasFiltrados = dentistas.filter(d =>
             )}
           </div>
         )}
+
+        {telaAtiva === 'metricas' && <MetricasOperacionais />}
 
         {telaAtiva === 'painel' && <>
         <div className="mb-8">

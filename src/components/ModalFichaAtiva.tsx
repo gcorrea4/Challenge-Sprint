@@ -3,6 +3,8 @@ import {
   MapPin, CalendarCheck, Printer, Plus, Trash2, Ban,
   CheckCircle2, Send, Clock, Activity, X, AlertTriangle,
 } from 'lucide-react';
+import { TicketTimeline } from './ticket';
+import type { EventoHistorico } from '../lib/api';
 
 interface HistoricoConsulta {
   id?: number;
@@ -56,6 +58,8 @@ interface Props {
   slotsLivres: SlotProposto[];
   dataHoje: string;
   ofertaAtiva?: OfertaAgendamento;
+  historicoTicket?: EventoHistorico[];
+  carregandoHistorico?: boolean;
   onClose: () => void;
   onGerarRelatorio: (p: Paciente) => void;
   onAdicionarSlot: () => void;
@@ -70,6 +74,7 @@ interface Props {
 export function ModalFichaAtiva({
   ficha, slotsPropostos, novaData, novaHora, procedimentoOferta,
   slotsOcupados, slotsLivres, dataHoje, ofertaAtiva,
+  historicoTicket = [], carregandoHistorico = false,
   onClose, onGerarRelatorio, onAdicionarSlot, onRemoverSlot, onEnviarOferta,
   onCancelarOferta, setNovaData, setNovaHora, setProcedimentoOferta,
 }: Props) {
@@ -288,6 +293,14 @@ export function ModalFichaAtiva({
               <X size={20} />
             </button>
           </div>
+
+          {/* Linha do tempo de status do ticket */}
+          {(carregandoHistorico || historicoTicket.length > 0) && (
+            <div className="mb-6">
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Status do Ticket</p>
+              <TicketTimeline eventos={historicoTicket} loading={carregandoHistorico} />
+            </div>
+          )}
 
           <div className="relative border-l-2 border-gray-200 ml-3 space-y-6">
             {ficha.historico && ficha.historico.length > 0 ? (

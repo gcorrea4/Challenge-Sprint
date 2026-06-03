@@ -18,6 +18,7 @@ import { CalculadoraScore } from '../pages/CalculadoraScore';
 import { FormularioContato } from '../pages/FormularioContato';
 import { Prontuario } from '../pages/Prontuario';
 import { Doador } from '../pages/Doador';
+import { TicketPublico } from '../pages/TicketPublico';
 
 // Layout com Header + Footer para páginas públicas e utilitários
 function PublicLayout() {
@@ -65,6 +66,9 @@ export function AppRoutes() {
           <Route path="/FormularioContato" element={<FormularioContato />} />
           <Route path="/prontuario/:nome"  element={<Prontuario />} />
         </Route>
+
+        {/* ── Rota pública de acompanhamento de ticket (sem login) ── */}
+        <Route path="/ticket/:codigo" element={<TicketPublico />} />
 
         {/* ── Dashboards protegidos — sem Header/Footer ── */}
         <Route path="/dashboard/admin"    element={<ProtectedRoute allowedRoles={['admin', 'dev']}><AdminDashboard /></ProtectedRoute>} />

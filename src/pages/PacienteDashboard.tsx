@@ -1,10 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { API_URL } from '../config';
+import { apiFetch } from '../utils/api';
 import { useForm } from 'react-hook-form';
 import { LayoutDashboard, LogOut, Clock, CalendarDays, Users, ClipboardList, Activity, CheckCircle2, AlertCircle, TrendingUp, Bell, CalendarCheck, ChevronRight, Phone, Mail, Navigation, MapPin, Sparkles } from 'lucide-react';
 import { MapaRota } from '../components/MapaRota';
-import { Skeleton, EmptyState } from '../components/ui';
+import { Skeleton, EmptyState, DemoBadge } from '../components/ui';
+import { TicketBadge, TicketNumero, TicketTimeline } from '../components/ticket';
+import { pacientesApi } from '../lib/api';
+import type { EventoHistorico, TicketStatus } from '../lib/api';
 
 interface HistoricoConsulta {
   id?: number;
@@ -58,6 +61,8 @@ export function PacienteDashboard() {
   const [ofertaRecebida, setOfertaRecebida] = useState<OfertaAgendamento | null>(null);
   const [slotEscolhidoId, setSlotEscolhidoId] = useState<string>('');
   const [mapaRotaAberto, setMapaRotaAberto] = useState(false);
+  const [historicoTicket, setHistoricoTicket] = useState<EventoHistorico[]>([]);
+  const [carregandoHistorico, setCarregandoHistorico] = useState(true);
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<TriagemFormData>({ defaultValues: { tipoDor: 'leve' } });
 
@@ -81,17 +86,17 @@ export function PacienteDashboard() {
   useEffect(() => {
     if (!userId) { setCarregandoDados(false); return; }
 
-    const fetchInfo = fetch(`${API_URL}/pacientes/${userId}`)
+    const fetchInfo = apiFetch(`/pacientes/${userId}`)
       .then(res => res.json())
       .then(data => { if (data?.cidade) setPacienteInfo({ cidade: data.cidade, pais: data.pais || 'Brasil' }); })
       .catch(() => {});
 
-    const fetchHistorico = fetch(`${API_URL}/pacientes/${userId}/historico`)
+    const fetchHistorico = apiFetch(`/pacientes/${userId}/historico`)
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setHistoricoPaciente(data); })
       .catch(() => {});
 
-    const fetchOferta = fetch(`${API_URL}/ofertas/paciente/${userId}`)
+    const fetchOferta = apiFetch(`/ofertas/paciente/${userId}`)
       .then(res => res.json())
       .then(data => {
         // Sempre atualiza — inclusive limpando se a oferta foi cancelada pelo dentista
@@ -104,11 +109,30 @@ export function PacienteDashboard() {
 
   }, [userId]);
 
+  // Busca histórico de status do ticket e detecta mudanças desde o último acesso.
+  useEffect(() => {
+    if (!userId) { setCarregandoHistorico(false); return; }
+    pacientesApi.historicoTicket(Number(userId))
+      .then(eventos => {
+        const lista = Array.isArray(eventos) ? eventos : [];
+        setHistoricoTicket(lista);
+        const novoStatus = lista[lista.length - 1]?.statusNovo ?? null;
+        const prevStatus = sessionStorage.getItem(`tdb_status_${userId}`);
+        if (prevStatus && novoStatus && prevStatus !== novoStatus) {
+          setMensagemSucesso('🦷 Seu caso teve uma atualização!');
+          setTimeout(() => setMensagemSucesso(''), 4000);
+        }
+        if (novoStatus) sessionStorage.setItem(`tdb_status_${userId}`, novoStatus);
+      })
+      .catch(() => {})
+      .finally(() => setCarregandoHistorico(false));
+  }, [userId]);
+
   // Re-busca a oferta sempre que o paciente abre a aba "consultas".
   // Garante que cancelamentos feitos pelo dentista sejam refletidos sem precisar recarregar a página.
   useEffect(() => {
     if (telaAtiva !== 'consultas' || !userId) return;
-    fetch(`${API_URL}/ofertas/paciente/${userId}`)
+    apiFetch(`/ofertas/paciente/${userId}`)
       .then(res => res.json())
       .then(data => {
         setOfertaRecebida(data && data.id ? (data as OfertaAgendamento) : null);
@@ -121,6 +145,9 @@ export function PacienteDashboard() {
   const consultasConcluidas = historicoPaciente.filter(h => h.status === 'Concluído').length;
   const consultasAgendadas = historicoPaciente.filter(h => h.status === 'Agendado').length;
   const progressoPct = Math.min(Math.round((consultasConcluidas / TOTAL_CONSULTAS_PLANO) * 100), 100);
+  const statusAtual: TicketStatus | null = historicoTicket.length > 0
+    ? historicoTicket[historicoTicket.length - 1].statusNovo
+    : null;
 
   const onSubmit = async (data: TriagemFormData) => {
     const payload = {
@@ -138,7 +165,7 @@ export function PacienteDashboard() {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
-      const response = await fetch(`${API_URL}/pacientes/${userId}`, {
+      const response = await apiFetch(`/pacientes/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -176,7 +203,7 @@ export function PacienteDashboard() {
     // Confirm via API — só atualiza estado local após confirmação do servidor
     if (ofertaRecebida.id) {
       try {
-        const res = await fetch(`${API_URL}/ofertas/${ofertaRecebida.id}/confirmar`, {
+        const res = await apiFetch(`/ofertas/${ofertaRecebida.id}/confirmar`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: slot.data, hora: slot.hora }),
@@ -227,6 +254,7 @@ export function PacienteDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans pb-16 md:pb-0 transition-colors duration-300">
+      <title>Meu Caso · Turma do Bem</title>
 
       {/* ── Top navigation bar ── */}
       <header className="sticky top-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
@@ -241,6 +269,7 @@ export function PacienteDashboard() {
               <p className="text-sm font-bold text-gray-900 dark:text-white leading-none truncate max-w-[140px]">{usuarioLogado}</p>
               <p className="text-xs text-orange-500 font-semibold mt-0.5">Beneficiário TdB</p>
             </div>
+            <DemoBadge />
           </div>
 
           {/* Tab navigation — desktop */}
@@ -320,6 +349,12 @@ export function PacienteDashboard() {
             {/* Boas-vindas */}
             <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
+                {userId && Number(userId) > 0 && (
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <TicketNumero id={Number(userId)} copiavel />
+                    {statusAtual && <TicketBadge status={statusAtual} />}
+                  </div>
+                )}
                 <h2 className="text-3xl font-black text-gray-800 dark:text-white mb-2">Olá, {usuarioLogado}! 👋</h2>
                 <p className="text-gray-500 dark:text-slate-400 text-lg">Bem-vindo ao seu painel da Turma do Bem.</p>
               </div>
@@ -376,6 +411,17 @@ export function PacienteDashboard() {
               {historicoPaciente.length === 0 && !carregandoDados && (
                 <p className="text-xs text-gray-400 dark:text-slate-500 mt-3 text-center">Preencha a triagem para iniciar o seu tratamento.</p>
               )}
+            </div>
+
+            {/* Linha do tempo do seu caso */}
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+              <div className="p-6 border-b border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700/30 flex items-center gap-3">
+                <div className="bg-orange-100 dark:bg-orange-950/40 p-2 rounded-lg text-[#FF8C00]"><Activity size={20} /></div>
+                <h3 className="font-bold text-gray-800 dark:text-white text-lg">Linha do tempo do seu caso</h3>
+              </div>
+              <div className="p-6">
+                <TicketTimeline eventos={historicoTicket} loading={carregandoHistorico} />
+              </div>
             </div>
 
             {/* Histórico */}

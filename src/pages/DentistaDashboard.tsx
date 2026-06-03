@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_URL } from '../config';
+import { apiFetch } from '../utils/api';
 import { calcularScore, type TipoDor } from '../utils/scoreUtils';
+import { gerarTicket, abreviarNome } from '../utils/ticketUtils';
 import { imprimirRelatorio } from '../utils/relatorioUtils';
 import { StatusAgendamento } from '../components/StatusAgendamento';
 import { ModalAvaliarPaciente } from '../components/ModalAvaliarPaciente';
 import { ModalFichaAtiva } from '../components/ModalFichaAtiva';
-import { Skeleton, EmptyState, Badge } from '../components/ui';
+import { Skeleton, EmptyState, Badge, DemoBadge } from '../components/ui';
+import { SLABadge, TicketBadge } from '../components/ticket';
+import { pacientesApi } from '../lib/api';
+import type { EventoHistorico, TicketStatus } from '../lib/api';
 import {
   LayoutDashboard, Users, Calendar, LogOut,
   Search, MessageSquare, Send,
@@ -38,6 +42,8 @@ interface Paciente {
   tempo_dor: number;
   telefone?: string;
   historico?: HistoricoConsulta[];
+  criadoEm?: string;
+  status?: TicketStatus;
 }
 
 interface Agendamento {
@@ -88,6 +94,8 @@ function mapearPaciente(p: Record<string, unknown>): Paciente {
     score_match: ((p.scoreMatch ?? p.score_match) as number)             ?? 50,
     telefone:    p.telefone as string | undefined,
     historico:   p.historico as HistoricoConsulta[] | undefined,
+    criadoEm:    (p.criadoEm ?? p.dataCadastro) as string | undefined,
+    status:      p.status as TicketStatus | undefined,
   };
 }
 
@@ -135,6 +143,8 @@ export function DentistaDashboard() {
   const [carregandoPacientes, setCarregandoPacientes] = useState(true);
   const [carregandoMeusPacientes, setCarregandoMeusPacientes] = useState(true);
   const [confirmarCancelamento, setConfirmarCancelamento] = useState<Paciente | null>(null);
+  const [historicoFichaAtiva, setHistoricoFichaAtiva] = useState<EventoHistorico[]>([]);
+  const [carregandoHistoricoFicha, setCarregandoHistoricoFicha] = useState(false);
 
   const dentistId = sessionStorage.getItem('userId') || '0';
   const usuarioLogado = sessionStorage.getItem('usuarioLogado') || 'Dentista';
@@ -148,7 +158,7 @@ export function DentistaDashboard() {
 
   const handleConcluirConsulta = async (idOferta: number) => {
     try {
-      const res = await fetch(`${API_URL}/ofertas/${idOferta}/concluir`, { method: 'PATCH' });
+      const res = await apiFetch(`/ofertas/${idOferta}/concluir`, { method: 'PATCH' });
       if (!res.ok) throw new Error();
       setAgendamentos(prev => prev.filter(a => a.id !== idOferta));
       showMensagem('Consulta marcada como concluída!');
@@ -170,7 +180,7 @@ export function DentistaDashboard() {
   useEffect(() => {
     const idNum = Number(dentistId);
     if (!idNum) { setCarregandoMeusPacientes(false); return; }
-    fetch(`${API_URL}/pacientes/adotados?idDentista=${idNum}`)
+    apiFetch(`/pacientes/adotados?idDentista=${idNum}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setMeusPacientes(data.map(mapearPaciente));
@@ -183,7 +193,7 @@ export function DentistaDashboard() {
   useEffect(() => {
     const idDentista = sessionStorage.getItem('userId');
     if (!idDentista) return;
-    fetch(`${API_URL}/ofertas/dentista/${idDentista}`)
+    apiFetch(`/ofertas/dentista/${idDentista}`)
       .then(res => res.json())
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((ofertas: any[]) => {
@@ -216,7 +226,7 @@ export function DentistaDashboard() {
   // Carrega fila de triagem (auth centralizada em ProtectedRoute)
   useEffect(() => {
     setCarregandoPacientes(true);
-    fetch(`${API_URL}/pacientes?cidade=${cidadeAtiva}`)
+    apiFetch(`/pacientes?cidade=${cidadeAtiva}`)
       .then(res => res.json())
       .then(data => {
         setPacientes(Array.isArray(data) ? data.map(mapearPaciente) : []);
@@ -229,13 +239,13 @@ export function DentistaDashboard() {
   useEffect(() => {
     const onVisibilityChange = () => {
       if (document.visibilityState !== 'visible') return;
-      fetch(`${API_URL}/pacientes?cidade=${cidadeAtiva}`)
+      apiFetch(`/pacientes?cidade=${cidadeAtiva}`)
         .then(r => r.json())
         .then(data => { if (Array.isArray(data)) setPacientes(data.map(mapearPaciente)); })
         .catch(() => {});
       const idNum = Number(dentistId);
       if (idNum) {
-        fetch(`${API_URL}/pacientes/adotados?idDentista=${idNum}`)
+        apiFetch(`/pacientes/adotados?idDentista=${idNum}`)
           .then(r => r.json())
           .then(data => { if (Array.isArray(data)) setMeusPacientes(data.map(mapearPaciente)); })
           .catch(() => {});
@@ -274,7 +284,7 @@ export function DentistaDashboard() {
   const handleEnviarOferta = async () => {
     if (!fichaAtiva || slotsLivres.length === 0) return;
     try {
-      const res = await fetch(`${API_URL}/ofertas`, {
+      const res = await apiFetch(`/ofertas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -305,7 +315,7 @@ export function DentistaDashboard() {
     if (acao === 'adotado' && !idNum) { alert('Erro: ID do dentista não encontrado. Por favor, faça login novamente.'); return; }
 
     try {
-      const res = await fetch(`${API_URL}/pacientes/${paciente.id}`, {
+      const res = await apiFetch(`/pacientes/${paciente.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -329,10 +339,11 @@ export function DentistaDashboard() {
         setPacienteSelecionado(null);
         setTelaAtiva('pacientes');
         showMensagem(`${paciente.nome} adotado com sucesso!`);
+        pacientesApi.atualizarStatus(paciente.id, 'EM_ATENDIMENTO', `Adotado por ${usuarioLogado}`).catch(() => {});
       } else {
         setMeusPacientes(prev => prev.filter(p => p.id !== paciente.id));
         setAgendamentos(prev => prev.filter(a => a.paciente.nome !== paciente.nome));
-        fetch(`${API_URL}/pacientes?cidade=${cidadeAtiva}`)
+        apiFetch(`/pacientes?cidade=${cidadeAtiva}`)
           .then(r => r.json())
           .then(data => { if (Array.isArray(data)) setPacientes(data.map(mapearPaciente)); })
           .catch(() => {});
@@ -345,7 +356,7 @@ export function DentistaDashboard() {
 
   const handleCancelarOferta = async (ofertaId: number, pacienteNome: string) => {
     try {
-      const res = await fetch(`${API_URL}/ofertas/${ofertaId}`, { method: 'DELETE' });
+      const res = await apiFetch(`/ofertas/${ofertaId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       setOfertasMapa(prev => {
         const novo = { ...prev };
@@ -362,7 +373,7 @@ export function DentistaDashboard() {
     if (!pergunta.trim()) return;
     setCarregandoIA(true);
     try {
-      const res = await fetch(`${API_URL}/IA/consultar`, {
+      const res = await apiFetch(`/IA/consultar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ texto: pergunta, fila_json: JSON.stringify(pacientesFiltrados) }),
@@ -388,6 +399,12 @@ export function DentistaDashboard() {
     setNovaData('');
     setNovaHora('');
     setProcedimentoOferta('Primeira Consulta - Avaliação');
+    setHistoricoFichaAtiva([]);
+    setCarregandoHistoricoFicha(true);
+    pacientesApi.historicoTicket(p.id)
+      .then(eventos => setHistoricoFichaAtiva(Array.isArray(eventos) ? eventos : []))
+      .catch(() => {})
+      .finally(() => setCarregandoHistoricoFicha(false));
   };
 
   // ─── Nav ─────────────────────────────────────────────────────────────────────
@@ -402,6 +419,7 @@ export function DentistaDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans pb-16 md:pb-0 transition-colors duration-300">
+      <title>Meu Painel · Turma do Bem</title>
 
       {/* ── Top navigation bar ── */}
       <header className="sticky top-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
@@ -418,6 +436,7 @@ export function DentistaDashboard() {
                 {userRole === 'dev' ? 'Desenvolvedor' : 'Dentista Voluntário'}
               </p>
             </div>
+            <DemoBadge />
           </div>
 
           {/* Tab navigation — desktop */}
@@ -528,11 +547,12 @@ export function DentistaDashboard() {
                             </h4>
                             <span className="bg-slate-50 dark:bg-slate-700 text-gray-500 dark:text-slate-400 text-xs px-2 py-0.5 rounded-md font-semibold border border-slate-100 dark:border-slate-600">{p.idade} anos</span>
                           </div>
-                          <div className="flex items-center gap-3 mt-1.5">
+                          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                             <p className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-1 font-medium"><MapPin size={12} /> {p.cidade}, {p.pais}</p>
                             <p className={`text-xs font-bold flex items-center gap-1 uppercase ${(p.tipo_dor || '').includes('quebrado') || p.tipo_dor === 'forte' ? 'text-red-500' : 'text-gray-500 dark:text-slate-400'}`}>
                               <AlertCircle size={12} /> {p.tipo_dor}
                             </p>
+                            {p.criadoEm && <SLABadge criadoEm={p.criadoEm} />}
                           </div>
                         </div>
                       </div>
@@ -622,6 +642,7 @@ export function DentistaDashboard() {
                           </div>
                         </div>
                         <Badge variant="success">Adotado</Badge>
+                        {p.status && <TicketBadge status={p.status} size="sm" />}
                       </div>
                       <div className="space-y-2 mb-3">
                         <p className="text-sm text-gray-600 dark:text-slate-300 flex items-center gap-2"><Phone size={14} className="text-gray-400 dark:text-slate-500" /> {p.telefone || '(11) 90000-0000'}</p>
@@ -688,7 +709,9 @@ export function DentistaDashboard() {
                         </div>
                         <div className="flex-1">
                           <h4 className="font-bold text-gray-800 dark:text-white text-lg">{ag.tipo}</h4>
-                          <p className="text-gray-500 dark:text-slate-400 text-sm">Paciente: {ag.paciente.nome}</p>
+                          <p className="text-gray-500 dark:text-slate-400 text-sm font-mono text-xs">
+                            {gerarTicket(ag.paciente.id)} · {abreviarNome(ag.paciente.nome)}
+                          </p>
                           <div className="flex items-center gap-4 mt-3">
                             <span className="bg-orange-50 dark:bg-orange-950/30 text-orange-500 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5"><Clock size={14} /> {ag.hora}</span>
                             <span className="bg-slate-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5"><MapPin size={14} /> O seu Consultório</span>
@@ -796,6 +819,8 @@ export function DentistaDashboard() {
           slotsLivres={slotsLivres}
           dataHoje={dataHoje}
           ofertaAtiva={ofertaAtiva}
+          historicoTicket={historicoFichaAtiva}
+          carregandoHistorico={carregandoHistoricoFicha}
           onClose={() => setFichaAtiva(null)}
           onGerarRelatorio={(p) => imprimirRelatorio(p, usuarioLogado)}
           onAdicionarSlot={handleAdicionarSlot}

@@ -82,6 +82,7 @@ export function Login() {
         sessionStorage.setItem('userRole', usuario.tipo || 'paciente');
         sessionStorage.setItem('usuarioLogado', usuario.nome);
         sessionStorage.setItem('userId', String(usuario.id || ''));
+        if (usuario.token) sessionStorage.setItem('authToken', usuario.token);
 
         if (usuario.tipo === 'dentista' && usuario.cidade && usuario.cidade !== 'N/A') {
           sessionStorage.setItem('dentistaCidade', usuario.cidade);

@@ -4,3 +4,4 @@ export { Badge } from './Badge';
 export { Input } from './Input';
 export { Skeleton } from './Skeleton';
 export { EmptyState } from './EmptyState';
+export { DemoBadge } from './DemoBadge';
