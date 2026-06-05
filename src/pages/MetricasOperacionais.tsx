@@ -1,17 +1,9 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, RefreshCw, Clock, CheckCircle2, TrendingUp, Layers } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Layers, Users, MessageSquare } from 'lucide-react';
 import { Skeleton } from '../components/ui';
 import { relatoriosApi } from '../lib/api';
 import type { MetricasOperacionais as MetricasDados, TicketStatus } from '../lib/api';
 import { TICKET_STATUS_CONFIG } from '../utils/ticketStatusConfig';
-
-function formatarHoras(horas: number): string {
-  if (horas < 1) return '< 1h';
-  if (horas < 24) return `${Math.round(horas)}h`;
-  const dias = Math.floor(horas / 24);
-  const h = Math.round(horas % 24);
-  return h > 0 ? `${dias}d ${h}h` : `${dias}d`;
-}
 
 function KPICard({
   label, valor, icone, corIcone, descricao,
@@ -36,11 +28,23 @@ function KPICard({
   );
 }
 
+const URGENCIA_CONFIG: Record<string, { label: string; cor: string }> = {
+  ALTA:  { label: 'Alta',  cor: 'bg-red-500' },
+  MEDIA: { label: 'Média', cor: 'bg-yellow-500' },
+  BAIXA: { label: 'Baixa', cor: 'bg-green-500' },
+};
+
+const CANAL_CONFIG: Record<string, { label: string; cor: string }> = {
+  WEB:        { label: 'Web',        cor: 'bg-blue-500' },
+  APP:        { label: 'App',        cor: 'bg-purple-500' },
+  PRESENCIAL: { label: 'Presencial', cor: 'bg-orange-500' },
+  TELEFONE:   { label: 'Telefone',   cor: 'bg-teal-500' },
+};
+
 export function MetricasOperacionais() {
   const [dados, setDados] = useState<MetricasDados | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(false);
-  // Incrementar dispara nova busca — setState fora do effect é permitido
   const [tentativa, setTentativa] = useState(0);
 
   const carregar = () => {
@@ -50,7 +54,6 @@ export function MetricasOperacionais() {
     setTentativa(t => t + 1);
   };
 
-  // Apenas callbacks assíncronos dentro do effect — sem setState síncrono
   useEffect(() => {
     let live = true;
     relatoriosApi.operacional()
@@ -70,14 +73,15 @@ export function MetricasOperacionais() {
   if (carregando) {
     return (
       <div className="space-y-6 animate-fade-in">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} variant="card" className="h-32" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => <Skeleton key={i} variant="card" className="h-32" />)}
         </div>
         <Skeleton variant="card" className="h-48" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton variant="card" className="h-56" />
-          <Skeleton variant="card" className="h-56" />
+          <Skeleton variant="card" className="h-48" />
+          <Skeleton variant="card" className="h-48" />
         </div>
+        <Skeleton variant="card" className="h-32" />
       </div>
     );
   }
@@ -102,12 +106,25 @@ export function MetricasOperacionais() {
     );
   }
 
-  // Distribuição por status — ordenada por volume desc
-  const distStatus = dados?.distribuicaoPorStatus ?? {};
-  const totalDist = Object.values(distStatus).reduce<number>((acc, n) => acc + (n ?? 0), 0);
+  const distStatus = dados?.por_status_ticket ?? {};
+  const totalDistStatus = Object.values(distStatus).reduce<number>((acc, n) => acc + (n ?? 0), 0);
   const statusOrdenados = (Object.entries(distStatus) as [TicketStatus, number][])
     .filter(([, n]) => (n ?? 0) > 0)
     .sort(([, a], [, b]) => b - a);
+
+  const urgenciaItens = (Object.entries(dados?.por_urgencia ?? {}) as [string, number][])
+    .filter(([, n]) => (n ?? 0) > 0)
+    .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
+  const totalUrgencia = urgenciaItens.reduce((acc, [, n]) => acc + n, 0);
+
+  const canalItens = (Object.entries(dados?.por_canal_origem ?? {}) as [string, number][])
+    .filter(([, n]) => (n ?? 0) > 0)
+    .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
+  const totalCanal = canalItens.reduce((acc, [, n]) => acc + n, 0);
+
+  const categoriaItens = (Object.entries(dados?.mensagens?.por_categoria ?? {}) as [string, number][])
+    .filter(([, n]) => (n ?? 0) > 0)
+    .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -120,42 +137,32 @@ export function MetricasOperacionais() {
         </p>
       </div>
 
-      {/* Linha 1 — 4 KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Linha 1 — KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <KPICard
+          label="Pacientes Ativos"
+          valor={String(dados?.total_pacientes_ativos ?? 0)}
+          icone={<Users size={20} className="text-orange-600" />}
+          corIcone="bg-orange-100 dark:bg-orange-950/40"
+          descricao="com casos em andamento"
+        />
         <KPICard
           label="Total de Tickets"
-          valor={String(dados?.totalTickets ?? 0)}
-          icone={<Layers size={20} className="text-orange-600" />}
-          corIcone="bg-orange-100 dark:bg-orange-950/40"
-        />
-        <KPICard
-          label="Tickets — últimos 7d"
-          valor={String(dados?.ticketsUltimos7d ?? 0)}
-          icone={<TrendingUp size={20} className="text-green-600" />}
-          corIcone="bg-green-100 dark:bg-green-950/40"
-          descricao="novos casos na última semana"
-        />
-        <KPICard
-          label="Tempo Médio Atribuição"
-          valor={dados?.tempoMedioAtribuicaoHoras != null
-            ? formatarHoras(dados.tempoMedioAtribuicaoHoras)
-            : 'N/D'}
-          icone={<Clock size={20} className="text-blue-600" />}
+          valor={String(totalDistStatus)}
+          icone={<Layers size={20} className="text-blue-600" />}
           corIcone="bg-blue-100 dark:bg-blue-950/40"
-          descricao="da abertura até dentista adotar"
+          descricao="soma de todos os status"
         />
         <KPICard
-          label="Tempo Médio Fechamento"
-          valor={dados?.tempoMedioFechamentoHoras != null
-            ? formatarHoras(dados.tempoMedioFechamentoHoras)
-            : 'N/D'}
-          icone={<CheckCircle2 size={20} className="text-purple-600" />}
+          label="Mensagens Recebidas"
+          valor={String(dados?.mensagens?.total ?? 0)}
+          icone={<MessageSquare size={20} className="text-purple-600" />}
           corIcone="bg-purple-100 dark:bg-purple-950/40"
-          descricao="da abertura até finalizar"
+          descricao="total de mensagens no sistema"
         />
       </div>
 
-      {/* Linha 2 — Distribuição por status (CSS puro, sem biblioteca) */}
+      {/* Linha 2 — Distribuição por Status */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
         <h3 className="font-bold text-gray-800 dark:text-white mb-5 text-lg">Distribuição por Status</h3>
         {statusOrdenados.length === 0 ? (
@@ -166,7 +173,7 @@ export function MetricasOperacionais() {
           <div className="space-y-4">
             {statusOrdenados.map(([status, count]) => {
               const cfg = TICKET_STATUS_CONFIG[status];
-              const pct = totalDist > 0 ? (count / totalDist) * 100 : 0;
+              const pct = totalDistStatus > 0 ? (count / totalDistStatus) * 100 : 0;
               const Icone = cfg?.icone;
               return (
                 <div key={status}>
@@ -198,66 +205,112 @@ export function MetricasOperacionais() {
         )}
       </div>
 
-      {/* Linha 3 — Top cidades + Top dentistas */}
+      {/* Linha 3 — Urgência + Canal de Origem */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Top cidades */}
+        {/* Urgência */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
-          <h3 className="font-bold text-gray-800 dark:text-white mb-4 text-lg">Top Cidades</h3>
-          {(!dados?.topCidades || dados.topCidades.length === 0) ? (
-            <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">Sem dados.</p>
+          <h3 className="font-bold text-gray-800 dark:text-white mb-5 text-lg">Por Urgência</h3>
+          {urgenciaItens.length === 0 ? (
+            <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">Nenhum dado disponível.</p>
           ) : (
-            <ol className="space-y-3">
-              {dados.topCidades.slice(0, 8).map((item, i) => (
-                <li key={item.cidade} className="flex items-center gap-3">
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
-                    i === 0
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
-                  }`}>
-                    {i + 1}
-                  </span>
-                  <span className="flex-1 text-sm font-medium text-gray-700 dark:text-slate-200 truncate">
-                    {item.cidade}
-                  </span>
-                  <span className="text-sm font-bold text-gray-800 dark:text-white shrink-0 tabular-nums">
-                    {item.total}
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <div className="space-y-4">
+              {urgenciaItens.map(([key, count]) => {
+                const cfg = URGENCIA_CONFIG[key];
+                const pct = totalUrgencia > 0 ? (count / totalUrgencia) * 100 : 0;
+                return (
+                  <div key={key}>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-sm font-bold text-gray-700 dark:text-slate-200">
+                        {cfg?.label ?? key}
+                      </span>
+                      <span className="text-xs font-bold text-gray-500 dark:text-slate-400 tabular-nums">
+                        {count} ({pct.toFixed(0)}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${cfg?.cor ?? 'bg-slate-400'}`}
+                        style={{ width: `${pct > 0 ? Math.max(pct, 2) : 0}%` }}
+                        role="progressbar"
+                        aria-valuenow={Math.round(pct)}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
-        {/* Top dentistas */}
+        {/* Canal de Origem */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
-          <h3 className="font-bold text-gray-800 dark:text-white mb-4 text-lg">Top Dentistas Voluntários</h3>
-          {(!dados?.topDentistas || dados.topDentistas.length === 0) ? (
-            <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">Sem dados.</p>
+          <h3 className="font-bold text-gray-800 dark:text-white mb-5 text-lg">Por Canal de Origem</h3>
+          {canalItens.length === 0 ? (
+            <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">Nenhum dado disponível.</p>
           ) : (
-            <ol className="space-y-3">
-              {dados.topDentistas.slice(0, 8).map((item, i) => (
-                <li key={item.nome} className="flex items-center gap-3">
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
-                    i === 0
-                      ? 'bg-[#8dc63f] text-white'
-                      : 'bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400'
-                  }`}>
-                    {i + 1}
-                  </span>
-                  <span className="flex-1 text-sm font-medium text-gray-700 dark:text-slate-200 truncate">
-                    {item.nome}
-                  </span>
-                  <span className="text-xs font-bold text-gray-400 dark:text-slate-500 shrink-0 tabular-nums">
-                    {item.atendimentos} atend.
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <div className="space-y-4">
+              {canalItens.map(([key, count]) => {
+                const cfg = CANAL_CONFIG[key];
+                const pct = totalCanal > 0 ? (count / totalCanal) * 100 : 0;
+                return (
+                  <div key={key}>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-sm font-bold text-gray-700 dark:text-slate-200">
+                        {cfg?.label ?? key}
+                      </span>
+                      <span className="text-xs font-bold text-gray-500 dark:text-slate-400 tabular-nums">
+                        {count} ({pct.toFixed(0)}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${cfg?.cor ?? 'bg-slate-400'}`}
+                        style={{ width: `${pct > 0 ? Math.max(pct, 2) : 0}%` }}
+                        role="progressbar"
+                        aria-valuenow={Math.round(pct)}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
       </div>
+
+      {/* Linha 4 — Mensagens por Categoria */}
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-bold text-gray-800 dark:text-white text-lg">Mensagens por Categoria</h3>
+          <span className="text-sm font-bold text-gray-500 dark:text-slate-400 tabular-nums">
+            {dados?.mensagens?.total ?? 0} total
+          </span>
+        </div>
+        {categoriaItens.length === 0 ? (
+          <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">Nenhum dado disponível.</p>
+        ) : (
+          <div className="flex flex-wrap gap-3">
+            {categoriaItens.map(([categoria, count]) => (
+              <div
+                key={categoria}
+                className="flex items-center gap-2 bg-gray-50 dark:bg-slate-700/50 rounded-xl px-4 py-3 border border-gray-100 dark:border-slate-600"
+              >
+                <span className="text-sm font-bold text-gray-700 dark:text-slate-200">
+                  {categoria.charAt(0) + categoria.slice(1).toLowerCase()}
+                </span>
+                <span className="text-lg font-black text-orange-500">{count}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

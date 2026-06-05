@@ -19,13 +19,15 @@ export interface EventoHistorico {
 }
 
 export interface MetricasOperacionais {
-  totalTickets: number | null;
-  ticketsUltimos7d: number | null;
-  tempoMedioAtribuicaoHoras: number | null;
-  tempoMedioFechamentoHoras: number | null;
-  distribuicaoPorStatus: Partial<Record<TicketStatus, number>>;
-  topCidades: Array<{ cidade: string; total: number }>;
-  topDentistas: Array<{ nome: string; atendimentos: number }>;
+  total_pacientes_ativos: number;
+  por_status_ticket: Partial<Record<TicketStatus, number>>;
+  por_urgencia: Partial<Record<'ALTA' | 'MEDIA' | 'BAIXA', number>>;
+  por_canal_origem: Partial<Record<'WEB' | 'APP' | 'PRESENCIAL' | 'TELEFONE', number>>;
+  mensagens: {
+    total: number;
+    por_categoria: Partial<Record<string, number>>;
+    por_urgencia_msg: Partial<Record<'ALTA' | 'MEDIA' | 'BAIXA', number>>;
+  };
 }
 
 // ── HTTP helper ────────────────────────────────────────────────────────────────
@@ -59,5 +61,5 @@ export const pacientesApi = {
 };
 
 export const relatoriosApi = {
-  operacional: () => request<MetricasOperacionais>('/relatorios/operacional'),
+  operacional: () => request<MetricasOperacionais>('/admin/metricas'),
 };
