@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   ChevronLeft, ChevronRight, Heart, ShieldCheck, Zap,
   Calculator, Users, MessageCircle, MapPin, Star,
-  CheckCircle2, ArrowRight, Smile,
+  CheckCircle2, ArrowRight, Smile, Layers, Target, Eye,
 } from 'lucide-react';
 import turmaDoRemHero from '../img/turma-do-bem-hero.jpg';
 
@@ -362,6 +362,108 @@ export function Home() {
             </motion.div>
           ))}
           <div className="min-w-[1px] flex-shrink-0 snap-end" />
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          NOSSOS PROGRAMAS  (fundo bege)
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 px-6 bg-[#F5F5DC] dark:bg-slate-900">
+        <div className="max-w-[1100px] mx-auto">
+          <motion.div {...fadeUp()} className="text-center mb-16">
+            <span className="text-[#FF8C00] text-xs font-bold uppercase tracking-[3px] mb-5 block">
+              Nossas iniciativas
+            </span>
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white leading-tight">
+              Nossos <span className="text-[#FF8C00]">Programas</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Card Dentista do Bem */}
+            <motion.div
+              {...fadeLeft(0.1)}
+              className="bg-white dark:bg-slate-800 rounded-[32px] p-10 border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-[0_8px_30px_rgba(255,140,0,0.12)] hover:border-orange-200 dark:hover:border-orange-700/60 transition-all duration-300 flex flex-col"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center mb-6 text-[#FF8C00]">
+                <Heart size={28} />
+              </div>
+              <span className="text-[#FF8C00] text-xs font-bold uppercase tracking-[2px] mb-2">Jovens de 11 a 17 anos</span>
+              <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-4">Dentista do Bem</h3>
+              <p className="text-gray-500 dark:text-slate-400 leading-relaxed text-base flex-1">
+                Atendimento odontológico voluntário para jovens em situação de vulnerabilidade social, garantindo continuidade do tratamento até os 18 anos no consultório particular do dentista voluntário.
+              </p>
+              <Link
+                to="/sobre"
+                className="mt-8 inline-flex items-center gap-2 text-[#FF8C00] font-bold group"
+              >
+                Saiba mais <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </motion.div>
+
+            {/* Card Apolônias do Bem */}
+            <motion.div
+              {...fadeRight(0.1)}
+              className="bg-white dark:bg-slate-800 rounded-[32px] p-10 border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-[0_8px_30px_rgba(139,92,246,0.12)] hover:border-violet-200 dark:hover:border-violet-700/60 transition-all duration-300 flex flex-col"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center mb-6 text-violet-600 dark:text-violet-400">
+                <ShieldCheck size={28} />
+              </div>
+              <span className="text-violet-600 dark:text-violet-400 text-xs font-bold uppercase tracking-[2px] mb-2">Mulheres em Situação de Vulnerabilidade</span>
+              <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-4">Apolônias do Bem</h3>
+              <p className="text-gray-500 dark:text-slate-400 leading-relaxed text-base flex-1">
+                Tratamento completo e gratuito para mulheres vítimas de violência doméstica que tiveram a dentição afetada por agressões, devolvendo dignidade e empregabilidade.
+              </p>
+              <Link
+                to="/apolonias"
+                className="mt-8 inline-flex items-center gap-2 text-violet-600 dark:text-violet-400 font-bold group"
+              >
+                Saiba mais <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          TECNOLOGIA QUE CENTRALIZA  (fundo preto)
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 bg-[#0B090B] relative overflow-hidden">
+        <div className="pulse-slow absolute -top-24 -right-24 w-96 h-96 rounded-full bg-violet-500/5" />
+        <div className="pulse-slow absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-[#FF8C00]/5" />
+
+        <div className="max-w-[1100px] mx-auto px-6 relative z-10">
+          <motion.div {...fadeUp()} className="text-center mb-16">
+            <span className="text-violet-400 text-xs font-bold uppercase tracking-[3px] mb-5 block">
+              Diferencial técnico
+            </span>
+            <h2 className="text-4xl md:text-5xl font-black text-white leading-tight mb-6">
+              Fila de Triagem <span className="text-violet-400">Inteligente</span>
+            </h2>
+            <p className="text-white/50 text-lg max-w-[640px] mx-auto leading-relaxed">
+              Substituímos a triagem manual fragmentada por WhatsApp e e-mail por um sistema de tickets rastreáveis com priorização automatizada por gravidade, idade e vulnerabilidade.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { icon: <Layers size={28} />, title: 'Gateway Centralizado', desc: 'Um único ponto de entrada para todos os canais de solicitação, eliminando fragmentação.' },
+              { icon: <Target size={28} />, title: 'Score TdB Determinístico', desc: 'Algoritmo que pontua casos por gravidade clínica, faixa etária e índice de vulnerabilidade.' },
+              { icon: <Eye   size={28} />, title: 'Timeline Pública',       desc: 'Paciente acompanha cada etapa do atendimento em tempo real, sem depender de ligações.' },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                {...fadeUp(i * 0.12)}
+                className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-violet-400/40 hover:bg-violet-500/5 transition-all duration-300 flex flex-col items-start gap-4"
+              >
+                <div className="w-12 h-12 rounded-xl bg-violet-500/15 flex items-center justify-center text-violet-400">
+                  {item.icon}
+                </div>
+                <h3 className="text-white font-bold text-lg">{item.title}</h3>
+                <p className="text-white/45 text-sm leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 

@@ -33,6 +33,7 @@ export function Footer() {
             <li><Link to="/" className="text-white/60 text-[0.95rem] transition-colors hover:text-[#FFAF00]">Início</Link></li>
             <li><Link to="/sobre" className="text-white/60 text-[0.95rem] transition-colors hover:text-[#FFAF00]">Sobre o Projeto</Link></li>
             <li><Link to="/quem-somos" className="text-white/60 text-[0.95rem] transition-colors hover:text-[#FFAF00]">Quem Somos</Link></li>
+            <li><Link to="/apolonias" className="text-white/60 text-[0.95rem] transition-colors hover:text-[#FFAF00]">Apolônias do Bem</Link></li>
             <li><Link to="/faq" className="text-white/60 text-[0.95rem] transition-colors hover:text-[#FFAF00]">Perguntas Frequentes (FAQ)</Link></li>
             <li><Link to="/reconhecimentos" className="text-white/60 text-[0.95rem] transition-colors hover:text-[#FFAF00]">Reconhecimentos</Link></li>
             <li><Link to="/cadastro" className="text-white/60 text-[0.95rem] transition-colors hover:text-[#FFAF00]">Cadastro</Link></li>

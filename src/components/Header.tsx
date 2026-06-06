@@ -35,6 +35,7 @@ export function Header() {
     { to: '/',               label: 'Início' },
     { to: '/quem-somos',     label: 'Quem Somos' },
     { to: '/sobre',          label: 'Sobre' },
+    { to: '/apolonias',      label: 'Apolônias do Bem' },
     { to: '/reconhecimentos',label: 'Reconhecimentos' },
     { to: '/faq',            label: 'FAQ' },
   ];
