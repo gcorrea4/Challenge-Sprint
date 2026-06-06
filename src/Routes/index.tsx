@@ -19,6 +19,7 @@ import { FormularioContato } from '../pages/FormularioContato';
 import { Prontuario } from '../pages/Prontuario';
 import { Doador } from '../pages/Doador';
 import { TicketPublico } from '../pages/TicketPublico';
+import {ApoloniasDoBem} from "../pages/ApoloniasDoBem";
 
 // Layout com Header + Footer para páginas públicas e utilitários
 function PublicLayout() {
@@ -65,6 +66,7 @@ export function AppRoutes() {
           <Route path="/Calculadora/Score" element={<CalculadoraScore />} />
           <Route path="/FormularioContato" element={<FormularioContato />} />
           <Route path="/prontuario/:nome"  element={<Prontuario />} />
+          <Route path="/apolonias" element={<ApoloniasDoBem />} />
         </Route>
 
         {/* ── Rota pública de acompanhamento de ticket (sem login) ── */}
