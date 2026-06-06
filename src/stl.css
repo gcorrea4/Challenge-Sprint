@@ -15,3 +15,7 @@
     color: #f1f5f9;
   }
 }
+.dark input[type="date"],
+.dark input[type="time"] {
+  color-scheme: dark;
+}

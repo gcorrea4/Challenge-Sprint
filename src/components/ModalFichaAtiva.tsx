@@ -225,12 +225,12 @@ export function ModalFichaAtiva({
                   <input
                     type="date" min={dataHoje} value={novaData}
                     onChange={e => setNovaData(e.target.value)}
-                    className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#FF8C00]"
+                    className="flex-1 bg-gray-50 dark:bg-slate-700 dark:text-white dark:border-slate-600 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#FF8C00]"
                   />
                   <input
                     type="time" value={novaHora}
                     onChange={e => setNovaHora(e.target.value)}
-                    className="w-[110px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#FF8C00]"
+                    className="w-[110px] bg-gray-50 dark:bg-slate-700 dark:text-white dark:border-slate-600 border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#FF8C00]"
                   />
                   <button
                     type="button" onClick={onAdicionarSlot}
