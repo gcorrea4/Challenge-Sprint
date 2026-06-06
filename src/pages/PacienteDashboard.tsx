@@ -14,9 +14,12 @@ interface HistoricoConsulta {
   titulo?: string;
   status?: string;
   data?: string;
+  dataISO?: string;
   hora?: string;
   proc?: string;
   dentista?: string;
+  dentistaCidade?: string;
+  dentistaPais?: string;
 }
 
 interface SlotOferta {
@@ -61,6 +64,7 @@ export function PacienteDashboard() {
   const [ofertaRecebida, setOfertaRecebida] = useState<OfertaAgendamento | null>(null);
   const [slotEscolhidoId, setSlotEscolhidoId] = useState<string>('');
   const [mapaRotaAberto, setMapaRotaAberto] = useState(false);
+  const [mapaRotaHistoricoItem, setMapaRotaHistoricoItem] = useState<HistoricoConsulta | null>(null);
   const [historicoTicket, setHistoricoTicket] = useState<EventoHistorico[]>([]);
   const [carregandoHistorico, setCarregandoHistorico] = useState(true);
 
@@ -224,7 +228,7 @@ export function PacienteDashboard() {
     // Atualiza estado local somente após backend confirmar
     const ofertaAtualizada = { ...ofertaRecebida, status: 'confirmado' as const, slotEscolhido: { data: slot.data, hora: slot.hora } };
     setOfertaRecebida(ofertaAtualizada);
-    setHistoricoPaciente(prev => [...prev, { status: 'Agendado', data: dataFormatada, hora: slot.hora, proc: ofertaRecebida.procedimento, dentista: ofertaRecebida.dentistaNome }]);
+    setHistoricoPaciente(prev => [...prev, { status: 'Agendado', data: dataFormatada, dataISO: slot.data, hora: slot.hora, proc: ofertaRecebida.procedimento, dentista: ofertaRecebida.dentistaNome, dentistaCidade: ofertaRecebida.dentistaCidade, dentistaPais: ofertaRecebida.dentistaPais }]);
     setMensagemSucesso(`Consulta confirmada para ${dataFormatada} às ${slot.hora}! O seu dentista foi notificado.`);
     setTimeout(() => { setTelaAtiva('painel'); setMensagemSucesso(''); }, 4000);
 
@@ -458,6 +462,15 @@ export function PacienteDashboard() {
                             {item.hora && <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-slate-700 px-2.5 py-1.5 rounded-lg"><Clock size={14} /> {item.hora}</span>}
                             <span className="flex items-center gap-1.5 bg-gray-50 dark:bg-slate-700 px-2.5 py-1.5 rounded-lg"><Users size={14} /> Dr(a). {item.dentista}</span>
                           </div>
+                          {item.status === 'Agendado' && (
+                            <button
+                              onClick={() => setMapaRotaHistoricoItem(item)}
+                              className="mt-3 w-full flex items-center justify-center gap-2 text-xs font-bold text-[#FF8C00] hover:text-white bg-orange-50 hover:bg-[#FF8C00] dark:bg-orange-950/30 dark:hover:bg-[#FF8C00] px-3 py-2.5 rounded-xl border border-orange-200 dark:border-orange-900/40 transition-all"
+                            >
+                              <Navigation size={14} />
+                              Ver Rota
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))
@@ -753,7 +766,7 @@ export function PacienteDashboard() {
         </div>
       </nav>
 
-      {/* ── Modal de Rota (fullscreen, estilo Waze) ── */}
+      {/* ── Modal de Rota — aba Consultas (oferta confirmada) ── */}
       {mapaRotaAberto && ofertaRecebida?.slotEscolhido && (
         <MapaRota
           dentistaCidade={ofertaRecebida.dentistaCidade || 'São Paulo'}
@@ -762,6 +775,18 @@ export function PacienteDashboard() {
           data={ofertaRecebida.slotEscolhido.data}
           hora={ofertaRecebida.slotEscolhido.hora}
           onClose={() => setMapaRotaAberto(false)}
+        />
+      )}
+
+      {/* ── Modal de Rota — Histórico (botão Ver Rota no card) ── */}
+      {mapaRotaHistoricoItem && (
+        <MapaRota
+          dentistaCidade={mapaRotaHistoricoItem.dentistaCidade || pacienteInfo.cidade || 'São Paulo'}
+          dentistaPais={mapaRotaHistoricoItem.dentistaPais || pacienteInfo.pais || 'Brasil'}
+          dentistaNome={mapaRotaHistoricoItem.dentista || ''}
+          data={mapaRotaHistoricoItem.dataISO ?? (mapaRotaHistoricoItem.data?.includes('-') ? mapaRotaHistoricoItem.data : (([d, m, y]) => `${y}-${m}-${d}`)(mapaRotaHistoricoItem.data?.split('/') ?? ['', '', '']))}
+          hora={mapaRotaHistoricoItem.hora || ''}
+          onClose={() => setMapaRotaHistoricoItem(null)}
         />
       )}
     </div>
