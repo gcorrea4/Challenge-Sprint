@@ -20,6 +20,7 @@ import { Prontuario } from '../pages/Prontuario';
 import { Doador } from '../pages/Doador';
 import { TicketPublico } from '../pages/TicketPublico';
 import {ApoloniasDoBem} from "../pages/ApoloniasDoBem";
+import { ScrollToTop } from '../components/ScrollToTop';
 
 // Layout com Header + Footer para páginas públicas e utilitários
 function PublicLayout() {
@@ -50,6 +51,7 @@ function PublicLayout() {
 export function AppRoutes() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* ── Páginas com Header + Footer ── */}
         <Route element={<PublicLayout />}>
