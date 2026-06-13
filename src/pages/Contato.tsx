@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
+import { useUtmSource } from '../hooks/useUtmSource';
 import {
   Phone,
   Mail,
@@ -132,6 +133,7 @@ export function Contato() {
   const [contatosOpen, setContatosOpen] = useState(true);
   const [localizacaoOpen, setLocalizacaoOpen] = useState(false);
   const [redesOpen, setRedesOpen] = useState(false);
+  const utmSource = useUtmSource();
 
   return (
     <main className="bg-white dark:bg-slate-900 min-h-screen font-sans pt-20 overflow-x-hidden transition-colors duration-300">
@@ -150,6 +152,14 @@ export function Contato() {
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-10">
             Entre em contato conosco por qualquer um dos canais abaixo.
           </p>
+
+          {utmSource && (
+            <div className="mb-8 flex items-center gap-2 text-sm font-semibold text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 rounded-xl py-3 px-4">
+              {utmSource === 'telegram'
+                ? '💬 Você veio pelo Telegram — obrigado por nos contatar!'
+                : '👋 Que bom ter você aqui — obrigado por nos contatar!'}
+            </div>
+          )}
 
           {/* Contatos */}
           <Accordion

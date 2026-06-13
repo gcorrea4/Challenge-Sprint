@@ -3,21 +3,25 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Send, ArrowLeft, User, Mail, HelpCircle, MessageSquare } from 'lucide-react';
 import { API_URL } from '../config';
+import { useUtmSource } from '../hooks/useUtmSource';
 
 interface ContatoFormData {
   nome: string;
   email: string;
   assunto: string;
   mensagem: string;
+  canal_origem?: string;
 }
 
 export function FormularioContato() {
   const navigate = useNavigate();
+  const utmSource = useUtmSource();
   const [isLoading, setIsLoading] = useState(false);
   const [erro, setErro] = useState('');
   const { register, handleSubmit, formState: { errors } } = useForm<ContatoFormData>({
     defaultValues: {
-      assunto: ''
+      assunto: '',
+      canal_origem: ''
     }
   });
 
@@ -25,10 +29,11 @@ export function FormularioContato() {
     setIsLoading(true);
     setErro('');
     try {
+      const canal_origem = utmSource?.toUpperCase() ?? (data.canal_origem || 'WEB');
       const response = await fetch(`${API_URL}/mensagens`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, canal_origem }),
       });
       if (!response.ok) throw new Error('Erro ao enviar');
       navigate('/contato');
@@ -122,6 +127,35 @@ export function FormularioContato() {
               </div>
               {errors.assunto && <span className="text-red-500 text-xs mt-1.5 block font-medium">Assunto é obrigatório</span>}
             </div>
+
+            {/* Canal de origem (UTM) */}
+            {utmSource === 'telegram' && (
+              <div className="md:col-span-2">
+                <p className="flex items-center gap-2 text-sm font-semibold text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 rounded-xl py-3 px-4 m-0">
+                  💬 Você veio pelo Telegram — obrigado por nos contatar!
+                </p>
+              </div>
+            )}
+
+            {utmSource === null && (
+              <div className="md:col-span-2">
+                <label className="block text-[13px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wide mb-2">Como você nos conheceu? <span className="text-gray-400 font-medium normal-case">(opcional)</span></label>
+                <div className="relative group">
+                  <select
+                    {...register("canal_origem")}
+                    className="w-full pl-4 pr-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-gray-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-600 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all duration-200 appearance-none cursor-pointer font-medium"
+                  >
+                    <option value="">Prefiro não informar</option>
+                    <option value="TELEGRAM">Telegram</option>
+                    <option value="INSTAGRAM">Instagram</option>
+                    <option value="YOUTUBE">YouTube</option>
+                    <option value="INDICACAO">Indicação de amigo</option>
+                    <option value="GOOGLE">Google / Pesquisa</option>
+                    <option value="OUTRO">Outro</option>
+                  </select>
+                </div>
+              </div>
+            )}
 
             {/* Mensagem */}
             <div className="md:col-span-2">

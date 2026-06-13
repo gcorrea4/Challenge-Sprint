@@ -15,56 +15,59 @@ function renderLogin() {
   );
 }
 
+beforeEach(() => {
+  // Garante estado limpo (o título depende de sessionStorage)
+  sessionStorage.clear();
+  mockFetch.mockReset();
+});
+
 describe('Login — renderização', () => {
-  it('exibe o título de boas-vindas', () => {
+  it('exibe o título de acesso à conta', () => {
     renderLogin();
-    expect(screen.getByText('Bem-vindo!')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Acessar conta' })).toBeInTheDocument();
   });
 
-  it('exibe campo de e-mail e botão Entrar', () => {
+  it('exibe campos de e-mail e senha e o botão Entrar', () => {
     renderLogin();
-    expect(screen.getByPlaceholderText('exemplo@email.com')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('seu@email.com')).toBeInTheDocument();
+    expect(document.querySelector('input[type="password"]')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
   });
 
   it('exibe links para cadastro e doador', () => {
     renderLogin();
-    expect(screen.getByText(/Cadastre-se agora/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cadastre-se grátis/i)).toBeInTheDocument();
     expect(screen.getByText(/Seja um Doador/i)).toBeInTheDocument();
   });
 });
 
 describe('Login — validação de campos obrigatórios', () => {
-  beforeEach(() => mockFetch.mockReset());
-
   it('mostra erro quando e-mail está vazio', async () => {
     renderLogin();
     fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
     await waitFor(() => {
-      expect(screen.getByText('O E-mail é obrigatório.')).toBeInTheDocument();
+      expect(screen.getByText('O e-mail é obrigatório')).toBeInTheDocument();
     });
   });
 
   it('mostra erro quando senha está vazia (e-mail preenchido)', async () => {
     renderLogin();
-    fireEvent.change(screen.getByPlaceholderText('exemplo@email.com'), {
+    fireEvent.change(screen.getByPlaceholderText('seu@email.com'), {
       target: { value: 'test@teste.com' },
     });
     fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
     await waitFor(() => {
-      expect(screen.getByText('A senha é obrigatória.')).toBeInTheDocument();
+      expect(screen.getByText('A senha é obrigatória')).toBeInTheDocument();
     });
   });
 });
 
 describe('Login — respostas da API', () => {
-  beforeEach(() => mockFetch.mockReset());
-
   it('exibe erro quando credenciais estão incorretas (HTTP 401)', async () => {
     mockFetch.mockResolvedValueOnce({ ok: false, json: async () => ({}) });
     renderLogin();
 
-    fireEvent.change(screen.getByPlaceholderText('exemplo@email.com'), {
+    fireEvent.change(screen.getByPlaceholderText('seu@email.com'), {
       target: { value: 'errado@teste.com' },
     });
     const senhaInput = document.querySelector('input[type="password"]') as HTMLInputElement;
@@ -72,7 +75,9 @@ describe('Login — respostas da API', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
     await waitFor(() => {
-      expect(screen.getByText('Email ou senha incorretos.')).toBeInTheDocument();
+      expect(
+        screen.getByText('E-mail ou senha incorretos. Verifique e tente novamente.'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -80,7 +85,7 @@ describe('Login — respostas da API', () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
     renderLogin();
 
-    fireEvent.change(screen.getByPlaceholderText('exemplo@email.com'), {
+    fireEvent.change(screen.getByPlaceholderText('seu@email.com'), {
       target: { value: 'test@teste.com' },
     });
     const senhaInput = document.querySelector('input[type="password"]') as HTMLInputElement;
@@ -88,7 +93,9 @@ describe('Login — respostas da API', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
     await waitFor(() => {
-      expect(screen.getByText('Erro ao conectar com o Servidor.')).toBeInTheDocument();
+      expect(
+        screen.getByText('Erro ao conectar com o servidor. Verifique sua conexão.'),
+      ).toBeInTheDocument();
     });
   });
 });
@@ -104,7 +111,7 @@ describe('Login — recuperação de senha', () => {
 
   it('exibe formulário de redefinição quando e-mail está preenchido', () => {
     renderLogin();
-    fireEvent.change(screen.getByPlaceholderText('exemplo@email.com'), {
+    fireEvent.change(screen.getByPlaceholderText('seu@email.com'), {
       target: { value: 'usuario@teste.com' },
     });
     fireEvent.click(screen.getByText('Esqueci minha senha'));
