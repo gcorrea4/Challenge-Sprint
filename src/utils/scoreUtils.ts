@@ -3,7 +3,7 @@
  * Extraída para ser reutilizável e testável independentemente do componente.
  */
 
-export type TipoDor = 'leve' | 'moderada' | 'forte' | 'urgente';
+export type TipoDor = 'leve' | 'moderada' | 'forte' | 'urgente' | 'dente quebrado';
 
 export type PacienteComScore = { nome: string; tipo_dor: TipoDor; renda: number; idade: number } & { score_calculado: number };
 
@@ -13,6 +13,7 @@ export const GRAVIDADE_SCORE: Record<TipoDor, number> = {
   moderada: 15,
   forte: 30,
   urgente: 45,
+  'dente quebrado': 45,
 };
 
 /** Pontos por idade (11–17 anos, máx 20) */

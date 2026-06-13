@@ -91,7 +91,7 @@ function mapearPaciente(p: Record<string, unknown>): Paciente {
     tipo_dor:    ((p.tipoDor ?? p.tipo_dor) as string)                   || 'Não informado',
     renda:       ((p.rendaSalarioMinimo ?? p.renda) as number)           ?? 0,
     tempo_dor:   ((p.tempoDorDias ?? p.tempo_dor) as number)             ?? 0,
-    score_match: ((p.scoreMatch ?? p.score_match) as number)             ?? 50,
+    score_match: ((p.scoreMatch ?? p.score_match) as number)             ?? 0,
     telefone:    p.telefone as string | undefined,
     historico:   p.historico as HistoricoConsulta[] | undefined,
     criadoEm:    (p.criadoEm ?? p.dataCadastro) as string | undefined,
@@ -264,8 +264,10 @@ export function DentistaDashboard() {
 
   const pacientesFiltrados = pacientes
     .filter(p => p.nome.toLowerCase().includes(pesquisa.toLowerCase()))
-    .sort((a, b) => calcularScorePaciente(b) - calcularScorePaciente(a))
-    .map(p => ({ ...p, score_match: calcularScorePaciente(p) }));
+    // Score persistido pelo backend (server-side) é o valor primário;
+    // calcularScorePaciente é só fallback quando a API não envia score (null/undefined/0).
+    .map(p => ({ ...p, score_match: (p.score_match && p.score_match > 0) ? p.score_match : calcularScorePaciente(p) }))
+    .sort((a, b) => b.score_match - a.score_match);
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
