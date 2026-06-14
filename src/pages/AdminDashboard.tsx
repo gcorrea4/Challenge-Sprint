@@ -11,7 +11,9 @@ import {
 } from '../utils/adminExportUtils';
 import { Skeleton, EmptyState, DemoBadge } from '../components/ui';
 import { FiltroStatus, TicketBadge } from '../components/ticket';
-import type { TicketStatus } from '../lib/api';
+import { ModalCasoAdmin } from '../components/ModalCasoAdmin';
+import { pacientesApi } from '../lib/api';
+import type { TicketStatus, EventoHistorico } from '../lib/api';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet.heat';
@@ -142,6 +144,9 @@ export function AdminDashboard() {
     id: number;
     nome: string;
   } | null>(null);
+  const [pacienteSelecionadoAdmin, setPacienteSelecionadoAdmin] = useState<typeof pacientes[0] | null>(null);
+  const [historicoModalAdmin, setHistoricoModalAdmin] = useState<EventoHistorico[]>([]);
+  const [carregandoHistoricoAdmin, setCarregandoHistoricoAdmin] = useState(false);
 
   const [statsAdmin, setStatsAdmin] = useState({
     total_beneficiarios: 0,
@@ -241,6 +246,21 @@ export function AdminDashboard() {
   // Abre o modal de confirmação — o fetch só acontece em handleConfirmarInativacao.
   const deletarUsuario = (tipo: 'pacientes' | 'dentistas', id: number, nome: string) => {
     setConfirmacaoPendente({ tipo, id, nome });
+  };
+
+  // Abre o modal de caso completo e carrega o histórico do ticket do paciente.
+  const abrirCasoAdmin = async (paciente: typeof pacientes[0]) => {
+    setPacienteSelecionadoAdmin(paciente);
+    setHistoricoModalAdmin([]);
+    setCarregandoHistoricoAdmin(true);
+    try {
+      const eventos = await pacientesApi.historicoTicket(paciente.id);
+      setHistoricoModalAdmin(Array.isArray(eventos) ? eventos : []);
+    } catch {
+      setHistoricoModalAdmin([]);
+    } finally {
+      setCarregandoHistoricoAdmin(false);
+    }
   };
 
   // Chamada HTTP idêntica à anterior (DELETE) — apenas renomeada e movida para cá.
@@ -480,7 +500,12 @@ const dentistasFiltrados = dentistas.filter(d =>
                                 {(p.nomePaciente || p.nome || '?').charAt(0)}
                               </div>
                               <div>
-                                <p className="font-bold text-gray-800 dark:text-white">{p.nomePaciente || p.nome}</p>
+                                <p
+                                  className="font-bold text-gray-800 dark:text-white hover:text-orange-500 cursor-pointer transition-colors"
+                                  onClick={() => abrirCasoAdmin(p)}
+                                >
+                                  {p.nomePaciente || p.nome}
+                                </p>
                                 <p className="text-xs text-gray-400 dark:text-slate-500">{p.email}</p>
                               </div>
                             </div>
@@ -745,6 +770,16 @@ const dentistasFiltrados = dentistas.filter(d =>
           ))}
         </div>
       </nav>
+
+      {/* ── Modal de caso completo (admin) ── */}
+      {pacienteSelecionadoAdmin && (
+        <ModalCasoAdmin
+          paciente={pacienteSelecionadoAdmin}
+          historicoTicket={historicoModalAdmin}
+          carregandoHistorico={carregandoHistoricoAdmin}
+          onClose={() => setPacienteSelecionadoAdmin(null)}
+        />
+      )}
 
       {/* ── Modal de confirmação de inativação ── */}
       {confirmacaoPendente && (

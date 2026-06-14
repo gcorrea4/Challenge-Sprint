@@ -70,7 +70,7 @@ export const relatoriosApi = {
 export interface ChatMensagem {
   id: number;
   idPaciente: number;
-  autorRole: 'dentista' | 'paciente';
+  autorRole: 'dentista' | 'paciente' | 'admin';
   autorNome: string;
   texto: string;
   enviadoEm: string; // ISO 8601

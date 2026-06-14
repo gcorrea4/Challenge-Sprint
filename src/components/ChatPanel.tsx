@@ -4,7 +4,7 @@ import { chatApi, type ChatMensagem } from '../lib/api';
 
 interface Props {
   idPaciente: number;
-  autorRole: 'dentista' | 'paciente';
+  autorRole: 'dentista' | 'paciente' | 'admin';
   autorNome: string;
 }
 
