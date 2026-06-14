@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { apiFetch } from '../utils/api';
-import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign, Archive, AlertTriangle, CheckCircle2, Search, UserX, FileDown, Sheet, Database } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign, Archive, AlertTriangle, CheckCircle2, Search, UserX, FileDown, Sheet, Database, MessageSquare } from 'lucide-react';
 import { MetricasOperacionais } from './MetricasOperacionais';
+import { MensagensOperacionais } from './MensagensOperacionais';
 import {
   exportarPacientesPDF, exportarPacientesCSV,
   exportarDentistasPDF, exportarDentistasCSV,
@@ -128,7 +129,7 @@ export function AdminDashboard() {
   const navigate = useNavigate();
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Admin";
 
-  const [telaAtiva, setTelaAtiva] = useState<'painel' | 'usuarios' | 'metricas'>('painel');
+  const [telaAtiva, setTelaAtiva] = useState<'painel' | 'pacientes' | 'dentistas' | 'metricas' | 'mensagens'>('painel');
   const [pacientes, setPacientes] = useState<UsuarioPaciente[]>([]);
   const [dentistas, setDentistas] = useState<UsuarioDentista[]>([]);
   const [filtroBusca, setFiltroBusca] = useState('');
@@ -214,7 +215,7 @@ export function AdminDashboard() {
   //    setCarregandoUsuarios(true) é chamado no onClick do botão de navegação,
   //    antes da mudança de telaAtiva, para mostrar o spinner imediatamente.
   useEffect(() => {
-    if (telaAtiva !== 'usuarios') return;
+    if (telaAtiva !== 'pacientes' && telaAtiva !== 'dentistas') return;
     let live = true;
     fetchTodos().then(([pacs, dents]) => {
       if (!live) return;
@@ -309,9 +310,11 @@ export function AdminDashboard() {
     });
 
   const navItems = [
-    { id: 'painel',   icon: <LayoutDashboard size={20} />, label: 'Visão Geral', badge: 0 },
-    { id: 'usuarios', icon: <Users size={20} />,           label: 'Usuários',    badge: pacientes.length + dentistas.length },
-    { id: 'metricas', icon: <Database size={20} />,        label: 'Métricas',    badge: 0 },
+    { id: 'painel',    icon: <LayoutDashboard size={20} />, label: 'Visão Geral', badge: 0 },
+    { id: 'pacientes', icon: <Users size={20} />,           label: 'Pacientes',   badge: pacientes.length },
+    { id: 'dentistas', icon: <Heart size={20} />,           label: 'Dentistas',   badge: dentistas.length },
+    { id: 'metricas',  icon: <Database size={20} />,        label: 'Métricas',    badge: 0 },
+    { id: 'mensagens', icon: <MessageSquare size={20} />,   label: 'Mensagens',   badge: 0 },
   ] as const;
 
   const contagemStatus = useMemo<Partial<Record<TicketStatus, number>>>(() => {
@@ -341,60 +344,64 @@ const dentistasFiltrados = dentistas.filter(d =>
   }, [pacientes, filtroStatus]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0d1117] font-sans pb-16 md:pb-0 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0d1117] font-sans transition-colors duration-300 flex">
       <title>Painel Admin · Turma do Bem</title>
 
-      {/* ── Top navigation bar ── */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center gap-4">
+      {/* ── Sidebar (desktop) ── */}
+      <aside className="hidden md:flex flex-col w-64 min-h-screen bg-[#0d1117] border-r border-slate-800 fixed top-0 left-0 z-40">
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-800">
+          <Heart size={22} className="text-orange-500" />
+          <span className="font-black text-white text-lg tracking-tight">Turma do Bem</span>
+        </div>
 
-          {/* User info */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+        {/* Nav items */}
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          {navItems.map(item => (
+            <button
+              key={item.id}
+              onClick={() => { setTelaAtiva(item.id); setFiltroBusca(''); if (item.id === 'pacientes' || item.id === 'dentistas') setCarregandoUsuarios(true); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-150 ${
+                telaAtiva === item.id
+                  ? 'bg-orange-500/10 text-orange-400 border-l-2 border-orange-500'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border-l-2 border-transparent'
+              }`}
+            >
+              {item.icon}
+              <span className="flex-1 text-left">{item.label}</span>
+              {item.badge > 0 && (
+                <span className="bg-orange-500 text-white text-[10px] font-black w-[18px] h-[18px] rounded-full flex items-center justify-center leading-none">
+                  {item.badge > 99 ? '99' : item.badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        {/* User + Logout */}
+        <div className="px-4 py-4 border-t border-slate-800">
+          <div className="flex items-center gap-3 mb-3">
             <div className="w-9 h-9 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl text-white flex items-center justify-center font-black text-base shadow-sm">
               {usuarioLogado.charAt(0).toUpperCase()}
             </div>
-            <div className="hidden sm:block">
-              <p className="text-sm font-bold text-gray-900 dark:text-white leading-none truncate max-w-[140px]">{usuarioLogado}</p>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-white leading-none truncate max-w-[120px]">{usuarioLogado}</p>
               <p className="text-xs text-orange-500 font-semibold mt-0.5">Administrador</p>
             </div>
             <DemoBadge />
           </div>
-
-          {/* Tab navigation — desktop */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-700 rounded-xl p-1 mx-auto">
-            {navItems.map(item => (
-              <button
-                key={item.id}
-                onClick={() => { setTelaAtiva(item.id); if (item.id === 'usuarios') setCarregandoUsuarios(true); }}
-                className={`relative flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                  telaAtiva === item.id
-                    ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-600/60'
-                }`}
-              >
-                {item.icon}
-                {item.label}
-                {item.badge > 0 && (
-                  <span className="bg-orange-500 text-white text-[10px] font-black w-[18px] h-[18px] rounded-full flex items-center justify-center leading-none">
-                    {item.badge > 99 ? '99' : item.badge}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
-
-          {/* Logout */}
           <button
             onClick={handleLogout}
-            className="ml-auto flex items-center gap-2 text-slate-400 hover:text-red-500 text-sm font-bold transition-colors px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30"
+            className="w-full flex items-center gap-2 text-slate-400 hover:text-red-400 text-sm font-bold transition-colors px-3 py-2 rounded-lg hover:bg-red-950/30"
             title="Sair"
           >
             <LogOut size={16} />
-            <span className="hidden sm:inline">Sair</span>
+            Sair
           </button>
         </div>
-      </header>
+      </aside>
 
+      <div className="flex-1 flex flex-col md:ml-64 pb-16 md:pb-0">
       <main className="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full animate-fade-in">
 
         {mensagemAdmin && (
@@ -410,104 +417,171 @@ const dentistasFiltrados = dentistas.filter(d =>
           </div>
         )}
 
-        {telaAtiva === 'usuarios' && (
+        {telaAtiva === 'pacientes' && (
           <div className="animate-fade-in">
-            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-700/60">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Gerenciar Usuários</h2>
-                <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Visualize e remova contas de pacientes e dentistas.</p>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Pacientes</h2>
+                <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Visualize e remova contas de pacientes.</p>
               </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                <input type="text" placeholder="Buscar por nome ou e-mail..." value={filtroBusca}
-                  onChange={(e) => setFiltroBusca(e.target.value)}
-                  className="pl-9 pr-4 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-400 w-full md:w-[280px] focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" />
+              <div className="flex items-center gap-3">
+                <BotoesExportar
+                  onPDF={() => exportarPacientesPDF(pacientesFiltrados)}
+                  onCSV={() => exportarPacientesCSV(pacientesFiltrados)}
+                />
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Buscar por nome ou e-mail..."
+                    value={filtroBusca}
+                    onChange={(e) => setFiltroBusca(e.target.value)}
+                    className="pl-9 pr-4 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-400 w-full md:w-[280px] focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                  />
+                </div>
               </div>
             </div>
 
             {carregandoUsuarios ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Skeleton variant="card" className="h-64" />
-                <Skeleton variant="card" className="h-64" />
-              </div>
+              <Skeleton variant="card" className="h-96" />
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Pacientes */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
-                  <div className="p-5 border-b border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700/30 flex items-center justify-between">
-                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><Users size={18} className="text-[#8dc63f]" /> Pacientes ({pacientesFiltrados.length})</h3>
-                    <BotoesExportar
-                      onPDF={() => exportarPacientesPDF(pacientesFiltrados)}
-                      onCSV={() => exportarPacientesCSV(pacientesFiltrados)}
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 border-l-4 border-l-[#8dc63f] shadow-sm overflow-hidden">
+                {Object.keys(contagemStatus).length > 0 && (
+                  <div className="px-5 py-3 border-b border-gray-100 dark:border-slate-700 overflow-x-auto">
+                    <FiltroStatus
+                      contagem={contagemStatus}
+                      valor={filtroStatus}
+                      onChange={setFiltroStatus}
                     />
                   </div>
-                  {Object.keys(contagemStatus).length > 0 && (
-                    <div className="px-5 py-3 border-b border-gray-100 dark:border-slate-700">
-                      <FiltroStatus
-                        contagem={contagemStatus}
-                        valor={filtroStatus}
-                        onChange={setFiltroStatus}
-                      />
-                    </div>
-                  )}
-                  <div className="divide-y divide-gray-50 dark:divide-slate-700 max-h-[500px] overflow-y-auto">
-                    {pacientesFiltrados.length === 0 ? (
-                      <EmptyState icon={UserX} title="Nenhum paciente encontrado" />
-                    ) : pacientesFiltrados.map((p) => (
-                      <div key={p.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/40 transition-colors">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-950/40 text-[#FF8C00] flex items-center justify-center font-bold text-sm shrink-0">
-                            {(p.nomePaciente || p.nome || '?').charAt(0)}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-bold text-gray-800 dark:text-white text-sm truncate">{p.nomePaciente || p.nome}</p>
-                            <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{p.email}</p>
-                            <p className="text-[11px] text-gray-400 dark:text-slate-500">{p.cidade}, {p.pais}</p>
-                            {p.statusTicket && <span className="mt-1 inline-block"><TicketBadge status={p.statusTicket} size="sm" /></span>}
-                          </div>
-                        </div>
-                        <button onClick={() => deletarUsuario('pacientes', p.id, p.nomePaciente || p.nome || '')}
-                          className="ml-3 shrink-0 p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
-                          title="Inativar conta">
-                          <Archive size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                )}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700/30">
+                        <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Nome / E-mail</th>
+                        <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Cidade</th>
+                        <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                        <th className="px-4 py-3 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider text-right">Ação</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-slate-700">
+                      {pacientesFiltrados.length === 0 ? (
+                        <tr>
+                          <td colSpan={4}>
+                            <EmptyState icon={UserX} title="Nenhum paciente encontrado" />
+                          </td>
+                        </tr>
+                      ) : pacientesFiltrados.map((p) => (
+                        <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/40 transition-colors">
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-950/40 text-[#FF8C00] flex items-center justify-center font-bold text-sm shrink-0">
+                                {(p.nomePaciente || p.nome || '?').charAt(0)}
+                              </div>
+                              <div>
+                                <p className="font-bold text-gray-800 dark:text-white">{p.nomePaciente || p.nome}</p>
+                                <p className="text-xs text-gray-400 dark:text-slate-500">{p.email}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-gray-500 dark:text-slate-400">{p.cidade}, {p.pais}</td>
+                          <td className="px-4 py-4">
+                            {p.statusTicket && <TicketBadge status={p.statusTicket} size="sm" />}
+                          </td>
+                          <td className="px-4 py-4 text-right">
+                            <button
+                              onClick={() => deletarUsuario('pacientes', p.id, p.nomePaciente || p.nome || '')}
+                              className="p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
+                              title="Inativar conta"
+                            >
+                              <Archive size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+              </div>
+            )}
+          </div>
+        )}
 
-                {/* Dentistas */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
-                  <div className="p-5 border-b border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700/30 flex items-center justify-between">
-                    <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2"><Heart size={18} className="text-[#FF8C00]" /> Dentistas ({dentistasFiltrados.length})</h3>
-                    <BotoesExportar
-                      onPDF={() => exportarDentistasPDF(dentistasFiltrados)}
-                      onCSV={() => exportarDentistasCSV(dentistasFiltrados)}
-                    />
-                  </div>
-                  <div className="divide-y divide-gray-50 dark:divide-slate-700 max-h-[500px] overflow-y-auto">
-                    {dentistasFiltrados.length === 0 ? (
-                      <EmptyState icon={UserX} title="Nenhum dentista encontrado" />
-                    ) : dentistasFiltrados.map((d) => (
-                      <div key={d.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/40 transition-colors">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-950/40 text-[#FF8C00] flex items-center justify-center font-bold text-sm shrink-0">
-                            {(d.nomeDentista || d.nome || '?').charAt(0)}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-bold text-gray-800 dark:text-white text-sm truncate">{d.nomeDentista || d.nome}</p>
-                            <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{d.email}</p>
-                            {d.cro && <p className="text-[11px] text-gray-400 dark:text-slate-500">CRO: {d.cro}</p>}
-                          </div>
-                        </div>
-                        <button onClick={() => deletarUsuario('dentistas', d.id, d.nomeDentista || d.nome || '')}
-                          className="ml-3 shrink-0 p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
-                          title="Inativar conta">
-                          <Archive size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+        {telaAtiva === 'dentistas' && (
+          <div className="animate-fade-in">
+            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-700/60">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Dentistas</h2>
+                <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Visualize e remova contas de dentistas voluntários.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <BotoesExportar
+                  onPDF={() => exportarDentistasPDF(dentistasFiltrados)}
+                  onCSV={() => exportarDentistasCSV(dentistasFiltrados)}
+                />
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Buscar por nome ou e-mail..."
+                    value={filtroBusca}
+                    onChange={(e) => setFiltroBusca(e.target.value)}
+                    className="pl-9 pr-4 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-400 w-full md:w-[280px] focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {carregandoUsuarios ? (
+              <Skeleton variant="card" className="h-96" />
+            ) : (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 border-l-4 border-l-[#FF8C00] shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700/30">
+                        <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Nome / E-mail</th>
+                        <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">CRO</th>
+                        <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Cidade</th>
+                        <th className="px-4 py-3 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider text-right">Ação</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-slate-700">
+                      {dentistasFiltrados.length === 0 ? (
+                        <tr>
+                          <td colSpan={4}>
+                            <EmptyState icon={UserX} title="Nenhum dentista encontrado" />
+                          </td>
+                        </tr>
+                      ) : dentistasFiltrados.map((d) => (
+                        <tr key={d.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/40 transition-colors">
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-950/40 text-[#FF8C00] flex items-center justify-center font-bold text-sm shrink-0">
+                                {(d.nomeDentista || d.nome || '?').charAt(0)}
+                              </div>
+                              <div>
+                                <p className="font-bold text-gray-800 dark:text-white">{d.nomeDentista || d.nome}</p>
+                                <p className="text-xs text-gray-400 dark:text-slate-500">{d.email}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-gray-500 dark:text-slate-400">{d.cro ?? '—'}</td>
+                          <td className="px-4 py-4 text-gray-500 dark:text-slate-400">{d.cidade}</td>
+                          <td className="px-4 py-4 text-right">
+                            <button
+                              onClick={() => deletarUsuario('dentistas', d.id, d.nomeDentista || d.nome || '')}
+                              className="p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
+                              title="Inativar conta"
+                            >
+                              <Archive size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
@@ -515,6 +589,8 @@ const dentistasFiltrados = dentistas.filter(d =>
         )}
 
         {telaAtiva === 'metricas' && <MetricasOperacionais />}
+
+        {telaAtiva === 'mensagens' && <MensagensOperacionais />}
 
         {telaAtiva === 'painel' && <>
         <div className="mb-8">
@@ -628,6 +704,7 @@ const dentistasFiltrados = dentistas.filter(d =>
         </div>
         </>}
       </main>
+      </div>
 
       {/* ── Mobile bottom navigation ── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
@@ -635,7 +712,7 @@ const dentistasFiltrados = dentistas.filter(d =>
           {navItems.map(item => (
             <button
               key={item.id}
-              onClick={() => { setTelaAtiva(item.id); if (item.id === 'usuarios') setCarregandoUsuarios(true); }}
+              onClick={() => { setTelaAtiva(item.id); setFiltroBusca(''); if (item.id === 'pacientes' || item.id === 'dentistas') setCarregandoUsuarios(true); }}
               className={`flex-1 flex flex-col items-center gap-1 py-3 px-1 transition-colors ${
                 telaAtiva === item.id ? 'text-orange-500' : 'text-slate-400'
               }`}

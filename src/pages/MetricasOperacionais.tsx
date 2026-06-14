@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, RefreshCw, Layers, Users, MessageSquare } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Layers, Users } from 'lucide-react';
 import { Skeleton } from '../components/ui';
 import { relatoriosApi } from '../lib/api';
 import type { MetricasOperacionais as MetricasDados, TicketStatus } from '../lib/api';
@@ -42,14 +42,6 @@ const CANAL_CONFIG: Record<string, { label: string; cor: string }> = {
   TELEFONE:   { label: 'Telefone',   cor: 'bg-teal-500' },
 };
 
-const CANAL_ORIGEM_MSG_CONFIG: Record<string, { label: string; cor: string }> = {
-  WEB:        { label: 'Web',        cor: '#3b82f6' },
-  TELEGRAM:   { label: 'Telegram',   cor: '#0088cc' },
-  APP:        { label: 'App',        cor: '#22c55e' },
-  PRESENCIAL: { label: 'Presencial', cor: '#f97316' },
-  TELEFONE:   { label: 'Telefone',   cor: '#a855f7' },
-};
-
 export function MetricasOperacionais() {
   const [dados, setDados] = useState<MetricasDados | null>(null);
   const [carregando, setCarregando] = useState(true);
@@ -82,15 +74,14 @@ export function MetricasOperacionais() {
   if (carregando) {
     return (
       <div className="space-y-6 animate-fade-in">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => <Skeleton key={i} variant="card" className="h-32" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[1, 2].map(i => <Skeleton key={i} variant="card" className="h-32" />)}
         </div>
         <Skeleton variant="card" className="h-48" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Skeleton variant="card" className="h-48" />
           <Skeleton variant="card" className="h-48" />
         </div>
-        <Skeleton variant="card" className="h-32" />
       </div>
     );
   }
@@ -131,15 +122,6 @@ export function MetricasOperacionais() {
     .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
   const totalCanal = canalItens.reduce((acc, [, n]) => acc + n, 0);
 
-  const categoriaItens = (Object.entries(dados?.mensagens?.por_categoria ?? {}) as [string, number][])
-    .filter(([, n]) => (n ?? 0) > 0)
-    .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
-
-  const canalOrigemMsgItens = (Object.entries(dados?.mensagens?.por_canal_origem ?? {}) as [string, number][])
-    .filter(([, n]) => (n ?? 0) > 0)
-    .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
-  const totalCanalOrigemMsg = canalOrigemMsgItens.reduce((acc, [, n]) => acc + n, 0);
-
   return (
     <div className="space-y-8 animate-fade-in">
 
@@ -152,7 +134,7 @@ export function MetricasOperacionais() {
       </div>
 
       {/* Linha 1 — KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <KPICard
           label="Pacientes Ativos"
           valor={String(dados?.total_pacientes_ativos ?? 0)}
@@ -168,14 +150,6 @@ export function MetricasOperacionais() {
           corIcone="bg-blue-500/10"
           corBorda="border-l-blue-500"
           descricao="soma de todos os status"
-        />
-        <KPICard
-          label="Mensagens Recebidas"
-          valor={String(dados?.mensagens?.total ?? 0)}
-          icone={<MessageSquare size={22} className="text-purple-500" />}
-          corIcone="bg-purple-500/10"
-          corBorda="border-l-purple-500"
-          descricao="total de mensagens no sistema"
         />
       </div>
 
@@ -299,79 +273,6 @@ export function MetricasOperacionais() {
           )}
         </div>
 
-      </div>
-
-      {/* Linha 4 — Mensagens por Categoria */}
-      <div className="bg-white dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-700/40 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Mensagens por Categoria</h3>
-          <span className="text-sm font-bold text-gray-500 dark:text-slate-400 tabular-nums">
-            {dados?.mensagens?.total ?? 0} total
-          </span>
-        </div>
-        {categoriaItens.length === 0 ? (
-          <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">Nenhum dado disponível.</p>
-        ) : (
-          <div className="flex flex-wrap gap-3">
-            {categoriaItens.map(([categoria, count]) => (
-              <div
-                key={categoria}
-                className="flex items-center gap-2 bg-gray-50 dark:bg-slate-700/50 rounded-xl px-4 py-3 border border-gray-100 dark:border-slate-600"
-              >
-                <span className="text-sm font-bold text-gray-700 dark:text-slate-200">
-                  {categoria.charAt(0) + categoria.slice(1).toLowerCase()}
-                </span>
-                <span className="text-lg font-black text-orange-500">{count}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Linha 5 — Canal de Origem das Mensagens */}
-      <div className="bg-white dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-700/40 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Canal de Origem das Mensagens</h3>
-          <span className="text-sm font-bold text-gray-500 dark:text-slate-400 tabular-nums">
-            {totalCanalOrigemMsg} total
-          </span>
-        </div>
-        {canalOrigemMsgItens.length === 0 ? (
-          <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">Nenhum dado disponível.</p>
-        ) : (
-          <div className="space-y-4">
-            {canalOrigemMsgItens.map(([key, count]) => {
-              const cfg = CANAL_ORIGEM_MSG_CONFIG[key];
-              const cor = cfg?.cor ?? '#94a3b8';
-              const pct = totalCanalOrigemMsg > 0 ? (count / totalCanalOrigemMsg) * 100 : 0;
-              return (
-                <div key={key}>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cor }} aria-hidden="true" />
-                      <span className="text-sm font-bold text-gray-700 dark:text-slate-200">
-                        {cfg?.label ?? key}
-                      </span>
-                    </div>
-                    <span className="text-xs font-bold text-gray-500 dark:text-slate-400 tabular-nums">
-                      {count} ({pct.toFixed(0)}%)
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{ width: `${pct > 0 ? Math.max(pct, 2) : 0}%`, backgroundColor: cor }}
-                      role="progressbar"
-                      aria-valuenow={Math.round(pct)}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
 
     </div>
