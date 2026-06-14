@@ -341,11 +341,11 @@ const dentistasFiltrados = dentistas.filter(d =>
   }, [pacientes, filtroStatus]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans pb-16 md:pb-0 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0d1117] font-sans pb-16 md:pb-0 transition-colors duration-300">
       <title>Painel Admin · Turma do Bem</title>
 
       {/* ── Top navigation bar ── */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+      <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center gap-4">
 
           {/* User info */}
@@ -523,8 +523,8 @@ const dentistasFiltrados = dentistas.filter(d =>
         </div>
 
         <div className="mb-8">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><TrendingUp size={22} className="text-[#FF8C00]"/> Relatório de Impacto (2026)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-4 flex items-center gap-2"><TrendingUp size={16} className="text-[#FF8C00]"/> Relatório de Impacto (2026)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gradient-to-br from-[#FF8C00] to-orange-600 p-6 rounded-2xl shadow-md text-white relative overflow-hidden group">
               <Smile className="absolute -right-4 -bottom-4 text-white/20 group-hover:scale-110 transition-transform" size={100} />
               <p className="text-orange-100 font-bold text-sm uppercase tracking-wider mb-1">Sorrisos Transformados</p>
@@ -547,26 +547,26 @@ const dentistasFiltrados = dentistas.filter(d =>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-900/50 p-6 rounded-xl border border-gray-100 dark:border-slate-700/40 border-l-4 border-l-[#8dc63f] shadow-sm flex items-center justify-between">
             <div>
-              <h3 className="text-gray-500 dark:text-slate-400 text-sm font-bold mb-1 uppercase tracking-widest">Jovens na Fila</h3>
-              <p className="text-5xl font-black text-gray-800 dark:text-white">{statsAdmin.total_beneficiarios}</p>
+              <h3 className="text-gray-500 dark:text-slate-400 text-xs font-bold mb-2 uppercase tracking-wider">Jovens na Fila</h3>
+              <p className="text-5xl font-bold text-gray-800 dark:text-white">{statsAdmin.total_beneficiarios}</p>
             </div>
-            <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-xl"><Users size={40} className="text-[#8dc63f]"/></div>
+            <div className="p-4 bg-[#8dc63f]/10 rounded-xl"><Users size={40} className="text-[#8dc63f]"/></div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-900/50 p-6 rounded-xl border border-gray-100 dark:border-slate-700/40 border-l-4 border-l-[#FF8C00] shadow-sm flex items-center justify-between">
             <div>
-              <h3 className="text-gray-500 dark:text-slate-400 text-sm font-bold mb-1 uppercase tracking-widest">Dentistas Voluntários</h3>
-              <p className="text-5xl font-black text-gray-800 dark:text-white">{statsAdmin.total_dentistas}</p>
+              <h3 className="text-gray-500 dark:text-slate-400 text-xs font-bold mb-2 uppercase tracking-wider">Dentistas Voluntários</h3>
+              <p className="text-5xl font-bold text-gray-800 dark:text-white">{statsAdmin.total_dentistas}</p>
             </div>
-            <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-xl"><Heart size={40} className="text-[#FF8C00]"/></div>
+            <div className="p-4 bg-[#FF8C00]/10 rounded-xl"><Heart size={40} className="text-[#FF8C00]"/></div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm p-8 border border-gray-100 dark:border-slate-700 h-full flex flex-col">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2"><MapPin size={24} className="text-[#FF8C00]"/> Mapa de Calor (Demandas)</h3>
+          <div className="bg-white dark:bg-slate-900/50 rounded-2xl shadow-sm p-8 border border-gray-100 dark:border-slate-700/40 h-full flex flex-col">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-6 flex items-center gap-2"><MapPin size={16} className="text-[#FF8C00]"/> Mapa de Calor (Demandas)</h3>
             <div className="flex-1 w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-600 relative" style={{ minHeight: '380px' }}>
               <MapContainer
                 center={[-15.0, -60.0]}
@@ -593,9 +593,9 @@ const dentistasFiltrados = dentistas.filter(d =>
             <p className="text-xs text-gray-400 dark:text-slate-500 mt-4 text-center font-medium">Zonas quentes indicam maior concentração de jovens na fila. Passe o mouse sobre os pontos para ver detalhes.</p>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm p-8 border border-gray-100 dark:border-slate-700 h-full">
+          <div className="bg-white dark:bg-slate-900/50 rounded-2xl shadow-sm p-8 border border-gray-100 dark:border-slate-700/40 h-full">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2"><CalendarDays size={24} className="text-[#8dc63f]"/> Agenda da Rede</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 flex items-center gap-2"><CalendarDays size={16} className="text-[#8dc63f]"/> Agenda da Rede</h3>
               <BotoesExportar
                 onPDF={() => exportarAtendimentosPDF(statsAdmin.ultimos_agendamentos)}
                 onCSV={() => exportarAtendimentosCSV(statsAdmin.ultimos_agendamentos)}
@@ -603,7 +603,7 @@ const dentistasFiltrados = dentistas.filter(d =>
             </div>
             <div className="space-y-4">
               {statsAdmin.ultimos_agendamentos && statsAdmin.ultimos_agendamentos.map((ag: AgendamentoAdmin, index: number) => (
-                <div key={index} className="p-5 rounded-2xl border border-gray-100 dark:border-slate-700 dark:bg-slate-700/50 shadow-sm hover:border-orange-200 dark:hover:border-orange-700/60 transition-colors flex flex-col gap-2">
+                <div key={index} className="p-5 rounded-xl border border-gray-100 dark:border-slate-700/40 dark:bg-slate-800/40 shadow-sm hover:border-orange-200 dark:hover:border-orange-700/60 transition-colors flex flex-col gap-2">
                   <div className="flex justify-between items-start">
                     <p className="font-bold text-gray-800 dark:text-white text-lg">{ag.paciente}</p>
                     <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-md ${ag.prioridade === 'Urgente' ? 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400' : ag.prioridade === 'Alta' ? 'bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400' : 'bg-green-100 text-green-600 dark:bg-green-950/40 dark:text-green-400'}`}>{ag.prioridade}</span>

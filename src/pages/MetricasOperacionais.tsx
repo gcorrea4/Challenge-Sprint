@@ -6,23 +6,24 @@ import type { MetricasOperacionais as MetricasDados, TicketStatus } from '../lib
 import { TICKET_STATUS_CONFIG } from '../utils/ticketStatusConfig';
 
 function KPICard({
-  label, valor, icone, corIcone, descricao,
+  label, valor, icone, corIcone, corBorda, descricao,
 }: {
   label: string;
   valor: string;
   icone: React.ReactNode;
   corIcone: string;
+  corBorda: string;
   descricao?: string;
 }) {
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${corIcone}`}>
+    <div className={`bg-white dark:bg-slate-900/50 p-6 rounded-xl border border-gray-100 dark:border-slate-700/40 border-l-4 ${corBorda} shadow-sm`}>
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${corIcone}`}>
         {icone}
       </div>
-      <p className="text-gray-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-3xl font-black text-gray-800 dark:text-white leading-none">{valor}</p>
+      <p className="text-gray-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">{label}</p>
+      <p className="text-4xl font-bold text-gray-800 dark:text-white leading-none">{valor}</p>
       {descricao && (
-        <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1.5 leading-snug">{descricao}</p>
+        <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-2 leading-snug">{descricao}</p>
       )}
     </div>
   );
@@ -155,29 +156,32 @@ export function MetricasOperacionais() {
         <KPICard
           label="Pacientes Ativos"
           valor={String(dados?.total_pacientes_ativos ?? 0)}
-          icone={<Users size={20} className="text-orange-600" />}
-          corIcone="bg-orange-100 dark:bg-orange-950/40"
+          icone={<Users size={22} className="text-orange-500" />}
+          corIcone="bg-orange-500/10"
+          corBorda="border-l-orange-500"
           descricao="com casos em andamento"
         />
         <KPICard
           label="Total de Tickets"
           valor={String(totalDistStatus)}
-          icone={<Layers size={20} className="text-blue-600" />}
-          corIcone="bg-blue-100 dark:bg-blue-950/40"
+          icone={<Layers size={22} className="text-blue-500" />}
+          corIcone="bg-blue-500/10"
+          corBorda="border-l-blue-500"
           descricao="soma de todos os status"
         />
         <KPICard
           label="Mensagens Recebidas"
           valor={String(dados?.mensagens?.total ?? 0)}
-          icone={<MessageSquare size={20} className="text-purple-600" />}
-          corIcone="bg-purple-100 dark:bg-purple-950/40"
+          icone={<MessageSquare size={22} className="text-purple-500" />}
+          corIcone="bg-purple-500/10"
+          corBorda="border-l-purple-500"
           descricao="total de mensagens no sistema"
         />
       </div>
 
       {/* Linha 2 — Distribuição por Status */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
-        <h3 className="font-bold text-gray-800 dark:text-white mb-5 text-lg">Distribuição por Status</h3>
+      <div className="bg-white dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-700/40 shadow-sm p-6">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-5">Distribuição por Status</h3>
         {statusOrdenados.length === 0 ? (
           <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">
             Nenhum dado disponível.
@@ -222,8 +226,8 @@ export function MetricasOperacionais() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Urgência */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
-          <h3 className="font-bold text-gray-800 dark:text-white mb-5 text-lg">Por Urgência</h3>
+        <div className="bg-white dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-700/40 shadow-sm p-6">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-5">Por Urgência</h3>
           {urgenciaItens.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">Nenhum dado disponível.</p>
           ) : (
@@ -259,8 +263,8 @@ export function MetricasOperacionais() {
         </div>
 
         {/* Canal de Origem */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
-          <h3 className="font-bold text-gray-800 dark:text-white mb-5 text-lg">Por Canal de Origem</h3>
+        <div className="bg-white dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-700/40 shadow-sm p-6">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-5">Por Canal de Origem</h3>
           {canalItens.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">Nenhum dado disponível.</p>
           ) : (
@@ -298,9 +302,9 @@ export function MetricasOperacionais() {
       </div>
 
       {/* Linha 4 — Mensagens por Categoria */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-700/40 shadow-sm p-6">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-bold text-gray-800 dark:text-white text-lg">Mensagens por Categoria</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Mensagens por Categoria</h3>
           <span className="text-sm font-bold text-gray-500 dark:text-slate-400 tabular-nums">
             {dados?.mensagens?.total ?? 0} total
           </span>
@@ -325,9 +329,9 @@ export function MetricasOperacionais() {
       </div>
 
       {/* Linha 5 — Canal de Origem das Mensagens */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-700/40 shadow-sm p-6">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-bold text-gray-800 dark:text-white text-lg">Canal de Origem das Mensagens</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Canal de Origem das Mensagens</h3>
           <span className="text-sm font-bold text-gray-500 dark:text-slate-400 tabular-nums">
             {totalCanalOrigemMsg} total
           </span>
