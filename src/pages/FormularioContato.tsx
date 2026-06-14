@@ -29,7 +29,13 @@ export function FormularioContato() {
     setIsLoading(true);
     setErro('');
     try {
-      const canal_origem = utmSource?.toUpperCase() ?? (data.canal_origem || 'WEB');
+      // Lê localStorage diretamente no submit para evitar race condition com o
+      // useEffect do useUtmSource (state pode estar null no momento do envio).
+      const canal_origem =
+        utmSource?.toUpperCase()
+        ?? localStorage.getItem('utm_source')?.toUpperCase()
+        ?? (data.canal_origem || 'WEB');
+      console.log('[UTM] canal_origem a enviar:', canal_origem); // TODO: remover (debug temporário)
       const response = await fetch(`${API_URL}/mensagens`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
