@@ -274,7 +274,7 @@ export function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Linha conectora */}
-            <div className="hidden md:block absolute top-10 left-[calc(16.6%+2rem)] right-[calc(16.6%+2rem)] h-px bg-gradient-to-r from-[#FF8C00]/20 via-[#FF8C00] to-[#FF8C00]/20" />
+            <div className="hidden md:block absolute top-10 left-[calc(16.6%+2rem)] right-[calc(16.6%+2rem)] h-px bg-gradient-to-r from-[#FF8C00]/20 via-[#FF8C00] to-[#FF8C00]/20 z-0" />
 
             {steps.map((step, i) => (
               <motion.div key={i} {...fadeUp(i * 0.15)} className="relative flex flex-col items-center text-center">

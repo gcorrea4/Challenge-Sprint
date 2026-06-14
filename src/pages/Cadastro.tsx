@@ -145,49 +145,64 @@ export function Cadastro() {
     `${inputBase} ${hasError ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-[#FF8C00]'}`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50/40 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-start justify-center pt-16 pb-10 px-4 font-sans">
-      <div className="w-full max-w-5xl bg-white dark:bg-slate-800 rounded-3xl shadow-2xl shadow-orange-100/60 dark:shadow-slate-900/50 overflow-hidden flex my-6">
+    <main className="min-h-screen flex bg-white dark:bg-slate-900 transition-colors duration-300 font-sans">
 
-        {/* ── Painel esquerdo — branding (desktop only) ── */}
-        <div className="hidden lg:flex flex-col justify-between w-[360px] flex-shrink-0 bg-gradient-to-br from-[#FF8C00] to-orange-600 text-white p-10">
+      {/* ── Painel esquerdo — identidade visual ── */}
+      <div className="hidden lg:flex lg:w-[42%] bg-gradient-to-br from-[#FF8C00] via-[#F5820A] to-[#E06000] flex-col justify-between p-12 relative overflow-hidden lg:sticky lg:top-0 lg:h-screen">
+        {/* Círculos decorativos */}
+        <div className="absolute -right-24 -top-24 w-80 h-80 bg-white/10 rounded-full pointer-events-none" />
+        <div className="absolute -left-12 bottom-32 w-56 h-56 bg-white/10 rounded-full pointer-events-none" />
+        <div className="absolute right-16 bottom-16 w-32 h-32 bg-white/10 rounded-full pointer-events-none" />
+
+        {/* Logo */}
+        <div className="relative z-10 mt-9 flex items-center gap-2">
+          <Heart size={22} className="fill-white text-white" />
+          <span className="text-2xl font-black text-white tracking-tight">Turma do Bem</span>
+        </div>
+
+        {/* Conteúdo central */}
+        <div className="relative z-10 space-y-7">
           <div>
-            <div className="flex items-center gap-2 mb-12">
-              <Heart size={22} className="fill-white" />
-              <span className="font-black text-xl tracking-tight">Turma do Bem</span>
-            </div>
-            <h2 className="text-3xl font-black leading-snug mb-4">
-              Junte-se a nós e transforme sorrisos
+            <h2 className="text-4xl font-black text-white leading-[1.1] mb-4">
+              Junte-se a nós e<br />transforme sorrisos
             </h2>
-            <p className="text-orange-100 text-sm leading-relaxed">
+            <p className="text-orange-100 text-lg leading-relaxed max-w-sm">
               Cadastre-se gratuitamente e faça parte de uma comunidade que já transformou mais de 2.400 vidas.
             </p>
           </div>
 
-          <div className="space-y-4">
+          {/* Stats */}
+          <div className="space-y-3">
             {[
-              { icon: <Smile size={17} />, text: '2.400+ beneficiários atendidos' },
-              { icon: <Stethoscope size={17} />, text: '180+ dentistas voluntários' },
-              { icon: <Shield size={17} />, text: 'Dados protegidos e seguros' },
+              { icon: <Smile size={18} />, text: '2.400+ beneficiários atendidos' },
+              { icon: <Stethoscope size={18} />, text: '180+ dentistas voluntários' },
+              { icon: <Shield size={18} />, text: 'Dados protegidos e seguros' },
             ].map(item => (
-              <div key={item.text} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+              <div key={item.text} className="flex items-center gap-3 bg-white/15 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+                <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white">
                   {item.icon}
                 </div>
-                <span className="text-sm font-medium text-orange-50">{item.text}</span>
+                <span className="text-sm font-medium text-white">{item.text}</span>
               </div>
             ))}
           </div>
-
-          <p className="text-xs text-orange-200 mt-8">
-            Já tem conta?{' '}
-            <Link to="/login" className="text-white font-bold underline underline-offset-2">Faça login</Link>
-          </p>
         </div>
 
-        {/* ── Painel direito — formulário ── */}
-        <div className="flex-1 p-6 sm:p-10 overflow-y-auto">
+        <p className="text-orange-300 text-xs relative z-10">© 2026 Turma do Bem. Todos os direitos reservados.</p>
+      </div>
+
+      {/* ── Painel direito — formulário ── */}
+      <div className="flex-1 flex justify-center p-6 sm:p-10 bg-gray-50 dark:bg-slate-950 min-h-screen overflow-y-auto">
+        <div className="w-full max-w-[480px] my-auto">
+
+          {/* Logo mobile */}
+          <div className="lg:hidden text-center mb-8">
+            <h1 className="text-2xl font-black text-[#FF8C00]">Turma do Bem</h1>
+            <p className="text-gray-400 text-sm mt-0.5">Odontologia voluntária para jovens</p>
+          </div>
+
           <div className="mb-8">
-            <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-1">Crie sua conta</h1>
+            <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-1">Crie sua conta</h1>
             <p className="text-gray-400 dark:text-slate-400 text-sm">Preencha os campos abaixo para se cadastrar.</p>
           </div>
 
@@ -558,6 +573,6 @@ export function Cadastro() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -48,7 +48,7 @@ export function Header() {
             style={{ fontFamily: '"Arial Black", Arial, sans-serif' }}
           >
             <Heart size={20} className="fill-[#FF8C00]" />
-            Turma do Bem
+            Dentista na Nuvem
           </Link>
         </div>
 
@@ -159,7 +159,7 @@ export function Header() {
         <div className="flex justify-between items-center border-b border-gray-100 dark:border-slate-700 px-6 py-5">
           <div className="flex items-center gap-2">
             <Heart size={18} className="fill-[#FF8C00] text-[#FF8C00]" />
-            <span className="font-black text-gray-900 dark:text-white">Turma do Bem</span>
+            <span className="font-black text-gray-900 dark:text-white">Dentista na Nuvem</span>
           </div>
           <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-red-500 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">

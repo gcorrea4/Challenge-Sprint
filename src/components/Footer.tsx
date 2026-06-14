@@ -11,7 +11,7 @@ export function Footer() {
         {/* 1. Coluna: Turma do Bem */}
         <div className="flex flex-col items-start">
           <h3 className="text-[#FFAF00] text-[1.3rem] mt-0 mb-[15px] font-bold">
-            Turma do Bem
+            Dentista na Nuvem
           </h3>
           <p className="text-white/60 leading-[1.6] text-[0.9rem] m-0">
             Otimizando o atendimento e transformando vidas através da odontologia voluntária.
