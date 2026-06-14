@@ -19,3 +19,27 @@
 .dark input[type="time"] {
   color-scheme: dark;
 }
+
+/* Orbs decorativos do hero (Sobre.tsx) — compositor-only */
+@keyframes orb-1 {
+  0%, 100% { transform: translate(25%, -33%) scale(1); }
+  50%      { transform: translate(28%, -36%) scale(1.05); }
+}
+@keyframes orb-2 {
+  0%, 100% { transform: translate(-25%, 33%) scale(1); }
+  50%      { transform: translate(-28%, 36%) scale(1.08); }
+}
+@keyframes orb-3 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -52%) scale(1.04); }
+}
+.animate-orb-1 { animation: orb-1 8s ease-in-out infinite; }
+.animate-orb-2 { animation: orb-2 10s ease-in-out infinite; }
+.animate-orb-3 { animation: orb-3 12s ease-in-out infinite; }
+
+/* Chip flutuante do mockup (Sobre.tsx) */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }

@@ -26,11 +26,6 @@ export function Header() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const navLinkClass = (path: string) =>
-    `font-semibold text-[15px] transition-colors duration-200 ${
-      isActive(path) ? 'text-[#FF8C00]' : 'text-white/90 hover:text-[#FF8C00]'
-    }`;
-
   const navLinks = [
     { to: '/',               label: 'Início' },
     { to: '/quem-somos',     label: 'Quem Somos' },
@@ -42,7 +37,8 @@ export function Header() {
 
   return (
     <>
-      <header className="flex justify-between items-center px-[5%] h-[65px] fixed top-0 left-0 w-full box-border z-[1000] bg-black/25 backdrop-blur-[14px] border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.08)]">
+      <header className="fixed top-0 left-0 w-full z-[1000] px-3 md:px-6 font-sans">
+        <div className="max-w-[1400px] mx-auto flex justify-between items-center h-[65px] px-5 md:px-8 rounded-b-[1.75rem] bg-black/30 dark:bg-slate-950/75 backdrop-blur-xl border border-white/15 dark:border-white/8 border-t-0 shadow-[0_10px_40px_rgba(0,0,0,0.20)]">
 
         {/* Logo */}
         <div className="flex-shrink-0">
@@ -59,8 +55,19 @@ export function Header() {
         {/* Nav desktop */}
         <nav className="hidden lg:flex items-center gap-[18px] xl:gap-[24px]">
           {navLinks.map(({ to, label }) => (
-            <Link key={to} to={to} className={navLinkClass(to)}>
+            <Link
+              key={to}
+              to={to}
+              className="relative group py-2 font-bold text-[12px] tracking-[0.08em] uppercase transition-colors duration-200"
+              style={{ color: isActive(to) ? '#FF8C00' : 'rgba(255,255,255,0.82)' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#FF8C00'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = isActive(to) ? '#FF8C00' : 'rgba(255,255,255,0.82)'; }}
+            >
               {label}
+              <span
+                className={`absolute bottom-0 left-0 h-[1.5px] transition-all duration-300 ${isActive(to) ? 'w-full' : 'w-0 group-hover:w-full'}`}
+                style={{ backgroundColor: '#FF8C00' }}
+              />
             </Link>
           ))}
 
@@ -113,6 +120,18 @@ export function Header() {
             </Link>
           )}
 
+          {/* Dark mode toggle — desktop only */}
+          <button
+            onClick={toggleDark}
+            aria-label={isDark ? 'Ativar modo claro' : 'Ativar modo noturno'}
+            className="hidden lg:flex w-9 h-9 items-center justify-center rounded-full bg-white/10 border border-white/15 hover:bg-white/20 transition-all cursor-pointer active:scale-95"
+          >
+            {isDark
+              ? <Sun  size={15} className="text-amber-400" />
+              : <Moon size={15} className="text-white/70" />
+            }
+          </button>
+
           {/* Hambúrguer — sempre visível para acesso ao drawer (conta/impacto) */}
           <button
             onClick={() => setIsMenuOpen(true)}
@@ -123,6 +142,7 @@ export function Header() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
           </button>
+        </div>
         </div>
       </header>
 

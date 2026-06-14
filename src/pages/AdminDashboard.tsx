@@ -56,7 +56,7 @@ function CityMarkers({ porCidade, coordsMap }: { porCidade: Record<string, numbe
           const [lat, lng] = coordsMap[cidade];
           const ratio = Number(qtd) / maxQtd;
           const radius = 5 + ratio * 18;
-          const color = ratio > 0.7 ? '#dc2626' : ratio > 0.4 ? '#f97316' : '#8b5cf6';
+          const color = ratio > 0.66 ? '#dc2626' : ratio > 0.33 ? '#FF8C00' : '#8dc63f';
           return (
             <CircleMarker
               key={cidade}
@@ -593,9 +593,9 @@ const dentistasFiltrados = dentistas.filter(d =>
         {telaAtiva === 'mensagens' && <MensagensOperacionais />}
 
         {telaAtiva === 'painel' && <>
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Painel Administrativo</h2>
-          <p className="text-gray-500 dark:text-slate-400 mt-1">Visão geral da operação global da Turma do Bem.</p>
+        <div className="mb-8 pb-6 border-b border-slate-200 dark:border-slate-700/60">
+          <h2 className="text-3xl font-black text-gray-800 dark:text-white tracking-tight">Painel Administrativo</h2>
+          <p className="text-gray-500 dark:text-slate-400 mt-1 text-sm">Visão geral da operação global da Turma do Bem.</p>
         </div>
 
         <div className="mb-8">
@@ -623,31 +623,37 @@ const dentistasFiltrados = dentistas.filter(d =>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white dark:bg-slate-900/50 p-6 rounded-xl border border-gray-100 dark:border-slate-700/40 border-l-4 border-l-[#8dc63f] shadow-sm flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-900/50 px-6 py-5 rounded-xl border border-gray-100 dark:border-slate-700/40 border-l-4 border-l-[#8dc63f] shadow-sm flex items-center justify-between">
             <div>
-              <h3 className="text-gray-500 dark:text-slate-400 text-xs font-bold mb-2 uppercase tracking-wider">Jovens na Fila</h3>
-              <p className="text-5xl font-bold text-gray-800 dark:text-white">{statsAdmin.total_beneficiarios}</p>
+              <h3 className="text-gray-500 dark:text-slate-400 text-xs font-bold mb-1.5 uppercase tracking-wider">Jovens na Fila</h3>
+              <p className="text-5xl font-black text-gray-800 dark:text-white leading-none">{statsAdmin.total_beneficiarios}</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-2">pacientes aguardando atendimento</p>
             </div>
-            <div className="p-4 bg-[#8dc63f]/10 rounded-xl"><Users size={40} className="text-[#8dc63f]"/></div>
+            <div className="p-3 bg-[#8dc63f]/10 rounded-xl shrink-0">
+              <Users size={28} className="text-[#8dc63f]"/>
+            </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900/50 p-6 rounded-xl border border-gray-100 dark:border-slate-700/40 border-l-4 border-l-[#FF8C00] shadow-sm flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-900/50 px-6 py-5 rounded-xl border border-gray-100 dark:border-slate-700/40 border-l-4 border-l-[#FF8C00] shadow-sm flex items-center justify-between">
             <div>
-              <h3 className="text-gray-500 dark:text-slate-400 text-xs font-bold mb-2 uppercase tracking-wider">Dentistas Voluntários</h3>
-              <p className="text-5xl font-bold text-gray-800 dark:text-white">{statsAdmin.total_dentistas}</p>
+              <h3 className="text-gray-500 dark:text-slate-400 text-xs font-bold mb-1.5 uppercase tracking-wider">Dentistas Voluntários</h3>
+              <p className="text-5xl font-black text-gray-800 dark:text-white leading-none">{statsAdmin.total_dentistas}</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-2">profissionais ativos na rede</p>
             </div>
-            <div className="p-4 bg-[#FF8C00]/10 rounded-xl"><Heart size={40} className="text-[#FF8C00]"/></div>
+            <div className="p-3 bg-[#FF8C00]/10 rounded-xl shrink-0">
+              <Heart size={28} className="text-[#FF8C00]"/>
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div className="bg-white dark:bg-slate-900/50 rounded-2xl shadow-sm p-8 border border-gray-100 dark:border-slate-700/40 h-full flex flex-col">
             <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-6 flex items-center gap-2"><MapPin size={16} className="text-[#FF8C00]"/> Mapa de Calor (Demandas)</h3>
-            <div className="flex-1 w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-600 relative" style={{ minHeight: '380px' }}>
+            <div className="flex-1 w-full rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-600 relative" style={{ minHeight: '460px' }}>
               <MapContainer
                 center={[-15.0, -60.0]}
                 zoom={3}
-                style={{ width: '100%', height: '100%', minHeight: '380px' }}
+                style={{ width: '100%', height: '100%', minHeight: '460px' }}
                 scrollWheelZoom={false}
                 zoomControl
               >
@@ -662,7 +668,7 @@ const dentistasFiltrados = dentistas.filter(d =>
               </MapContainer>
               {/* Legenda do mapa */}
               <div className="absolute bottom-3 left-3 z-[1000] bg-black/70 backdrop-blur-sm rounded-xl px-3 py-2 flex items-center gap-2 pointer-events-none">
-                <div className="w-24 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #4338ca, #8b5cf6, #f97316, #dc2626)' }} />
+                <div className="w-24 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #8dc63f, #FF8C00, #dc2626)' }} />
                 <span className="text-white text-[10px] font-bold whitespace-nowrap">Baixa → Alta demanda</span>
               </div>
             </div>
@@ -679,7 +685,16 @@ const dentistasFiltrados = dentistas.filter(d =>
             </div>
             <div className="space-y-4">
               {statsAdmin.ultimos_agendamentos && statsAdmin.ultimos_agendamentos.map((ag: AgendamentoAdmin, index: number) => (
-                <div key={index} className="p-5 rounded-xl border border-gray-100 dark:border-slate-700/40 dark:bg-slate-800/40 shadow-sm hover:border-orange-200 dark:hover:border-orange-700/60 transition-colors flex flex-col gap-2">
+                <div
+                  key={index}
+                  className={`p-5 rounded-xl border dark:bg-slate-800/40 shadow-sm transition-colors flex flex-col gap-2 border-l-4 ${
+                    ag.prioridade === 'Urgente'
+                      ? 'border-gray-100 dark:border-slate-700/40 border-l-red-500 hover:border-l-red-400'
+                      : ag.prioridade === 'Alta'
+                      ? 'border-gray-100 dark:border-slate-700/40 border-l-[#FF8C00] hover:border-l-orange-400'
+                      : 'border-gray-100 dark:border-slate-700/40 border-l-[#8dc63f] hover:border-l-green-400'
+                  }`}
+                >
                   <div className="flex justify-between items-start">
                     <p className="font-bold text-gray-800 dark:text-white text-lg">{ag.paciente}</p>
                     <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-md ${ag.prioridade === 'Urgente' ? 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400' : ag.prioridade === 'Alta' ? 'bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400' : 'bg-green-100 text-green-600 dark:bg-green-950/40 dark:text-green-400'}`}>{ag.prioridade}</span>
