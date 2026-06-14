@@ -26,6 +26,7 @@ export interface MetricasOperacionais {
   mensagens: {
     total: number;
     por_categoria: Partial<Record<string, number>>;
+    por_canal_origem: Partial<Record<'WEB' | 'TELEGRAM' | 'APP' | 'PRESENCIAL' | 'TELEFONE', number>>;
     por_urgencia_msg: Partial<Record<'ALTA' | 'MEDIA' | 'BAIXA', number>>;
   };
 }
