@@ -64,3 +64,25 @@ export const pacientesApi = {
 export const relatoriosApi = {
   operacional: () => request<MetricasOperacionais>('/admin/metricas'),
 };
+
+// ── Chat ───────────────────────────────────────────────────────────────────────
+
+export interface ChatMensagem {
+  id: number;
+  idPaciente: number;
+  autorRole: 'dentista' | 'paciente';
+  autorNome: string;
+  texto: string;
+  enviadoEm: string; // ISO 8601
+}
+
+export const chatApi = {
+  listar: (idPaciente: number) =>
+    request<ChatMensagem[]>(`/chat/${idPaciente}`),
+
+  enviar: (idPaciente: number, msg: { autorRole: string; autorNome: string; texto: string }) =>
+    request<ChatMensagem>(`/chat/${idPaciente}`, {
+      method: 'POST',
+      body: JSON.stringify(msg),
+    }),
+};

@@ -4,6 +4,7 @@ import {
   CheckCircle2, Send, Clock, Activity, X, AlertTriangle,
 } from 'lucide-react';
 import { TicketTimeline } from './ticket';
+import { ChatPanel } from './ChatPanel';
 import type { EventoHistorico } from '../lib/api';
 
 interface HistoricoConsulta {
@@ -72,13 +73,14 @@ interface Props {
 }
 
 export function ModalFichaAtiva({
-  ficha, slotsPropostos, novaData, novaHora, procedimentoOferta,
+  ficha, usuarioLogado, slotsPropostos, novaData, novaHora, procedimentoOferta,
   slotsOcupados, slotsLivres, dataHoje, ofertaAtiva,
   historicoTicket = [], carregandoHistorico = false,
   onClose, onGerarRelatorio, onAdicionarSlot, onRemoverSlot, onEnviarOferta,
   onCancelarOferta, setNovaData, setNovaHora, setProcedimentoOferta,
 }: Props) {
   const [confirmandoCancelamento, setConfirmandoCancelamento] = useState(false);
+  const [abaAtiva, setAbaAtiva] = useState<'historico' | 'chat'>('historico');
 
   const handleCancelarOferta = () => {
     if (!ofertaAtiva?.id || !onCancelarOferta) return;
@@ -283,57 +285,86 @@ export function ModalFichaAtiva({
           </div>
         </div>
 
-        {/* ── Painel direito — histórico ── */}
-        <div className="flex-1 min-h-0 p-5 md:p-8 md:w-1/2 md:flex-none overflow-y-auto bg-gray-50/50 dark:bg-slate-800/50">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-              <Activity size={20} className="text-[#8dc63f]" /> Histórico de Tratamento
-            </h3>
-            <button onClick={onClose} className="text-gray-400 dark:text-slate-500 hover:text-red-500 transition-colors p-1">
+        {/* ── Painel direito — abas Histórico / Chat ── */}
+        <div className="flex-1 min-h-0 flex flex-col md:w-1/2 md:flex-none overflow-hidden bg-gray-50/50 dark:bg-slate-800/50">
+
+          {/* Tab bar */}
+          <div className="flex items-center border-b border-gray-100 dark:border-slate-700 px-4 pt-4 gap-1 flex-shrink-0">
+            {(['historico', 'chat'] as const).map(aba => (
+              <button
+                key={aba}
+                onClick={() => setAbaAtiva(aba)}
+                className={`px-4 py-2 rounded-t-xl text-xs font-black uppercase tracking-wider transition-all ${
+                  abaAtiva === aba
+                    ? 'bg-white dark:bg-slate-900 text-orange-500 dark:text-orange-400 border-b-2 border-orange-500'
+                    : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
+                }`}
+              >
+                {aba === 'historico' ? '📋 Histórico' : '💬 Chat'}
+              </button>
+            ))}
+            <button onClick={onClose} className="ml-auto text-gray-400 dark:text-slate-500 hover:text-red-500 transition-colors p-1">
               <X size={20} />
             </button>
           </div>
 
-          {/* Linha do tempo de status do ticket */}
-          {(carregandoHistorico || historicoTicket.length > 0) && (
-            <div className="mb-6">
-              <p className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-3">Status do Ticket</p>
-              <TicketTimeline eventos={historicoTicket} loading={carregandoHistorico} />
-            </div>
-          )}
+          {/* Conteúdo das abas */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            {abaAtiva === 'historico' ? (
+              <div className="h-full overflow-y-auto p-5 md:p-8">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-6">
+                  <Activity size={20} className="text-[#8dc63f]" /> Histórico de Tratamento
+                </h3>
 
-          <div className="relative border-l-2 border-gray-200 dark:border-slate-700 ml-3 space-y-6">
-            {ficha.historico && ficha.historico.length > 0 ? (
-              ficha.historico.map((item, idx) => (
-                <div key={idx} className="relative pl-6 animate-fade-in">
-                  <div className={`absolute w-5 h-5 rounded-full -left-[11px] top-0.5 border-4 border-white dark:border-slate-800 shadow-sm ${item.status === 'Agendado' ? 'bg-[#FF8C00]' : 'bg-[#8dc63f]'}`} />
-                  <p className="text-xs font-bold text-gray-400 dark:text-slate-500 mb-1">{item.data}</p>
-                  <div className={`p-4 rounded-xl border ${item.status === 'Agendado' ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900/40' : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 shadow-sm'}`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className={`font-bold text-sm ${item.status === 'Agendado' ? 'text-orange-800 dark:text-orange-300' : 'text-gray-800 dark:text-white'}`}>
-                        {item.proc || item.titulo}
-                      </h4>
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${item.status === 'Agendado' ? 'bg-orange-100 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400' : 'bg-green-100 dark:bg-green-950/50 text-green-600 dark:text-green-400'}`}>
-                        {item.status}
-                      </span>
-                    </div>
-                    {item.hora && (
-                      <p className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-1 mt-1">
-                        <Clock size={11} /> {item.hora}
-                      </p>
-                    )}
-                    <p className={`text-xs mt-1 ${item.status === 'Agendado' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-slate-400'}`}>
-                      Dr(a). {item.dentista}
-                    </p>
+                {/* Linha do tempo de status do ticket */}
+                {(carregandoHistorico || historicoTicket.length > 0) && (
+                  <div className="mb-6">
+                    <p className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-3">Status do Ticket</p>
+                    <TicketTimeline eventos={historicoTicket} loading={carregandoHistorico} />
                   </div>
+                )}
+
+                <div className="relative border-l-2 border-gray-200 dark:border-slate-700 ml-3 space-y-6">
+                  {ficha.historico && ficha.historico.length > 0 ? (
+                    ficha.historico.map((item, idx) => (
+                      <div key={idx} className="relative pl-6 animate-fade-in">
+                        <div className={`absolute w-5 h-5 rounded-full -left-[11px] top-0.5 border-4 border-white dark:border-slate-800 shadow-sm ${item.status === 'Agendado' ? 'bg-[#FF8C00]' : 'bg-[#8dc63f]'}`} />
+                        <p className="text-xs font-bold text-gray-400 dark:text-slate-500 mb-1">{item.data}</p>
+                        <div className={`p-4 rounded-xl border ${item.status === 'Agendado' ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900/40' : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 shadow-sm'}`}>
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className={`font-bold text-sm ${item.status === 'Agendado' ? 'text-orange-800 dark:text-orange-300' : 'text-gray-800 dark:text-white'}`}>
+                              {item.proc || item.titulo}
+                            </h4>
+                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${item.status === 'Agendado' ? 'bg-orange-100 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400' : 'bg-green-100 dark:bg-green-950/50 text-green-600 dark:text-green-400'}`}>
+                              {item.status}
+                            </span>
+                          </div>
+                          {item.hora && (
+                            <p className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-1 mt-1">
+                              <Clock size={11} /> {item.hora}
+                            </p>
+                          )}
+                          <p className={`text-xs mt-1 ${item.status === 'Agendado' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-slate-400'}`}>
+                            Dr(a). {item.dentista}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-10">
+                      <Activity size={32} className="text-gray-300 dark:text-slate-600 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-slate-400 font-medium text-sm">Nenhum histórico ainda.</p>
+                      <p className="text-gray-400 dark:text-slate-500 text-xs mt-1">O histórico aparecerá aqui quando for agendado algum procedimento.</p>
+                    </div>
+                  )}
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-10">
-                <Activity size={32} className="text-gray-300 dark:text-slate-600 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-slate-400 font-medium text-sm">Nenhum histórico ainda.</p>
-                <p className="text-gray-400 dark:text-slate-500 text-xs mt-1">O histórico aparecerá aqui quando for agendado algum procedimento.</p>
               </div>
+            ) : (
+              <ChatPanel
+                idPaciente={ficha.id}
+                autorRole="dentista"
+                autorNome={usuarioLogado}
+              />
             )}
           </div>
         </div>
