@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { X, Navigation, Car, Footprints, ExternalLink, AlertCircle, ArrowRight } from 'lucide-react';
-import { LATAM_COORDINATES, normalizarCidade } from '../data/latamCoordinates';
 
 // ── Ícones customizados (evita problema do import de PNG no Vite) ──────────
 const userIcon = L.divIcon({
@@ -13,7 +12,7 @@ const userIcon = L.divIcon({
 });
 
 const destIcon = L.divIcon({
-  html: `<div style="background:#FF8C00;color:white;padding:5px 10px;border-radius:10px;font-size:12px;font-weight:bold;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.3)">🦷 Consultório</div>`,
+  html: `<div style="background:#FF8C00;color:white;padding:5px 10px;border-radius:10px;font-size:12px;font-weight:bold;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.3)">🦷 Turma do Bem</div>`,
   iconSize: [120, 30],
   iconAnchor: [60, 30],
   className: '',
@@ -72,22 +71,13 @@ interface Props {
   onClose: () => void;
 }
 
-// ── Geocoding: dicionário local primeiro, Nominatim como fallback ─────────
-async function geocodeCidade(cidade: string, pais: string): Promise<[number, number]> {
-  // Tenta o dicionário local (coordenadas de centros urbanos, sempre na malha viária)
-  const cidadeNormalizada = normalizarCidade(cidade);
-  const local = LATAM_COORDINATES[cidadeNormalizada] ?? LATAM_COORDINATES[cidade];
-  if (local) return local;
-
-  // Fallback: Nominatim com país para evitar geocoding em continente errado
-  const query = `${cidade}, ${pais}`;
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&featuretype=city`;
-  const res = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
-  if (!res.ok) throw new Error(`Geocoding falhou (${res.status})`);
-  const json = await res.json();
-  if (!json.length) throw new Error(`Cidade "${cidade}" não encontrada. Verifique o cadastro do dentista.`);
-  return [parseFloat(json[0].lat), parseFloat(json[0].lon)]; // [lat, lng]
-}
+// ── Sede da Turma do Bem — destino fixo de toda rota ──────────────────────
+// Rua Maurício Francisco Klabin, 449 — Vila Mariana, São Paulo/SP, 04120-020
+const SEDE_TDB = {
+  coords: [-23.5931575, -46.6348912] as [number, number],
+  nome: 'Turma do Bem',
+  endereco: 'R. Maurício Francisco Klabin, 449 — Vila Mariana, São Paulo/SP',
+};
 
 // ── Rota via OpenRouteService ─────────────────────────────────────────────
 const ORS_KEY = (import.meta.env.VITE_ORS_API_KEY as string | undefined) ?? '';
@@ -136,7 +126,7 @@ async function buscarRota(
 }
 
 // ── Componente principal ──────────────────────────────────────────────────
-export function MapaRota({ dentistaCidade, dentistaPais, dentistaNome, data, hora, onClose }: Props) {
+export function MapaRota({ dentistaNome, data, hora, onClose }: Props) {
   const [status, setStatus]           = useState<Status>('localizando');
   const [erroMsg, setErroMsg]         = useState('');
   const [userLoc, setUserLoc]         = useState<[number, number] | null>(null);
@@ -156,18 +146,10 @@ export function MapaRota({ dentistaCidade, dentistaPais, dentistaNome, data, hor
       async (pos) => {
         const origem: [number, number] = [pos.coords.latitude, pos.coords.longitude];
         setUserLoc(origem);
-        setStatus('geocodificando');
 
-        let dest: [number, number];
-        try {
-          dest = await geocodeCidade(dentistaCidade, dentistaPais);
-          setDestLoc(dest);
-        } catch (err) {
-          // Geocoding falhou: não temos destino, erro fatal
-          setStatus('erro');
-          setErroMsg(err instanceof Error ? err.message : 'Cidade do dentista não encontrada.');
-          return;
-        }
+        // Destino fixo: sede da Turma do Bem (coordenada real, não o centro da cidade)
+        const dest: [number, number] = SEDE_TDB.coords;
+        setDestLoc(dest);
 
         setStatus('calculando');
         try {
@@ -203,7 +185,7 @@ export function MapaRota({ dentistaCidade, dentistaPais, dentistaNome, data, hor
     ? `https://waze.com/ul?ll=${destLoc[0]},${destLoc[1]}&navigate=yes`
     : '#';
   const gmapsUrl = destLoc
-    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dentistaCidade + ', ' + dentistaPais)}&travelmode=${modo === 'foot' ? 'walking' : 'driving'}`
+    ? `https://www.google.com/maps/dir/?api=1&destination=${destLoc[0]},${destLoc[1]}&travelmode=${modo === 'foot' ? 'walking' : 'driving'}`
     : '#';
 
   // Centro inicial (Brasil)
@@ -263,6 +245,7 @@ export function MapaRota({ dentistaCidade, dentistaPais, dentistaNome, data, hor
             <p className="text-white/60 text-xs">
               Dr(a). {dentistaNome} · {data.split('-').reverse().join('/')} às {hora}
             </p>
+            <p className="text-white/40 text-[11px] mt-0.5">{SEDE_TDB.endereco}</p>
           </div>
           <button
             onClick={onClose}
@@ -317,7 +300,7 @@ export function MapaRota({ dentistaCidade, dentistaPais, dentistaNome, data, hor
                   <span className="text-white font-black text-3xl">{routeInfo.duracao}</span>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <div className="w-2 h-2 bg-[#FF8C00] rounded-full" />
-                    <span className="text-white/50 text-sm">{routeInfo.distancia} até {dentistaCidade}</span>
+                    <span className="text-white/50 text-sm">{routeInfo.distancia} até a Turma do Bem</span>
                   </div>
                 </div>
 
@@ -350,7 +333,7 @@ export function MapaRota({ dentistaCidade, dentistaPais, dentistaNome, data, hor
             /* Rota automática indisponível — mostra destino no mapa + apps externos */
             <div className="flex items-center gap-3 mb-4 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
               <AlertCircle size={18} className="text-yellow-400 flex-shrink-0" />
-              <p className="text-white/70 text-sm">Rota automática indisponível. Use um dos apps abaixo para navegar até <span className="text-white font-bold">{dentistaCidade}</span>.</p>
+              <p className="text-white/70 text-sm">Rota automática indisponível. Use um dos apps abaixo para navegar até a <span className="text-white font-bold">Turma do Bem</span>.</p>
             </div>
           )}
 
