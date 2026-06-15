@@ -166,7 +166,6 @@ export function MapaRota({ dentistaNome, data, hora, onClose }: Props) {
       },
       { enableHighAccuracy: true, timeout: 15_000 },
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Recalcula ao trocar modo ──────────────────────────────────────────
