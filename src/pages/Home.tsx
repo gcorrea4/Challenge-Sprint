@@ -274,14 +274,14 @@ export function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Linha conectora */}
-            <div className="hidden md:block absolute top-10 left-[calc(16.6%+2rem)] right-[calc(16.6%+2rem)] h-px bg-gradient-to-r from-[#FF8C00]/20 via-[#FF8C00] to-[#FF8C00]/20 z-0" />
+            <div className="hidden md:block absolute top-10 left-[calc(16.6%+2.5rem)] right-[calc(16.6%+2.5rem)] h-px bg-gradient-to-r from-[#FF8C00]/20 via-[#FF8C00] to-[#FF8C00]/20 z-0" />
 
             {steps.map((step, i) => (
               <motion.div key={i} {...fadeUp(i * 0.15)} className="relative flex flex-col items-center text-center">
                 <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-black mb-7 relative z-10 transition-all
                   ${step.orange
                     ? 'bg-[#FF8C00] text-white shadow-[0_0_30px_rgba(255,140,0,0.35)]'
-                    : 'bg-white/8 text-white border-2 border-[#FF8C00]/40'
+                    : 'bg-[#1c1a1c] text-white border-2 border-[#FF8C00]/40'
                   }`}
                 >
                   {step.num}
