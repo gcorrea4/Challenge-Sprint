@@ -23,11 +23,12 @@ interface Props {
   paciente: PacienteAdmin;
   historicoTicket: EventoHistorico[];
   carregandoHistorico: boolean;
+  abaInicial?: 'caso' | 'historico' | 'chat';
   onClose: () => void;
 }
 
-export function ModalCasoAdmin({ paciente, historicoTicket, carregandoHistorico, onClose }: Props) {
-  const [abaAtiva, setAbaAtiva] = useState<'caso' | 'historico' | 'chat'>('caso');
+export function ModalCasoAdmin({ paciente, historicoTicket, carregandoHistorico, abaInicial = 'caso', onClose }: Props) {
+  const [abaAtiva, setAbaAtiva] = useState<'caso' | 'historico' | 'chat'>(abaInicial);
   const nome = paciente.nomePaciente || paciente.nome || '?';
 
   return (

@@ -8,8 +8,9 @@
     <title>Dentista na Nuvem</title>
     <script>
       (function() {
-        var t = localStorage.getItem('tdb_dark_mode');
-        if (t === 'true' || (t === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        // Padrão: dark. Só fica claro se o usuário salvou explicitamente 'false'.
+        var saved = localStorage.getItem('tdb_dark_mode');
+        if (saved !== 'false') {
           document.documentElement.classList.add('dark');
         }
       })();

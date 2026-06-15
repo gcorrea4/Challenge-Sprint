@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { apiFetch } from '../utils/api';
-import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign, Archive, AlertTriangle, CheckCircle2, Search, UserX, FileDown, Sheet, Database, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, MapPin, Heart, CalendarDays, Clock, TrendingUp, Smile, DollarSign, Archive, AlertTriangle, CheckCircle2, Search, UserX, FileDown, Sheet, Database, MessageSquare, Sun, Moon } from 'lucide-react';
+import { useDarkMode } from '../hooks/useDarkMode';
 import { MetricasOperacionais } from './MetricasOperacionais';
 import { MensagensOperacionais } from './MensagensOperacionais';
 import {
@@ -130,6 +131,7 @@ function BotoesExportar({ onPDF, onCSV }: { onPDF: () => void; onCSV: () => void
 export function AdminDashboard() {
   const navigate = useNavigate();
   const usuarioLogado = sessionStorage.getItem("usuarioLogado") || "Admin";
+  const { isDark, toggle: toggleDark } = useDarkMode();
 
   const [telaAtiva, setTelaAtiva] = useState<'painel' | 'pacientes' | 'dentistas' | 'metricas' | 'mensagens'>('painel');
   const [pacientes, setPacientes] = useState<UsuarioPaciente[]>([]);
@@ -147,6 +149,7 @@ export function AdminDashboard() {
   const [pacienteSelecionadoAdmin, setPacienteSelecionadoAdmin] = useState<typeof pacientes[0] | null>(null);
   const [historicoModalAdmin, setHistoricoModalAdmin] = useState<EventoHistorico[]>([]);
   const [carregandoHistoricoAdmin, setCarregandoHistoricoAdmin] = useState(false);
+  const [abaInicialModal, setAbaInicialModal] = useState<'caso' | 'historico' | 'chat'>('caso');
 
   const [statsAdmin, setStatsAdmin] = useState({
     total_beneficiarios: 0,
@@ -249,8 +252,9 @@ export function AdminDashboard() {
   };
 
   // Abre o modal de caso completo e carrega o histórico do ticket do paciente.
-  const abrirCasoAdmin = async (paciente: typeof pacientes[0]) => {
+  const abrirCasoAdmin = async (paciente: typeof pacientes[0], abaInicial: 'caso' | 'historico' | 'chat' = 'caso') => {
     setPacienteSelecionadoAdmin(paciente);
+    setAbaInicialModal(abaInicial);
     setHistoricoModalAdmin([]);
     setCarregandoHistoricoAdmin(true);
     try {
@@ -410,6 +414,17 @@ const dentistasFiltrados = dentistas.filter(d =>
             </div>
             <DemoBadge />
           </div>
+          {/* Toggle dark mode */}
+          <button
+            onClick={toggleDark}
+            className="w-full flex items-center gap-2 text-slate-400 hover:text-slate-200 text-sm font-bold transition-all px-3 py-2 rounded-lg hover:bg-slate-800/60 mb-1 active:scale-95"
+          >
+            {isDark
+              ? <Sun size={16} className="text-amber-400" />
+              : <Moon size={16} className="text-slate-400" />
+            }
+            {isDark ? 'Modo Claro' : 'Modo Escuro'}
+          </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2 text-slate-400 hover:text-red-400 text-sm font-bold transition-colors px-3 py-2 rounded-lg hover:bg-red-950/30"
@@ -515,13 +530,24 @@ const dentistasFiltrados = dentistas.filter(d =>
                             {p.statusTicket && <TicketBadge status={p.statusTicket} size="sm" />}
                           </td>
                           <td className="px-4 py-4 text-right">
-                            <button
-                              onClick={() => deletarUsuario('pacientes', p.id, p.nomePaciente || p.nome || '')}
-                              className="p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
-                              title="Inativar conta"
-                            >
-                              <Archive size={16} />
-                            </button>
+                            <div className="flex items-center justify-end gap-1">
+                              {p.statusTicket === 'EM_ATENDIMENTO' && (
+                                <button
+                                  onClick={() => abrirCasoAdmin(p, 'chat')}
+                                  className="p-2 rounded-lg text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors"
+                                  title="Ver chat do caso"
+                                >
+                                  <MessageSquare size={16} />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => deletarUsuario('pacientes', p.id, p.nomePaciente || p.nome || '')}
+                                className="p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
+                                title="Inativar conta"
+                              >
+                                <Archive size={16} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -777,6 +803,7 @@ const dentistasFiltrados = dentistas.filter(d =>
           paciente={pacienteSelecionadoAdmin}
           historicoTicket={historicoModalAdmin}
           carregandoHistorico={carregandoHistoricoAdmin}
+          abaInicial={abaInicialModal}
           onClose={() => setPacienteSelecionadoAdmin(null)}
         />
       )}

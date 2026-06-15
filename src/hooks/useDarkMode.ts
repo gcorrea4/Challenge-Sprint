@@ -4,7 +4,7 @@ export function useDarkMode() {
   const [isDark, setIsDark] = useState<boolean>(() => {
     const saved = localStorage.getItem('tdb_dark_mode');
     if (saved !== null) return saved === 'true';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return true; // padrão: dark
   });
 
   useEffect(() => {

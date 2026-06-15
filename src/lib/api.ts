@@ -86,3 +86,21 @@ export const chatApi = {
       body: JSON.stringify(msg),
     }),
 };
+
+// ── Mensagens do site (contato) ─────────────────────────────────────────────────
+
+export interface MensagemSite {
+  id: number;
+  nome: string;
+  email: string;
+  assunto: string;
+  categoria: string;
+  mensagem: string;
+  canalOrigem: string;
+  urgencia?: string;
+  criadoEm?: string;
+}
+
+export const mensagensApi = {
+  listar: () => request<MensagemSite[]>('/mensagens'),
+};

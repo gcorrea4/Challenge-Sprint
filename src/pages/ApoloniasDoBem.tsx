@@ -47,8 +47,8 @@ export function ApoloniasDoBem() {
     {
       num: '01', icon: <Phone size={22} />,
       title: 'Entre em contato',
-      desc: 'Fale com a Turma do Bem pelo WhatsApp ou pelo formulário no site. Nossa equipe responde com acolhimento e total sigilo.',
-      cta: { label: 'WhatsApp', href: 'https://wa.me/5511965793913' },
+      desc: 'Fale com a Turma do Bem pelo Telegram ou pelo formulário no site. Nossa equipe responde com acolhimento e total sigilo.',
+      cta: { label: 'Telegram', href: 'https://t.me/turmadobembot' },
     },
     {
       num: '02', icon: <FileText size={22} />,
@@ -172,7 +172,7 @@ export function ApoloniasDoBem() {
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
               <motion.a
-                href="https://wa.me/5511965793913"
+                href="https://t.me/turmadobembot"
                 target="_blank"
                 rel="noreferrer"
                 whileHover={{ scale: 1.04, y: -2 }}
@@ -405,7 +405,7 @@ export function ApoloniasDoBem() {
 
           <motion.div {...fadeUp(0.5)} className="text-center mt-14">
             <motion.a
-              href="https://wa.me/5511965793913"
+              href="https://t.me/turmadobembot"
               target="_blank"
               rel="noreferrer"
               whileHover={{ scale: 1.05, y: -2 }}
@@ -574,14 +574,14 @@ export function ApoloniasDoBem() {
                 Sou mulher vítima de violência e quero receber tratamento odontológico gratuito.
               </p>
               <motion.a
-                href="https://wa.me/5511965793913"
+                href="https://t.me/turmadobembot"
                 target="_blank"
                 rel="noreferrer"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="block w-full bg-[#6B2D8B] text-white py-3.5 rounded-2xl font-bold text-sm hover:bg-[#5B2070] transition-all shadow-[0_4px_15px_rgba(107,45,139,0.35)]"
               >
-                Falar pelo WhatsApp
+                Falar pelo Telegram
               </motion.a>
             </motion.div>
 

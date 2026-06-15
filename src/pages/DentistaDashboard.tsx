@@ -15,8 +15,9 @@ import {
   LayoutDashboard, Users, Calendar, LogOut,
   Search, MessageSquare, Send,
   MapPin, Phone, AlertCircle, Star, Filter, Clock, CheckCircle2, X,
-  Heart, FileText, SearchX, CalendarDays,
+  Heart, FileText, SearchX, CalendarDays, Sun, Moon,
 } from 'lucide-react';
+import { useDarkMode } from '../hooks/useDarkMode';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -149,6 +150,7 @@ export function DentistaDashboard() {
   const dentistId = sessionStorage.getItem('userId') || '0';
   const usuarioLogado = sessionStorage.getItem('usuarioLogado') || 'Dentista';
   const userRole = sessionStorage.getItem('userRole');
+  const { isDark, toggle: toggleDark } = useDarkMode();
   const [cidadeAtiva, setCidadeAtiva] = useState(sessionStorage.getItem('dentistaCidade') || 'São Paulo');
 
   const showMensagem = (msg: string, ms = 3500) => {
@@ -468,6 +470,17 @@ export function DentistaDashboard() {
             </div>
             <DemoBadge />
           </div>
+          {/* Toggle dark mode */}
+          <button
+            onClick={toggleDark}
+            className="w-full flex items-center gap-2 text-slate-400 hover:text-slate-200 text-sm font-bold transition-all px-3 py-2 rounded-lg hover:bg-slate-800/60 mb-1 active:scale-95"
+          >
+            {isDark
+              ? <Sun size={16} className="text-amber-400" />
+              : <Moon size={16} className="text-slate-400" />
+            }
+            {isDark ? 'Modo Claro' : 'Modo Escuro'}
+          </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2 text-slate-400 hover:text-red-400 text-sm font-bold transition-colors px-3 py-2 rounded-lg hover:bg-red-950/30"

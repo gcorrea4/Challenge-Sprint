@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, RefreshCw, MessageSquare } from 'lucide-react';
+import { AlertTriangle, RefreshCw, MessageSquare, Mail } from 'lucide-react';
 import { Skeleton } from '../components/ui';
-import { relatoriosApi } from '../lib/api';
+import { relatoriosApi, mensagensApi, type MensagemSite } from '../lib/api';
 import type { MetricasOperacionais as MetricasDados } from '../lib/api';
 
 const CANAL_ORIGEM_MSG_CONFIG: Record<string, { label: string; cor: string }> = {
@@ -17,6 +17,8 @@ export function MensagensOperacionais() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(false);
   const [tentativa, setTentativa] = useState(0);
+  const [mensagens, setMensagens] = useState<MensagemSite[]>([]);
+  const [carregandoLista, setCarregandoLista] = useState(true);
 
   const carregar = () => {
     setCarregando(true);
@@ -31,6 +33,14 @@ export function MensagensOperacionais() {
       .then(d => { if (!live) return; setDados(d); setCarregando(false); })
       .catch(() => { if (!live) return; setErro(true); setCarregando(false); });
     return () => { live = false; };
+  }, [tentativa]);
+
+  useEffect(() => {
+    setCarregandoLista(true);
+    mensagensApi.listar()
+      .then(data => setMensagens(Array.isArray(data) ? data : []))
+      .catch(() => setMensagens([]))
+      .finally(() => setCarregandoLista(false));
   }, [tentativa]);
 
   if (carregando) {
@@ -164,6 +174,60 @@ export function MensagensOperacionais() {
                 </div>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* Lista de mensagens recebidas */}
+      <div className="bg-white dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-700/40 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700/40 flex items-center justify-between">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
+            Mensagens Recebidas
+          </h3>
+          <span className="text-sm font-bold text-gray-400 dark:text-slate-500">{mensagens.length} total</span>
+        </div>
+
+        {carregandoLista ? (
+          <div className="p-6 space-y-3">
+            {[1, 2, 3].map(i => <Skeleton key={i} variant="card" className="h-20" />)}
+          </div>
+        ) : mensagens.length === 0 ? (
+          <div className="py-12 text-center text-sm text-gray-400 dark:text-slate-500">
+            Nenhuma mensagem recebida ainda.
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-50 dark:divide-slate-800 max-h-[500px] overflow-y-auto">
+            {mensagens.map(msg => (
+              <div key={msg.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors">
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-950/40 text-orange-500 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      {(msg.nome ?? '?').charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-gray-800 dark:text-white">{msg.nome}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 flex items-center gap-1">
+                        <Mail size={10} /> {msg.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {msg.categoria && (
+                      <span className="text-[10px] font-bold bg-orange-50 dark:bg-orange-950/30 text-orange-500 border border-orange-100 dark:border-orange-900/40 px-2 py-0.5 rounded-full">
+                        {msg.categoria}
+                      </span>
+                    )}
+                    {msg.canalOrigem && (
+                      <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded-full">
+                        {msg.canalOrigem}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs font-bold text-gray-600 dark:text-slate-300 mb-1">{msg.assunto}</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-2">{msg.mensagem}</p>
+              </div>
+            ))}
           </div>
         )}
       </div>

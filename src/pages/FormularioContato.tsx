@@ -13,6 +13,19 @@ interface ContatoFormData {
   canal_origem?: string;
 }
 
+const mapearCanal = (valor: string): string => {
+  const mapa: Record<string, string> = {
+    'Telegram': 'TELEGRAM',
+    'Instagram': 'INSTAGRAM',
+    'YouTube': 'YOUTUBE',
+    'Google / Pesquisa': 'GOOGLE',
+    'Indicação de amigo': 'INDICACAO',
+    'Outro': 'OUTRO',
+    'Prefiro não informar': 'WEB',
+  };
+  return mapa[valor] ?? valor.toUpperCase().trim();
+};
+
 export function FormularioContato() {
   const navigate = useNavigate();
   const utmSource = useUtmSource();
@@ -31,11 +44,11 @@ export function FormularioContato() {
     try {
       // Lê localStorage diretamente no submit para evitar race condition com o
       // useEffect do useUtmSource (state pode estar null no momento do envio).
-      const canal_origem =
-        utmSource?.toUpperCase()
-        ?? localStorage.getItem('utm_source')?.toUpperCase()
+      const canalBruto =
+        utmSource
+        ?? localStorage.getItem('utm_source')
         ?? (data.canal_origem || 'WEB');
-      console.log('[UTM] canal_origem a enviar:', canal_origem); // TODO: remover (debug temporário)
+      const canal_origem = mapearCanal(canalBruto);
       const response = await fetch(`${API_URL}/mensagens`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

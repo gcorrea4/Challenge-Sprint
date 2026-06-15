@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { apiFetch } from '../utils/api';
 import { useForm } from 'react-hook-form';
-import { LayoutDashboard, LogOut, Clock, CalendarDays, Users, ClipboardList, Activity, CheckCircle2, AlertCircle, TrendingUp, Bell, CalendarCheck, ChevronRight, Phone, Mail, Navigation, MapPin, Sparkles, MessageSquare, Heart } from 'lucide-react';
+import { LayoutDashboard, LogOut, Clock, CalendarDays, Users, ClipboardList, Activity, CheckCircle2, AlertCircle, TrendingUp, Bell, CalendarCheck, ChevronRight, Phone, Mail, Navigation, MapPin, Sparkles, MessageSquare, Heart, Sun, Moon } from 'lucide-react';
+import { useDarkMode } from '../hooks/useDarkMode';
 import { MapaRota } from '../components/MapaRota';
 import { ChatPanel } from '../components/ChatPanel';
 import { Skeleton, EmptyState, DemoBadge } from '../components/ui';
@@ -56,6 +57,7 @@ export function PacienteDashboard() {
   const navigate = useNavigate();
   const usuarioLogado = sessionStorage.getItem('usuarioLogado');
   const userId = sessionStorage.getItem('userId');
+  const { isDark, toggle: toggleDark } = useDarkMode();
 
   const [telaAtiva, setTelaAtiva] = useState<'painel' | 'triagem' | 'consultas'>('painel');
   const [historicoPaciente, setHistoricoPaciente] = useState<HistoricoConsulta[]>([]);
@@ -304,6 +306,17 @@ export function PacienteDashboard() {
             </div>
             <DemoBadge />
           </div>
+          {/* Toggle dark mode */}
+          <button
+            onClick={toggleDark}
+            className="w-full flex items-center gap-2 text-slate-400 hover:text-slate-200 text-sm font-bold transition-all px-3 py-2 rounded-lg hover:bg-slate-800/60 mb-1 active:scale-95"
+          >
+            {isDark
+              ? <Sun size={16} className="text-amber-400" />
+              : <Moon size={16} className="text-slate-400" />
+            }
+            {isDark ? 'Modo Claro' : 'Modo Escuro'}
+          </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2 text-slate-400 hover:text-red-400 text-sm font-bold transition-colors px-3 py-2 rounded-lg hover:bg-red-950/30"
