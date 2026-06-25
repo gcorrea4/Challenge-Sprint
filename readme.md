@@ -27,6 +27,20 @@ A aplicação foi desenvolvida em **React + Vite + TypeScript** com integração
 |  **API Java (Azure)** | app-dentista-na-nuvem.azurewebsites.net & https://app-dentista-na-nuvem.azurewebsites.net/q/swagger-ui |
 
 
+---
+
+## 🔑 Credenciais de Acesso para Avaliação
+
+| Perfil | E-mail | Senha |
+|---|---|---|
+| 👑 **Administrador** | admin@turmadobem.org | admin123 |
+| 👨‍⚕️ **Médico** | brunao@gmail.com | 667212 |
+| 👤 **Paciente** | zipzip@gmail.com | 667212 |
+
+
+
+---
+
 ### Executar localmente
 
 **Pré-requisito:** [Node.js](https://nodejs.org/) 18+ instalado.
