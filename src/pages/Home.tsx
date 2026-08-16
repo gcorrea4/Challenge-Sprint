@@ -73,12 +73,12 @@ export function Home() {
   ];
 
   const cards = [
-    { num: '1°', icon: <Calculator  size={32} />, title: 'Triagem Inteligente',  desc: 'Algoritmo de priorização para jovens em situação de vulnerabilidade com base em métricas socioeconômicas.', color: 'orange' },
-    { num: '2°', icon: <ShieldCheck size={32} />, title: 'Prontuário Digital',   desc: 'Histórico clínico completo e seguro, garantindo que cada atendimento seja registrado e acompanhado.',        color: 'green'  },
-    { num: '3°', icon: <Zap         size={32} />, title: 'Match Geográfico',     desc: 'Conectamos dentistas voluntários aos pacientes mais próximos através de mapas de calor reais.',                color: 'orange' },
-    { num: '4°', icon: <Heart       size={32} />, title: 'Impacto Direto',       desc: 'Sua doação via PIX financia kits de higiene e tratamentos complexos como canais e próteses.',                  color: 'green'  },
-    { num: '5°', icon: <Users       size={32} />, title: 'Rede de Voluntariado', desc: 'Faça parte da maior rede de voluntariado especializado do mundo, presente em todo o Brasil.',                   color: 'orange' },
-    { num: '6°', icon: <MessageCircle size={32} />, title: 'Suporte e Contato', desc: 'Canais diretos de comunicação com a sede da TdB em São Paulo para tirar dúvidas em tempo real.',              color: 'green'  },
+    { icon: <Calculator  size={32} />, title: 'Triagem Inteligente',  desc: 'Algoritmo de priorização para jovens em situação de vulnerabilidade com base em métricas socioeconômicas.', color: 'orange' },
+    { icon: <ShieldCheck size={32} />, title: 'Prontuário Digital',   desc: 'Histórico clínico completo e seguro, garantindo que cada atendimento seja registrado e acompanhado.',        color: 'green'  },
+    { icon: <Zap         size={32} />, title: 'Match Geográfico',     desc: 'Conectamos dentistas voluntários aos pacientes mais próximos através de mapas de calor reais.',                color: 'orange' },
+    { icon: <Heart       size={32} />, title: 'Impacto Direto',       desc: 'Sua doação via PIX financia kits de higiene e tratamentos complexos como canais e próteses.',                  color: 'green'  },
+    { icon: <Users       size={32} />, title: 'Rede de Voluntariado', desc: 'Faça parte da maior rede de voluntariado especializado do mundo, presente em todo o Brasil.',                   color: 'orange' },
+    { icon: <MessageCircle size={32} />, title: 'Suporte e Contato', desc: 'Canais diretos de comunicação com a sede da TdB em São Paulo para tirar dúvidas em tempo real.',              color: 'green'  },
   ];
 
   // ── Animações reutilizáveis ─────────────────────────────────────────────────
@@ -170,16 +170,6 @@ export function Home() {
           </motion.div>
         </div>
 
-        {/* Indicador de scroll */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.1, duration: 0.8 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        >
-          <span className="text-white/35 text-[10px] tracking-[3px] uppercase">role para ver mais</span>
-          <div className="w-px h-10 bg-gradient-to-b from-white/30 to-transparent" />
-        </motion.div>
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════
@@ -350,10 +340,6 @@ export function Home() {
               transition={{ duration: 0.5, delay: index * 0.08 }}
               className="bg-white dark:bg-slate-800 p-10 md:p-12 rounded-[32px] min-w-[320px] md:min-w-[420px] snap-start border border-gray-100 dark:border-slate-700 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group hover:border-orange-200 dark:hover:border-orange-700/60 hover:shadow-[0_8px_30px_rgba(255,140,0,0.10)] transition-all duration-300"
             >
-              {/* Número fantasma */}
-              <div className="absolute -right-4 -top-8 text-[8rem] font-black text-gray-50 dark:text-slate-700 group-hover:scale-110 transition-transform pointer-events-none select-none">
-                {card.num.replace('°', '')}
-              </div>
               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-8 relative z-10 transition-colors ${card.color === 'orange' ? 'bg-orange-50 text-orange-500' : 'bg-green-50 text-green-500'}`}>
                 {card.icon}
               </div>
